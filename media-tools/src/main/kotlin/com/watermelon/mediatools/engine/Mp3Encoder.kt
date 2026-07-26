@@ -3,12 +3,13 @@ package com.watermelon.mediatools.engine
 import java.io.OutputStream
 
 /**
- * Thin JNI wrapper around libmp3lame. Not usable until the native library actually
- * builds — see media-tools/src/main/cpp/lame/README.md; this class assumes the
- * native lib is named `mp3encoder` per CMakeLists.txt.
- *
- * Usage: feed interleaved 16-bit PCM chunks via [encodeChunk], call [flush] once at
- * end-of-stream, then [close]. One instance = one encode session (not reusable).
+ * Thin JNI wrapper around libmp3lame. NOT CURRENTLY FUNCTIONAL: the native build is
+ * disabled in media-tools/build.gradle.kts (commented out) because libmp3lame's source
+ * isn't vendored yet -- see media-tools/src/main/cpp/lame/README.md. Constructing this
+ * class will throw UnsatisfiedLinkError at runtime until both are fixed:
+ *   1. libmp3lame source added under cpp/lame/
+ *   2. the externalNativeBuild blocks in media-tools/build.gradle.kts re-enabled
+ * AudioExtractor (the only caller) is therefore not usable end-to-end yet either.
  */
 class Mp3Encoder(sampleRateHz: Int, numChannels: Int, bitrateKbps: Int = 128) {
 

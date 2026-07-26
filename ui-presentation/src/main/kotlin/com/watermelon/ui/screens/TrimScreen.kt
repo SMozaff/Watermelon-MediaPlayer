@@ -147,8 +147,10 @@ fun TrimScreen(
                         onBack()
                     },
                     onDeleteOriginal = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            // API 29+: real system consent dialog via OriginalFileDeleter.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            // API 30+: real system consent dialog via OriginalFileDeleter
+                            // (MediaStore.createDeleteRequest requires API 30, not 29 --
+                            // this boundary was wrong before, caught via lint's NewApi check).
                             // Its result callback (registered once in MainActivity) calls
                             // MediaJobManager.resolveOriginalFileDecision itself once the
                             // user answers -- this composable just watches the job's state
@@ -157,7 +159,7 @@ fun TrimScreen(
                             pendingDeleteConsent = true
                             originalFileDeleter.requestDelete(job.id, Uri.parse(job.inputUri), contentResolver)
                         } else {
-                            // API < 29: direct delete works without a consent dialog.
+                            // API < 30: direct delete works without a consent dialog.
                             mediaJobsViewModel.resolveOriginalFileDecision(job.id, deleteOriginal = true, contentResolver)
                             activeJobId = null
                             onBack()

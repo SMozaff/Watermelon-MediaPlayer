@@ -19,6 +19,11 @@ android {
 dependencies {
     implementation(project(":common-interfaces"))
     implementation(project(":media-tools"))
+    // media-tools' media3 deps are `implementation`, not `api`, so they aren't transitively
+    // exposed here -- ui-presentation needs its own direct dependency to resolve
+    // androidx.media3.common.util.UnstableApi (used by TrimScreen/CompressScreen/
+    // TrimViewModel/CompressViewModel). This was a real CI build failure, not a style choice.
+    implementation(libs.androidx.media3.common)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)  // Scaffold is included here
     implementation(libs.androidx.compose.material.icons.extended)

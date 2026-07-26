@@ -47,17 +47,21 @@ class OriginalFileDeleter(
         }
 
     /**
-     * Requests deletion of [originalUri] via the system consent dialog (API 30+) or a
-     * legacy RecoverableSecurityException-driven prompt (API 29). [jobId] is threaded
-     * through so [onResult] can tell the caller which job's original this was for.
+     * Requests deletion of [originalUri] via the system consent dialog. Requires API 30
+     * (R) -- MediaStore.createDeleteRequest was introduced in API 30, not 29 as an earlier
+     * version of this comment incorrectly stated (a real bug: the SDK_INT guard below used
+     * to check Build.VERSION_CODES.Q (29) instead of R (30), which would have thrown
+     * NoSuchMethodError on a real API 29 device -- caught via lint's NewApi check reporting
+     * "Call requires API level 30 (current min is 23)").
      *
-     * Below API 29, ContentResolver.delete() generally works directly for files the app
-     * can see without a consent dialog gate -- so this path isn't wired for < Q; call
+     * Below API 30, ContentResolver.delete() generally works directly for files the app
+     * can see without a consent dialog gate -- so this path isn't wired for < R; call
      * MediaJobManager.resolveOriginalFileDecision directly on those OS versions instead.
      */
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.R)
     fun requestDelete(jobId: String, originalUri: Uri, contentResolver: ContentResolver) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            FileLogger.e(TAG, "requestDelete called on API < 29 -- use direct ContentResolver.delete instead")
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            FileLogger.e(TAG, "requestDelete called on API < 30 -- use direct ContentResolver.delete instead")
             return
         }
         pendingJobId = jobId

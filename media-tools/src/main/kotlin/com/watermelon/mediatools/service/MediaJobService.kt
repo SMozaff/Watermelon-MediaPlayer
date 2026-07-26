@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.media3.common.util.UnstableApi
 import com.watermelon.common.util.FileLogger
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobManager
@@ -45,9 +46,22 @@ private const val EXTRA_JOB_ID = "job_id"
  * revisiting if that becomes a real issue.
  *
  * NOT run on-device.
+ *
+ * @UnstableApi is required on this class because it uses [MediaJobManager] throughout
+ * (the field, the provider, and every call site), and MediaJobManager itself is
+ * @UnstableApi-annotated (it touches Media3 Transformer internals). Lint caught 5 separate
+ * UnsafeOptInUsageError instances here before this annotation was added -- each usage needs
+ * the opt-in propagated, and annotating the whole class is simpler than annotating every
+ * individual member/call site separately.
  */
+@UnstableApi
 class MediaJobService : Service() {
 
+    // Explicitly annotated (not just relying on the class-level @UnstableApi above) since
+    // a companion object is technically a separate declaration and lint's opt-in
+    // propagation into nested objects isn't guaranteed -- being explicit rather than
+    // assuming inheritance covers jobManagerProvider's MediaJobManager reference.
+    @UnstableApi
     companion object {
         /** Must be set once by the app before this service is started. See class doc. */
         var jobManagerProvider: (() -> MediaJobManager)? = null
@@ -99,7 +113,14 @@ class MediaJobService : Service() {
         val active = jobs.filter { it.state is MediaJobState.Queued || it.state is MediaJobState.Running }
         if (active.isEmpty()) {
             FileLogger.i(TAG, "no active jobs -- stopping foreground")
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            // stopForeground(int) (STOP_FOREGROUND_REMOVE) requires API 24, but this
+            // module's minSdk is 23 (confirmed by a real lint failure: "Call requires API
+            // level 24 (current min is 23): android.app.Service#stopForeground [NewApi]").
+            // The boolean overload is deprecated but available since API 1 and does the
+            // same thing (true = remove the notification), so it's the correct minSdk-safe
+            // choice here, not a workaround to revisit later.
+            @Suppress("DEPRECATION")
+            stopForeground(true)
             stopSelf()
             return
         }

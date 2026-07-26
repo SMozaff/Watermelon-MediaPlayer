@@ -2,7 +2,7 @@
 agp = "8.7.0"                    # Android Gradle Plugin (stable for 2026)
 kotlin = "2.0.20"                # Kotlin 2.x (Compose compatible)
 compose-bom = "2025.04.01"       # Jetpack Compose BOM
-media3 = "1.6.0"                 # Bumped for media-tools: Transformer.addListener()/onFallbackApplied (see media-tools/build.gradle.kts)
+media3 = "1.8.0"                 # Bumped for media-tools: Presentation.createForShortSide(int) requires 1.8.0+ (confirmed via Context7 release notes -- this was the root cause of a real CI build failure; 1.6.0 only had the Transformer.Listener API, not this method). Also where experimentalSetMp4EditListTrimEnabled was introduced (unused, see VideoTrimmer.kt).
 coil = "3.0.4"                   # Coil 3.x
 ktor = "3.0.0"                   # Subtitle network (lightweight)
 kotlinx-serialization = "1.7.3"  # JSON parsing for SubtitleApiClient responses

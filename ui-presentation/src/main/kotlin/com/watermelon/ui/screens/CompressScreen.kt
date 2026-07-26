@@ -115,7 +115,10 @@ fun CompressScreen(
                         onBack()
                     },
                     onDeleteOriginal = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // API 30+ required for MediaStore.createDeleteRequest -- see
+                        // OriginalFileDeleter/TrimScreen's identical fix for why this is R,
+                        // not Q.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             pendingDeleteConsent = true
                             originalFileDeleter.requestDelete(job.id, Uri.parse(job.inputUri), contentResolver)
                         } else {
