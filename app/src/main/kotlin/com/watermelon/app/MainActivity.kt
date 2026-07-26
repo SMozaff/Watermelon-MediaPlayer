@@ -102,6 +102,42 @@ class MainActivity : ComponentActivity() {
 
     private val database by lazy { WatermelonDatabase(applicationContext) }
     private val settingsStore by lazy { FolderVisibilityStoreImpl(applicationContext) }
+
+    // media-tools: reuse the singleton MediaJobManager/OutputFileStore owned by
+    // WatermelonApplication (see that class's doc — no DI framework in this app, so this
+    // Activity just reads the Application-scoped instances rather than constructing new ones).
+    //
+    // NOTE ON A REAL INCONSISTENCY FOUND WHILE WIRING THIS: FolderVisibilityStoreImpl has
+    // getCompressedOutputPath()/getTrimmedOutputPath() methods (added earlier this session),
+    // but the actual user-editable value lives in SettingsState/SettingsPersistence.kt (the
+    // real settings screen + its prefs round-trip). Those are two different SharedPreferences-
+    // backed values that would silently drift apart. WatermelonApplication constructs
+    // OutputFileStore once at startup using FolderVisibilityStoreImpl's values, which won't
+    // reflect changes made in the Settings screen without restarting the app. Not fixed here
+    // (would mean either removing the FolderVisibilityStoreImpl methods or restructuring
+    // WatermelonApplication to observe settingsState) -- flagging rather than leaving this
+    // silently wrong.
+    private val mediaJobManager by lazy {
+        (application as com.watermelon.app.WatermelonApplication).mediaJobManager
+    }
+    private val outputFileStore by lazy {
+        (application as com.watermelon.app.WatermelonApplication).outputFileStore
+    }
+    private val audioExtractor by lazy { com.watermelon.mediatools.engine.AudioExtractor() }
+    private val videoTrimmer by lazy {
+        com.watermelon.mediatools.engine.VideoTrimmer(applicationContext, outputFileStore)
+    }
+    private val videoCompressor by lazy {
+        com.watermelon.mediatools.engine.VideoCompressor(applicationContext, outputFileStore)
+    }
+    private val mediaJobsViewModel by lazy {
+        com.watermelon.ui.viewmodel.MediaJobsViewModel(mediaJobManager)
+    }
+    // Constructed in onCreate, not lazily -- registerForActivityResult must be called
+    // unconditionally during Activity initialization (Android's own constraint, not a
+    // choice made here), so a `by lazy` field wouldn't reliably register in time.
+    private lateinit var originalFileDeleter: com.watermelon.mediatools.output.OriginalFileDeleter
+
     private val vhsReverseSound by lazy { VhsReverseSound() }
     private val subtitleRepository by lazy {
         com.watermelon.subtitle.repository.SubtitleRepositoryImpl(applicationContext)
@@ -190,6 +226,10 @@ class MainActivity : ComponentActivity() {
         installCrashLogger()
         com.watermelon.common.util.FileLogger.i("App", "onCreate — app starting")
         super.onCreate(savedInstanceState)
+
+        originalFileDeleter = com.watermelon.mediatools.output.OriginalFileDeleter(this) { jobId, deleted ->
+            mediaJobManager.resolveOriginalFileDecision(jobId, deleteOriginal = deleted, contentResolver)
+        }
 
         val savedVolume = prefs.getInt("volume", -1)
         if (savedVolume >= 0) {
@@ -548,6 +588,7 @@ class MainActivity : ComponentActivity() {
         var settingsState by remember {
             mutableStateOf(loadSettingsState(prefs, pureDarkTheme))
         }
+        var showPremiumUpsell by remember { mutableStateOf(false) }
 
         val savedBrightness = remember { prefs.getFloat("brightness", -1f) }
 
@@ -617,7 +658,24 @@ class MainActivity : ComponentActivity() {
                         onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
                         availablePlaylists = playlists,
                         folderName = "Videos",
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onExtractAudio = { item ->
+                            if (!settingsState.isPremiumUnlocked) {
+                                showPremiumUpsell = true
+                            } else {
+                                mediaJobManager.extractAudio(audioExtractor, item.uri, item.displayName)
+                            }
+                        },
+                        onTrimVideo = { item ->
+                            navController.navigate(
+                                "trim/${Uri.encode(item.uri)}/${Uri.encode(item.displayName)}/${item.durationMs}"
+                            )
+                        },
+                        onCompressVideo = { item ->
+                            navController.navigate(
+                                "compress/${Uri.encode(item.uri)}/${Uri.encode(item.displayName)}"
+                            )
+                        }
                     )
                 }
             }
@@ -684,7 +742,24 @@ class MainActivity : ComponentActivity() {
                         onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
                         availablePlaylists = playlists,
                         folderName = screenTitle,
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onExtractAudio = { item ->
+                            if (!settingsState.isPremiumUnlocked) {
+                                showPremiumUpsell = true
+                            } else {
+                                mediaJobManager.extractAudio(audioExtractor, item.uri, item.displayName)
+                            }
+                        },
+                        onTrimVideo = { item ->
+                            navController.navigate(
+                                "trim/${Uri.encode(item.uri)}/${Uri.encode(item.displayName)}/${item.durationMs}"
+                            )
+                        },
+                        onCompressVideo = { item ->
+                            navController.navigate(
+                                "compress/${Uri.encode(item.uri)}/${Uri.encode(item.displayName)}"
+                            )
+                        }
                     )
                 }
             }
@@ -897,6 +972,35 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             }
                         },
+                        onExtractAudio = {
+                            if (!settingsState.isPremiumUnlocked) {
+                                showPremiumUpsell = true
+                            } else {
+                                lifecycleScope.launch {
+                                    val displayName = runCatching { mediaRepository.getByUri(mediaUri)?.displayName }
+                                        .getOrNull() ?: mediaUri.substringAfterLast('/')
+                                    mediaJobManager.extractAudio(audioExtractor, mediaUri, displayName)
+                                }
+                            }
+                        },
+                        onTrimVideo = {
+                            lifecycleScope.launch {
+                                val displayName = runCatching { mediaRepository.getByUri(mediaUri)?.displayName }
+                                    .getOrNull() ?: mediaUri.substringAfterLast('/')
+                                navController.navigate(
+                                    "trim/${Uri.encode(mediaUri)}/${Uri.encode(displayName)}/$durationMs"
+                                )
+                            }
+                        },
+                        onCompressVideo = {
+                            lifecycleScope.launch {
+                                val displayName = runCatching { mediaRepository.getByUri(mediaUri)?.displayName }
+                                    .getOrNull() ?: mediaUri.substringAfterLast('/')
+                                navController.navigate(
+                                    "compress/${Uri.encode(mediaUri)}/${Uri.encode(displayName)}"
+                                )
+                            }
+                        },
                         surface = { modifier ->
                             AndroidView(
                                 modifier = modifier,
@@ -911,6 +1015,78 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 }
+            }
+            composable(
+                route = "trim/{uri}/{displayName}/{durationMs}",
+                arguments = listOf(
+                    navArgument("uri") { type = NavType.StringType },
+                    navArgument("displayName") { type = NavType.StringType },
+                    navArgument("durationMs") { type = NavType.LongType },
+                )
+            ) { backStackEntry ->
+                val mediaUri = Uri.decode(backStackEntry.arguments?.getString("uri").orEmpty())
+                val displayName = Uri.decode(backStackEntry.arguments?.getString("displayName").orEmpty())
+                val durationMs = backStackEntry.arguments?.getLong("durationMs") ?: 0L
+                val controller = mediaController
+                val pbController = playbackController
+                if (controller == null || pbController == null) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Connecting…", style = MaterialTheme.typography.bodyLarge)
+                    }
+                } else {
+                    val playerVm = remember(pbController) { PlayerViewModel(pbController) }
+                    LaunchedEffect(mediaUri) { playerVm.onIntent(UserIntent.Play(mediaUri)) }
+                    val trimVm = remember { com.watermelon.ui.viewmodel.TrimViewModel(mediaJobManager, videoTrimmer) }
+
+                    com.watermelon.ui.screens.TrimScreen(
+                        playerViewModel = playerVm,
+                        trimViewModel = trimVm,
+                        mediaJobsViewModel = mediaJobsViewModel,
+                        contentResolver = contentResolver,
+                        originalFileDeleter = originalFileDeleter,
+                        inputUri = Uri.parse(mediaUri),
+                        originalDisplayName = displayName,
+                        durationMs = durationMs,
+                        isPremiumUnlocked = settingsState.isPremiumUnlocked,
+                        onRequestUpsell = { showPremiumUpsell = true },
+                        onBack = { navController.popBackStack() },
+                        surface = { modifier ->
+                            AndroidView(
+                                modifier = modifier,
+                                factory = { ctx ->
+                                    val view = android.view.LayoutInflater.from(ctx)
+                                        .inflate(R.layout.player_view_texture, null) as PlayerView
+                                    view.player = controller
+                                    view.useController = false
+                                    view
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+            composable(
+                route = "compress/{uri}/{displayName}",
+                arguments = listOf(
+                    navArgument("uri") { type = NavType.StringType },
+                    navArgument("displayName") { type = NavType.StringType },
+                )
+            ) { backStackEntry ->
+                val mediaUri = Uri.decode(backStackEntry.arguments?.getString("uri").orEmpty())
+                val displayName = Uri.decode(backStackEntry.arguments?.getString("displayName").orEmpty())
+                val compressVm = remember { com.watermelon.ui.viewmodel.CompressViewModel(mediaJobManager, videoCompressor) }
+
+                com.watermelon.ui.screens.CompressScreen(
+                    compressViewModel = compressVm,
+                    mediaJobsViewModel = mediaJobsViewModel,
+                    contentResolver = contentResolver,
+                    originalFileDeleter = originalFileDeleter,
+                    inputUri = Uri.parse(mediaUri),
+                    originalDisplayName = displayName,
+                    isPremiumUnlocked = settingsState.isPremiumUnlocked,
+                    onRequestUpsell = { showPremiumUpsell = true },
+                    onBack = { navController.popBackStack() }
+                )
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
@@ -943,6 +1119,12 @@ class MainActivity : ComponentActivity() {
             composable(Routes.DESIGN_SYSTEM) {
                 DesignSystemScreen(onBack = { navController.popBackStack() })
             }
+        }
+
+        if (showPremiumUpsell) {
+            com.watermelon.ui.components.PremiumUpsellDialog(
+                onDismiss = { showPremiumUpsell = false }
+            )
         }
     }
 

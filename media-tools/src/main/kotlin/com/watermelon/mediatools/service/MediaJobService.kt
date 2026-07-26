@@ -33,14 +33,11 @@ private const val EXTRA_JOB_ID = "job_id"
  * empty. Uses the "dataSync" foreground service type (confirmed via Android docs this
  * session) rather than "mediaPlayback", since this isn't audio/video playback.
  *
- * IMPORTANT, not yet resolved: this class needs a real [MediaJobManager] instance to observe
- * ([jobs] StateFlow) and to route cancel actions into. Since MediaJobManager isn't currently
- * a singleton/DI-provided object anywhere in this codebase (no DI framework exists in this
- * repo, confirmed by audit), [jobManagerProvider] is a placeholder static var the app must
- * set once at startup (e.g. in Application.onCreate or MainActivity) before this service can
- * do anything real. This is the same shape problem WatermelonPlaybackService likely solves
- * differently (MediaController connects to it, not the other way around) -- worth revisiting
- * once real app-level wiring exists, not guessing at a DI setup here.
+ * [jobManagerProvider] is set once by [com.watermelon.app.WatermelonApplication.onCreate]
+ * (this app has no DI framework, confirmed by audit — a static provider is the pragmatic
+ * stopgap rather than introducing one for this alone). Still a stopgap, not a proper DI
+ * setup: fine for this app's single-Application-instance reality, but worth replacing if a
+ * real DI framework is ever adopted.
  *
  * On Android 15+ (VANILLA_ICE_CREAM), dataSync foreground services have a 6-hour time limit
  * enforced by the system (onTimeout() callback) -- confirmed via docs. Not handled here;

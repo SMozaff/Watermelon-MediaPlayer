@@ -93,6 +93,12 @@ fun VideoListScreen(
     availablePlaylists: List<Playlist> = emptyList(),
     folderName: String = "Videos",
     onBack: () -> Unit = {},
+    // Media tools entry points (extract audio / trim / compress). Null = feature not wired
+    // by this caller yet; the context menu simply won't show that item. Kept optional so
+    // existing callers of VideoListScreen don't all need updating at once.
+    onExtractAudio: ((MediaItem) -> Unit)? = null,
+    onTrimVideo: ((MediaItem) -> Unit)? = null,
+    onCompressVideo: ((MediaItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -443,5 +449,37 @@ fun VideoListScreen(
                 }
             }
         )
+    }
+
+    // Per-item context menu. This fills in an existing hook (contextMenuItem/showContextMenu
+    // were already set by VideoListItem's onContextMenuClick, but nothing previously rendered
+    // a menu for them) -- media-tools entry points per UI_MANIFEST.md §2.1, gated on the
+    // corresponding callback being non-null so callers that haven't wired media-tools yet
+    // don't see broken/no-op items.
+    if (showContextMenu && contextMenuItem != null) {
+        val item = contextMenuItem!!
+        DropdownMenu(
+            expanded = true,
+            onDismissRequest = { showContextMenu = false; contextMenuItem = null }
+        ) {
+            onExtractAudio?.let { action ->
+                DropdownMenuItem(
+                    text = { Text("Extract Audio", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
+                )
+            }
+            onTrimVideo?.let { action ->
+                DropdownMenuItem(
+                    text = { Text("Trim", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
+                )
+            }
+            onCompressVideo?.let { action ->
+                DropdownMenuItem(
+                    text = { Text("Compress", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
+                )
+            }
+        }
     }
 }

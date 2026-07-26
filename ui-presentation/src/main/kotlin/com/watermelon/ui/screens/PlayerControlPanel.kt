@@ -47,7 +47,13 @@ fun ControlPanel(
     onOrientationChange: (ScreenOrientation) -> Unit,
     onRepeat: () -> Unit, onShuffle: () -> Unit, onScreenshot: () -> Unit,
     onSleepTimer: () -> Unit, onPip: () -> Unit, onBackground: () -> Unit,
-    onShare: () -> Unit, onFavourite: () -> Unit, onAddToPlaylist: () -> Unit, onDelete: () -> Unit
+    onShare: () -> Unit, onFavourite: () -> Unit, onAddToPlaylist: () -> Unit, onDelete: () -> Unit,
+    // media-tools entry points (blueprint §2.2 / UI_MANIFEST.md §2.2). Nullable, matching
+    // VideoListScreen's onExtractAudio/onTrimVideo/onCompressVideo pattern -- items simply
+    // don't render if the caller hasn't wired media-tools yet.
+    onExtractAudio: (() -> Unit)? = null,
+    onTrimVideo: (() -> Unit)? = null,
+    onCompressVideo: (() -> Unit)? = null,
 ) {
     // Note: the panel sits flush against the screen's trailing edge, so it only rounds
     // its *leading* corners — using WatermelonShapes.Radius.card so it stays on the
@@ -127,6 +133,20 @@ fun ControlPanel(
             )
             IconStub(WatermelonIcons.PlaylistAdd, "Add to playlist", false, onAddToPlaylist)
             IconStub(WatermelonIcons.Delete, "Delete", false, onDelete)
+        }
+        if (onExtractAudio != null || onTrimVideo != null || onCompressVideo != null) {
+            HorizontalDivider(color = PlayerColors.current.textPrimary.copy(alpha = 0.12f))
+            PanelLabel("Media Tools")
+            Row(horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2), verticalAlignment = Alignment.CenterVertically) {
+                // No dedicated icons exist yet for these three actions (checked res/drawable
+                // and WatermelonIcons -- neither has an audio-extract/trim/compress glyph).
+                // Reusing existing generic icons as honest placeholders rather than
+                // referencing drawable resources that don't exist; swap for real icons
+                // when available.
+                onExtractAudio?.let { IconStub(WatermelonIcons.VolumeHigh, "Extract audio", false, it) }
+                onTrimVideo?.let { IconStub(R.drawable.ic_screenshot_single, "Trim", false, it) }
+                onCompressVideo?.let { IconStub(WatermelonIcons.Share, "Compress", false, it) }
+            }
         }
     }
 }

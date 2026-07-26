@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":playback-engine"))
     implementation(project(":library-storage"))
     implementation(project(":subtitle-engine"))
+    implementation(project(":media-tools"))
     implementation(project(":common-interfaces"))
 
     implementation(libs.androidx.core)

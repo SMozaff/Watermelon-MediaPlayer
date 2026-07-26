@@ -45,7 +45,15 @@ private const val PROGRESS_POLL_MS = 250L
 @UnstableApi
 class MediaJobManager(
     private val outputFileStore: OutputFileStore,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
+    /**
+     * Optional application Context, used only to start MediaJobService's foreground
+     * notification when a job begins. Nullable/optional so this class stays constructible
+     * without Android context (e.g. in tests) -- if null, jobs still run correctly, just
+     * without the persistent notification / foreground-process protection, which is a real
+     * but non-fatal degradation (see startJobServiceIfNeeded's doc).
+     */
+    private val appContext: android.content.Context? = null,
 ) {
     private val _jobs = MutableStateFlow<List<MediaJob>>(emptyList())
     val jobs: StateFlow<List<MediaJob>> = _jobs.asStateFlow()
@@ -69,6 +77,7 @@ class MediaJobManager(
         _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued) }
         setState(id, MediaJobState.Running)
         pollProgress(id, transformer)
+        startJobServiceIfNeeded()
         FileLogger.i(TAG, "job registered id=$id type=$type")
         return id
     }
@@ -88,6 +97,7 @@ class MediaJobManager(
         val id = UUID.randomUUID().toString()
         _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued) }
         setState(id, MediaJobState.Running)
+        startJobServiceIfNeeded()
         FileLogger.i(TAG, "coroutine job registered id=$id type=$type")
 
         progressPollers[id] = scope.launch(Dispatchers.IO) {
@@ -134,16 +144,14 @@ class MediaJobManager(
      * completed TRIM/COMPRESS job (see [MediaJobState.Completed.awaitingOriginalFileDecision]).
      * If [deleteOriginal] is true, deletes [MediaJob.inputUri] via MediaStore.
      *
-     * KNOWN GAP, not yet handled: on API 29+, [android.content.ContentResolver.delete] on a
-     * MediaStore item this app didn't itself insert (which is the normal case here — these
-     * are pre-existing library videos, not media-tools output) throws
-     * RecoverableSecurityException rather than deleting. The real fix is
-     * MediaStore.createDeleteRequest(resolver, uris) on API 30+, which returns a
-     * PendingIntent the caller must launch via startIntentSenderForResult and handle the
-     * result — that's an Activity-level concern this manager class can't do on its own.
-     * This method's caller (the UI layer, not yet built) needs to catch
-     * RecoverableSecurityException / build the delete request and re-invoke this method
-     * after the user confirms via that system dialog. Not guessing at that wiring here.
+     * On API 29+, a direct [android.content.ContentResolver.delete] on a MediaStore item this
+     * app didn't itself insert (the normal case here — these are pre-existing library videos,
+     * not media-tools output) would throw RecoverableSecurityException. That path is what
+     * [com.watermelon.mediatools.output.OriginalFileDeleter] exists for: it drives the real
+     * MediaStore.createDeleteRequest -> system consent dialog flow and calls this method
+     * itself once the user answers. TrimScreen/CompressScreen route "Delete Original" through
+     * OriginalFileDeleter on API 29+ and call this method directly only on API < 29 (see
+     * those screens for the actual UI wiring).
      */
     fun resolveOriginalFileDecision(id: String, deleteOriginal: Boolean, contentResolver: android.content.ContentResolver) {
         val job = _jobs.value.find { it.id == id }
@@ -239,6 +247,31 @@ class MediaJobManager(
 
     private fun stopPolling(id: String) {
         progressPollers.remove(id)?.cancel()
+    }
+
+    /**
+     * Starts MediaJobService so it can show its progress/cancel notification and hold a
+     * foreground-process lifetime while this job runs. Safe to call on every job start --
+     * MediaJobService's onStartCommand only sets up its jobs-observer once
+     * (observerJob == null check), so redundant starts are harmless.
+     *
+     * If [appContext] wasn't supplied, this silently does nothing -- jobs still complete
+     * correctly, just without the notification/foreground protection. That's a real
+     * degradation (the process could be killed if backgrounded mid-job), not a cosmetic one,
+     * so callers should supply appContext in production; this fallback exists only so
+     * MediaJobManager stays constructible without Android context (e.g. tests).
+     */
+    private fun startJobServiceIfNeeded() {
+        val context = appContext ?: run {
+            FileLogger.e(TAG, "no appContext supplied to MediaJobManager -- MediaJobService will not start; job will run without foreground protection")
+            return
+        }
+        val intent = android.content.Intent(context, com.watermelon.mediatools.service.MediaJobService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
     }
 
     private fun setState(id: String, state: MediaJobState) {

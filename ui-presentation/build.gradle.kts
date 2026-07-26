@@ -18,6 +18,7 @@ android {
 
 dependencies {
     implementation(project(":common-interfaces"))
+    implementation(project(":media-tools"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)  // Scaffold is included here
     implementation(libs.androidx.compose.material.icons.extended)

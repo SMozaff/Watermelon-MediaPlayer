@@ -26,14 +26,20 @@ import com.watermelon.mediatools.output.OutputNaming
  * Quick compressor: downscales resolution via [Presentation.createForShortSide] (confirmed
  * current API via docs this session) and re-encodes at a target audio/video bitrate.
  *
- * CAVEAT — not fully verified: [Presentation.createForShortSide] and
- * [AudioEncoderSettings.Builder.setBitrate] (bits per second — confirmed via docs) are
- * checked. The wiring below — [VideoEncoderSettings.Builder] and attaching both encoder
- * settings via [DefaultEncoderFactory.Builder] into [Transformer.Builder.setEncoderFactory] —
- * matches the long-standing Media3 Transformer pattern but Context7 couldn't confirm the
- * exact method signatures this session (searches came back with related-but-not-matching
- * snippets). If this doesn't compile as-is, check `DefaultEncoderFactory`/`VideoEncoderSettings`
- * against the real 1.6.0 sources first — don't assume this file is correct un-verified.
+ * CONFIRMED via Context7 (Media3 docs, re-checked this session): [Presentation.createForShortSide],
+ * [AudioEncoderSettings.Builder.setBitrate] (bits per second), and the core
+ * [DefaultEncoderFactory.Builder] pattern —
+ * `DefaultEncoderFactory.Builder(context).setRequestedVideoEncoderSettings(VideoEncoderSettings.Builder().setBitrate(bitrate).build()).build()`
+ * — matches this file's usage exactly, including [VideoEncoderSettings.Builder.setBitrate]'s
+ * signature.
+ *
+ * STILL NOT CONFIRMED: [DefaultEncoderFactory.Builder.setRequestedAudioEncoderSettings] and
+ * [Transformer.Builder.setEncoderFactory] didn't surface from three separate targeted
+ * Context7 queries this session (the tool kept returning the same video-settings snippet
+ * above). Both are written here following the same long-standing Media3 pattern as the
+ * confirmed video-settings call, but that symmetry is an inference, not a confirmation —
+ * check against real 1.6.0 sources for these two specifically before trusting them to
+ * compile as-is.
  *
  * NOT run on-device.
  */

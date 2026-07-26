@@ -66,7 +66,14 @@ data class SettingsState(
     /** When false, Continue Watching is hidden from the Playlists screen — but resume
      *  positions keep being recorded in the background regardless, so nothing is lost if
      *  the user re-enables it later. */
-    val continueWatchingEnabled: Boolean = true
+    val continueWatchingEnabled: Boolean = true,
+    /** media-tools output paths (MediaStore RELATIVE_PATH strings). See OutputFileStore's
+     *  doc for the API<29 limitation: custom subfolders are silently ignored on those OS
+     *  versions, so the settings UI should surface that rather than pretend it works. */
+    val compressedOutputPath: String = "Movies/Watermelon/compressed",
+    val trimmedOutputPath: String = "Movies/Watermelon/trimmed",
+    /** Phase 5 gating flag -- placeholder only, no real purchase flow (Phase 6). */
+    val isPremiumUnlocked: Boolean = false,
 )
 
 enum class VhsIntensity { OFF, LOW, MED, HIGH }
@@ -141,6 +148,41 @@ fun SettingsScreen(
                         label = "Continue Watching playlist",
                         checked = state.continueWatchingEnabled
                     ) { onStateChange(state.copy(continueWatchingEnabled = it)) }
+                }
+            }
+
+            item {
+                SettingsGroup(title = "MEDIA TOOLS") {
+                    ToggleRow(
+                        label = "Premium unlocked (placeholder -- no purchase flow yet)",
+                        checked = state.isPremiumUnlocked
+                    ) { onStateChange(state.copy(isPremiumUnlocked = it)) }
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        TextFieldRow(
+                            label = "Compressed video folder",
+                            value = state.compressedOutputPath,
+                            onValueChange = { onStateChange(state.copy(compressedOutputPath = it)) },
+                        )
+                        TextFieldRow(
+                            label = "Trimmed video folder",
+                            value = state.trimmedOutputPath,
+                            onValueChange = { onStateChange(state.copy(trimmedOutputPath = it)) },
+                        )
+                    } else {
+                        // Custom RELATIVE_PATH subfolders are silently ignored by
+                        // MediaStore.insert() below API 29 (see OutputFileStore's doc) --
+                        // showing editable fields that silently fail to apply would be
+                        // worse than not showing them, so this note replaces the fields
+                        // entirely on those OS versions rather than accepting input we
+                        // can't honor.
+                        Text(
+                            text = "Custom folders require Android 10 or later. Compressed and " +
+                                "trimmed videos will save to the default Movies location on this device.",
+                            style = WatermelonTypography.typography.bodySmall,
+                            color = WatermelonColors.DarkOnSurfaceVariant,
+                            modifier = Modifier.padding(vertical = WatermelonSpacing.sm)
+                        )
+                    }
                 }
             }
 
@@ -343,6 +385,36 @@ private fun ToggleRow(
                 uncheckedTrackColor = WatermelonColors.DarkSurface
             )
         )
+    }
+}
+
+@Composable
+private fun TextFieldRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    supportingText: String? = null,
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = WatermelonSpacing.sm)) {
+        Text(
+            text = label,
+            style = WatermelonTypography.typography.bodyLarge,
+            color = WatermelonColors.DarkOnSurface
+        )
+        androidx.compose.material3.TextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (supportingText != null) {
+            Text(
+                text = supportingText,
+                style = WatermelonTypography.typography.bodySmall,
+                color = WatermelonColors.DarkOnSurfaceVariant,
+                modifier = Modifier.padding(top = WatermelonSpacing.xs)
+            )
+        }
     }
 }
 

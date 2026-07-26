@@ -37,6 +37,11 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
         ScreenshotMode.valueOf(prefs.getString("screenshot_mode", null) ?: ScreenshotMode.SINGLE.name)
     }.getOrDefault(ScreenshotMode.SINGLE),
     continueWatchingEnabled = prefs.getBoolean("continue_watching_enabled", true),
+    compressedOutputPath = prefs.getString("mt_compressed_output_path", null)
+        ?: "Movies/Watermelon/compressed",
+    trimmedOutputPath = prefs.getString("mt_trimmed_output_path", null)
+        ?: "Movies/Watermelon/trimmed",
+    isPremiumUnlocked = prefs.getBoolean("mt_premium_unlocked", false),
     subtitleStyle = SubtitleStyle(
         enabled = prefs.getBoolean("subtitle_enabled", true),
         sizeSp = prefs.getInt("subtitle_size_sp", 18),
@@ -78,6 +83,9 @@ fun saveSettingsState(prefs: SharedPreferences, state: SettingsState) {
         .putBoolean("full_folder_access", state.fullFolderAccess)
         .putString("screenshot_mode", state.screenshotMode.name)
         .putBoolean("continue_watching_enabled", state.continueWatchingEnabled)
+        .putString("mt_compressed_output_path", state.compressedOutputPath)
+        .putString("mt_trimmed_output_path", state.trimmedOutputPath)
+        .putBoolean("mt_premium_unlocked", state.isPremiumUnlocked)
         .putBoolean("subtitle_enabled", state.subtitleStyle.enabled)
         .putInt("subtitle_size_sp", state.subtitleStyle.sizeSp)
         .putLong("subtitle_color_argb", state.subtitleStyle.textColorArgb)

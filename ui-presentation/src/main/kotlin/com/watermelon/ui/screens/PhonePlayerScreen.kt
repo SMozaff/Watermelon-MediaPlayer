@@ -119,6 +119,9 @@ fun PhonePlayerScreen(
     onFavourite: ((Boolean) -> Unit)? = null,
     onAddToPlaylist: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
+    onExtractAudio: (() -> Unit)? = null,
+    onTrimVideo: (() -> Unit)? = null,
+    onCompressVideo: (() -> Unit)? = null,
     onLockChanged: ((Boolean) -> Unit)? = null,
     isInPipMode: Boolean = false,
     modifier: Modifier = Modifier
@@ -662,7 +665,10 @@ fun PhonePlayerScreen(
                     onShare = { onShare?.invoke() },
                     onFavourite = { onFavourite?.invoke(!isFavourite) },
                     onAddToPlaylist = { onAddToPlaylist?.invoke() },
-                    onDelete = { onDelete?.invoke() }
+                    onDelete = { onDelete?.invoke() },
+                    onExtractAudio = onExtractAudio,
+                    onTrimVideo = onTrimVideo,
+                    onCompressVideo = onCompressVideo,
                 )
             }
         }
