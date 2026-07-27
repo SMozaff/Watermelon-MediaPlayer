@@ -149,6 +149,12 @@ fun CompressScreen(
     }
 }
 
+// @UnstableApi required: references VideoCompressor.Preset, a nested type inside the
+// @UnstableApi-annotated VideoCompressor class. CompressScreen's own @UnstableApi doesn't
+// propagate to this separate private function -- same class of issue caught earlier in
+// MediaJobService/MediaJobsViewModel, just discovered here via a real CI lint failure
+// instead of proactive audit.
+@UnstableApi
 @Composable
 private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onClick: () -> Unit) {
     val label = when (preset) {
