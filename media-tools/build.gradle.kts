@@ -32,12 +32,24 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     // Pure-Java MP3 encoder (LGPL, port of LAME) -- no NDK/JNI needed, replacing the
     // previous libmp3lame-via-JNI plan that was blocked on this sandbox having no
-    // network access to fetch and vendor libmp3lame's C source. Coordinates found via
-    // web search (mvnrepository.com/artifact/com.cloudburst/java-lame/3.98.4) --
-    // NOT independently verified by fetching the POM directly (network-blocked here
-    // too). Double check this resolves correctly on your first real build; if it
-    // doesn't, the underlying project is https://github.com/nwaldispuehl/java-lame
-    // and the jar can be built from source or grabbed from its GitHub Releases instead.
+    // network access to fetch and vendor libmp3lame's C source.
+    //
+    // CORRECTED after a real CI build failure: this was originally declared as
+    // com.cloudburst:java-lame:3.98.4 (from an unreliable web search hit that turned out
+    // not to exist on Maven Central -- confirmed by "Could not find
+    // com.cloudburst:java-lame:3.98.4" in a real Gradle sync). The project
+    // (github.com/nwaldispuehl/java-lame) is NOT published to Maven Central at all --
+    // confirmed directly from its own README, which only documents building it into a
+    // local ~/.m2 repo. Now served via JitPack instead (see settings.gradle.kts for the
+    // repository declaration), using JitPack's group:artifact:tag convention against the
+    // project's real v3.98.4 GitHub Release.
+    //
+    // FALLBACK if JitPack fails to build this on first resolve (it builds repos live,
+    // rather than serving a pre-existing artifact, so there's some risk here too -- not
+    // eliminated, just a real, verified mechanism rather than a guess): download the
+    // pre-built jar directly from https://github.com/nwaldispuehl/java-lame/releases
+    // (asset attached to the v3.98.4 release) and drop it in as a local file dependency
+    // instead, e.g. `implementation(files("libs/java-lame-3.98.4.jar"))`.
     implementation(libs.java.lame)
 
     testImplementation(libs.junit)
