@@ -5,6 +5,10 @@ package com.watermelon.mediatools.job
  *
  * [progressPercent] comes from polling `Transformer.getProgress()` on a timer while
  * [state] is [MediaJobState.Running] — Transformer has no push-based progress stream.
+ *
+ * [requestedStartMs]: TRIM-only, null for other job types. The start time the user actually
+ * asked for, before keyframe-snapping — needed by MediaJobManager to compute
+ * [MediaJobState.Completed.actualTrimRangeMs] once the real output duration is known.
  */
 data class MediaJob(
     val id: String,
@@ -13,6 +17,7 @@ data class MediaJob(
     val outputPath: String,
     val state: MediaJobState,
     val progressPercent: Int = 0,
+    val requestedStartMs: Long? = null,
 )
 
 enum class MediaJobType { EXTRACT_AUDIO, TRIM, COMPRESS }
@@ -26,8 +31,17 @@ sealed class MediaJobState {
      * completion — UI should show a "keep or delete the original video?" prompt bound to
      * [MediaJob.inputUri]. False for EXTRACT_AUDIO (source video isn't replaced) and false
      * again once the user has answered (see MediaJobManager.resolveOriginalFileDecision).
+     *
+     * [actualTrimRangeMs]: TRIM-only, null for other job types. Populated with the real
+     * (startMs, endMs) of the output file after a keyframe-snapped cut, which can differ
+     * slightly from what the user selected (see VideoTrimmer). UI should show this instead
+     * of silently assuming the exact requested range was honored.
      */
-    data class Completed(val outputUri: String, val awaitingOriginalFileDecision: Boolean = false) : MediaJobState()
+    data class Completed(
+        val outputUri: String,
+        val awaitingOriginalFileDecision: Boolean = false,
+        val actualTrimRangeMs: Pair<Long, Long>? = null,
+    ) : MediaJobState()
     data class Failed(val reason: String) : MediaJobState()
     data object Cancelled : MediaJobState()
 }

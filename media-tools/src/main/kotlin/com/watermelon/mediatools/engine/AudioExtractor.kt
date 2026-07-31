@@ -14,13 +14,14 @@ private const val TAG = "AudioExtractor"
 private const val TIMEOUT_US = 10_000L
 
 /**
- * Extracts a video's audio track and encodes it to a real .mp3 file.
+ * Extracts a video's audio track and encodes it to a real .mp3 file, using java-lame (a
+ * pure-Java, LGPL port of LAME -- see Mp3Encoder's doc for why this replaced an earlier
+ * JNI/libmp3lame plan).
  *
  * Deliberately bypasses Media3 Transformer for this one path. Transformer's encode-side
- * only targets codecs MediaCodec itself provides (no MP3 encoder exists on Android), and
- * routing raw PCM through Transformer's Muxer SPI to reach our own libmp3lame encoder was
- * an unverified API bet (see project history) — so this uses plain MediaExtractor +
- * MediaCodec decode instead, which is stable, well-documented Android SDK, not Media3.
+ * only targets codecs MediaCodec itself provides (no MP3 encoder exists on Android), so
+ * this uses plain MediaExtractor + MediaCodec decode (stable, well-documented Android SDK,
+ * not Media3) to get raw PCM, then feeds that to Mp3Encoder.
  *
  * This means AudioExtractor does NOT go through MediaJobManager/Transformer.Listener like
  * VideoTrimmer/VideoCompressor will — it needs its own progress/cancel plumbing. Callers
@@ -33,6 +34,13 @@ class AudioExtractor {
 
     class Result(val outputPath: String, val durationUs: Long)
 
+    /** Bitrate presets for the "pick a size vs. quality tradeoff" UI (per product request). */
+    enum class BitratePreset(val kbps: Int, val label: String) {
+        SMALLER_SIZE(96, "Smaller size"),
+        STANDARD(128, "Standard"),
+        ORIGINAL_QUALITY(320, "Original quality"),
+    }
+
     /**
      * Suspend entry point for use with MediaJobManager.registerCoroutineJob. Runs the
      * blocking [extract] work, checking real coroutine cancellation (so MediaJobManager.cancel()
@@ -41,7 +49,7 @@ class AudioExtractor {
     suspend fun extractSuspending(
         inputPath: String,
         outputPath: String,
-        bitrateKbps: Int = 128,
+        bitrateKbps: Int = BitratePreset.STANDARD.kbps,
         onProgress: (Int) -> Unit,
     ): Result {
         val ctx = currentCoroutineContext()
@@ -59,7 +67,7 @@ class AudioExtractor {
     fun extract(
         inputPath: String,
         outputPath: String,
-        bitrateKbps: Int = 128,
+        bitrateKbps: Int = BitratePreset.STANDARD.kbps,
         isCancelled: () -> Boolean = { false },
         onProgress: (Int) -> Unit = {},
     ): Result {
@@ -82,13 +90,12 @@ class AudioExtractor {
         codec.start()
 
         val encoder = Mp3Encoder(sampleRate, channelCount, bitrateKbps)
-        check(encoder.isValid) { "Mp3Encoder failed to initialize (native lib missing/broken)" }
 
         File(outputPath).parentFile?.mkdirs()
         val out = BufferedOutputStream(FileOutputStream(outputPath))
 
         try {
-            runDecodeLoop(extractor, codec, encoder, out, channelCount, durationUs, isCancelled, onProgress)
+            runDecodeLoop(extractor, codec, encoder, out, durationUs, isCancelled, onProgress)
             encoder.flush(out)
         } finally {
             out.flush()
@@ -99,7 +106,7 @@ class AudioExtractor {
             extractor.release()
         }
 
-        FileLogger.i(TAG, "extract complete outputPath=$outputPath")
+        FileLogger.i(TAG, "extract complete outputPath=$outputPath bitrateKbps=$bitrateKbps")
         return Result(outputPath, durationUs)
     }
 
@@ -117,7 +124,6 @@ class AudioExtractor {
         codec: MediaCodec,
         encoder: Mp3Encoder,
         out: java.io.OutputStream,
-        channelCount: Int,
         durationUs: Long,
         isCancelled: () -> Boolean,
         onProgress: (Int) -> Unit,
@@ -159,10 +165,9 @@ class AudioExtractor {
                     // all device/codec combinations — if Mp3Encoder output sounds corrupted
                     // on a real device, check KEY_PCM_ENCODING on the decoder's output
                     // format first.
-                    val pcmShorts = ShortArray(bufferInfo.size / 2)
-                    outBuffer.asShortBuffer().get(pcmShorts)
-                    val samplesPerChannel = pcmShorts.size / channelCount
-                    encoder.encodeChunk(pcmShorts, samplesPerChannel, out)
+                    val pcmBytes = ByteArray(bufferInfo.size)
+                    outBuffer.get(pcmBytes)
+                    encoder.encodeChunk(pcmBytes, 0, pcmBytes.size, out)
                 }
                 codec.releaseOutputBuffer(outIndex, false)
 

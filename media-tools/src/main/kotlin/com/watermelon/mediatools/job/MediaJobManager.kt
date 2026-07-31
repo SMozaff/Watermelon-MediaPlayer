@@ -71,10 +71,11 @@ class MediaJobManager(
         inputUri: String,
         outputPath: String,
         transformer: Transformer,
+        requestedStartMs: Long? = null,
     ): String {
         val id = UUID.randomUUID().toString()
         transformers[id] = transformer
-        _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued) }
+        _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued, requestedStartMs = requestedStartMs) }
         setState(id, MediaJobState.Running)
         pollProgress(id, transformer)
         startJobServiceIfNeeded()
@@ -127,15 +128,57 @@ class MediaJobManager(
             FileLogger.e(TAG, "completeJob for unknown job id=$id")
             return
         }
+
+        // For TRIM jobs, read the staging file's REAL duration before publish() deletes it
+        // -- the requested cut may have shifted slightly due to keyframe snapping (see
+        // VideoTrimmer), and this is the only reliable way to know the actual result
+        // (ExportResult's own field for this wasn't confirmed via Context7 this session, so
+        // reading the real output file directly is the safer ground-truth approach).
+        val actualTrimRangeMs: Pair<Long, Long>? =
+            if (job.type == MediaJobType.TRIM && job.requestedStartMs != null) {
+                readActualTrimRange(job.outputPath, job.requestedStartMs)
+            } else null
+
         val displayName = File(job.outputPath).name
         val publishedUri = outputFileStore.publish(job.type, job.outputPath, displayName)
         if (publishedUri != null) {
             val awaitingDecision = job.type == MediaJobType.TRIM || job.type == MediaJobType.COMPRESS
-            setState(id, MediaJobState.Completed(publishedUri.toString(), awaitingDecision))
-            FileLogger.i(TAG, "job completed id=$id uri=$publishedUri awaitingDecision=$awaitingDecision")
+            setState(id, MediaJobState.Completed(publishedUri.toString(), awaitingDecision, actualTrimRangeMs))
+            FileLogger.i(TAG, "job completed id=$id uri=$publishedUri awaitingDecision=$awaitingDecision actualTrimRangeMs=$actualTrimRangeMs")
         } else {
             setState(id, MediaJobState.Failed("Job finished but publishing the output file failed"))
             FileLogger.e(TAG, "publish failed after job completed id=$id")
+        }
+    }
+
+    /**
+     * Reads the trimmed staging file's real duration via MediaMetadataRetriever (same
+     * confirmed-real API used in VideoCompressor for source-resolution detection) and
+     * derives (actualStartMs, actualEndMs). The output file's own timeline always starts at
+     * 0, so we can't recover "where did the start land" from the file alone -- this assumes
+     * requestedStartMs is a close-enough proxy for the actual start (keyframe snapping
+     * typically lands within one GOP, usually well under a second), and reports
+     * actualEndMs = requestedStartMs + realDurationMs. If that assumption turns out wrong in
+     * practice, this is the one place to revisit.
+     */
+    private fun readActualTrimRange(stagingPath: String, requestedStartMs: Long): Pair<Long, Long>? {
+        val retriever = android.media.MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(stagingPath)
+            val durationMs = retriever.extractMetadata(
+                android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
+            )?.toLongOrNull()
+            if (durationMs == null) {
+                FileLogger.e(TAG, "could not read output duration for $stagingPath")
+                null
+            } else {
+                requestedStartMs to (requestedStartMs + durationMs)
+            }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "readActualTrimRange failed for $stagingPath", e)
+            null
+        } finally {
+            retriever.release()
         }
     }
 
@@ -223,11 +266,16 @@ class MediaJobManager(
      * [outputFileStore], then runs [AudioExtractor] as a coroutine job. This is what the
      * video-list/player overflow action (blueprint §3 UI) should call.
      */
-    fun extractAudio(extractor: com.watermelon.mediatools.engine.AudioExtractor, inputPath: String, originalDisplayName: String): String {
+    fun extractAudio(
+        extractor: com.watermelon.mediatools.engine.AudioExtractor,
+        inputPath: String,
+        originalDisplayName: String,
+        bitrateKbps: Int = com.watermelon.mediatools.engine.AudioExtractor.BitratePreset.STANDARD.kbps,
+    ): String {
         val outputName = OutputNaming.extractedAudioName(originalDisplayName)
         val stagingPath = outputFileStore.stagingPathFor(MediaJobType.EXTRACT_AUDIO, outputName)
         return registerCoroutineJob(MediaJobType.EXTRACT_AUDIO, inputPath, stagingPath) { onProgress ->
-            extractor.extractSuspending(inputPath, stagingPath, onProgress = onProgress)
+            extractor.extractSuspending(inputPath, stagingPath, bitrateKbps, onProgress = onProgress)
         }
     }
 

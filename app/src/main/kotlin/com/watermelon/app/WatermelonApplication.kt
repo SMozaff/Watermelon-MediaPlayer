@@ -36,6 +36,7 @@ class WatermelonApplication : Application() {
 
         outputFileStore = OutputFileStore(
             context = applicationContext,
+            mp3RelativePath = { settingsStore.getMp3OutputPath() },
             compressedRelativePath = { settingsStore.getCompressedOutputPath() },
             trimmedRelativePath = { settingsStore.getTrimmedOutputPath() },
         )

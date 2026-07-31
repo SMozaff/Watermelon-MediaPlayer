@@ -26,16 +26,19 @@ private const val TAG = "OutputFileStore"
  * `onError` leaves the partial output file on disk (Media3 doesn't delete it) -- callers
  * should call [deleteStaging] on failure/cancellation to avoid orphaned files.
  *
- * Output locations, per product requirement: Movies/Watermelon/compressed and
- * Movies/Watermelon/trimmed (MediaStore.Video, so results show up in gallery/video apps).
- * Both are user-configurable via [compressedRelativePath]/[trimmedRelativePath] -- callers
- * read the current value from settings (same SharedPreferences-backed pattern as
- * FolderVisibilityStoreImpl's getString/putString in library-storage) and pass it in here;
- * this class doesn't own settings persistence itself, to avoid media-tools depending on
- * library-storage for a single pair of strings.
+ * Output locations, per product requirement: Music/Watermelon (audio), Movies/Watermelon/compressed
+ * and Movies/Watermelon/trimmed (video). All three use MediaStore's proper top-level
+ * directories (Music/, Movies/) so they're indexed correctly by other apps, rather than a
+ * fully custom top-level folder name.
+ * All three are user-configurable via [mp3RelativePath]/[compressedRelativePath]/
+ * [trimmedRelativePath] -- callers read the current value from settings (same
+ * SharedPreferences-backed pattern as FolderVisibilityStoreImpl's getString/putString in
+ * library-storage) and pass it in here; this class doesn't own settings persistence itself,
+ * to avoid media-tools depending on library-storage for a few strings.
  */
 class OutputFileStore(
     private val context: Context,
+    private val mp3RelativePath: () -> String = { "Music/Watermelon" },
     private val compressedRelativePath: () -> String = { "Movies/Watermelon/compressed" },
     private val trimmedRelativePath: () -> String = { "Movies/Watermelon/trimmed" },
 ) {
@@ -62,8 +65,8 @@ class OutputFileStore(
         val (collection, mimeType, relativePath) = when (type) {
             MediaJobType.EXTRACT_AUDIO -> Triple(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                "audio/mpeg", // Real MP3 (Phase 0 Option B -- libmp3lame), not AAC/.m4a
-                "Music/Watermelon"
+                "audio/mpeg", // Real MP3 via java-lame (pure-Java LAME port), not AAC/.m4a
+                mp3RelativePath()
             )
             MediaJobType.COMPRESS -> Triple(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,

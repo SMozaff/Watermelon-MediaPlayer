@@ -82,11 +82,8 @@ fun CompressScreen(
         Button(
             onClick = {
                 val preset = selectedPreset ?: return@Button
-                if (!isPremiumUnlocked) {
-                    onRequestUpsell()
-                } else {
-                    activeJobId = compressViewModel.startCompress(inputUri, originalDisplayName, preset)
-                }
+                // Premium gating temporarily disabled -- see TrimScreen's identical note.
+                activeJobId = compressViewModel.startCompress(inputUri, originalDisplayName, preset)
             },
             enabled = selectedPreset != null,
             shape = WatermelonShapes.control,
@@ -157,11 +154,10 @@ fun CompressScreen(
 @UnstableApi
 @Composable
 private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onClick: () -> Unit) {
-    val label = when (preset) {
-        VideoCompressor.Preset.SMALL -> "Small"
-        VideoCompressor.Preset.MEDIUM -> "Medium"
-        VideoCompressor.Preset.ORIGINAL_QUALITY -> "Original Quality"
-    }
+    // Uses preset.label directly (added to the enum itself) rather than a separate
+    // when-mapping here, so this file doesn't need updating every time presets change --
+    // that mapping used to list SMALL/MEDIUM/ORIGINAL_QUALITY by name and would have gone
+    // stale the moment the 4-tier redesign (HIGH_QUALITY/MEDIUM/SMALL/TINY) landed.
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,7 +166,7 @@ private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onCl
             .padding(WatermelonSpacing.md)
     ) {
         Text(
-            label,
+            preset.label,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             style = MaterialTheme.typography.bodyLarge

@@ -51,6 +51,9 @@ class FolderVisibilityStoreImpl(context: Context) : FolderVisibilityStore {
     // strings (e.g. "Movies/Watermelon/compressed") -- see OutputFileStore for how
     // they're consumed, and its note on the API < 29 RELATIVE_PATH limitation.
 
+    fun getMp3OutputPath(): String = getString(KEY_MP3_PATH, "Music/Watermelon")
+    fun setMp3OutputPath(path: String) = putString(KEY_MP3_PATH, path)
+
     fun getCompressedOutputPath(): String = getString(KEY_COMPRESSED_PATH, "Movies/Watermelon/compressed")
     fun setCompressedOutputPath(path: String) = putString(KEY_COMPRESSED_PATH, path)
 
@@ -59,6 +62,7 @@ class FolderVisibilityStoreImpl(context: Context) : FolderVisibilityStore {
 
     companion object {
         private const val KEY_HIDDEN_FOLDERS = "hidden_folders"
+        private const val KEY_MP3_PATH = "media_tools_mp3_path"
         private const val KEY_COMPRESSED_PATH = "media_tools_compressed_path"
         private const val KEY_TRIMMED_PATH = "media_tools_trimmed_path"
     }

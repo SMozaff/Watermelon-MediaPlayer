@@ -8,6 +8,7 @@ ktor = "3.0.0"                   # Subtitle network (lightweight)
 kotlinx-serialization = "1.7.3"  # JSON parsing for SubtitleApiClient responses
 coroutines = "1.9.0"
 navigation-compose = "2.8.5"
+java-lame = "3.98.4"          # Pure-Java LAME MP3 encoder, replacing the JNI/libmp3lame plan (see media-tools/build.gradle.kts comment)
 lifecycle = "2.8.7"
 datastore = "1.1.1"
 benchmark-macro = "1.3.3"
@@ -19,6 +20,7 @@ lottie = "6.4.0"
 
 
 [libraries]
+java-lame = { module = "com.cloudburst:java-lame", version.ref = "java-lame" }
 androidx-core = { module = "androidx.core:core-ktx", version = "1.15.0" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.0" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }

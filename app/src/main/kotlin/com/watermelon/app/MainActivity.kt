@@ -108,15 +108,16 @@ class MainActivity : ComponentActivity() {
     // Activity just reads the Application-scoped instances rather than constructing new ones).
     //
     // NOTE ON A REAL INCONSISTENCY FOUND WHILE WIRING THIS: FolderVisibilityStoreImpl has
-    // getCompressedOutputPath()/getTrimmedOutputPath() methods (added earlier this session),
-    // but the actual user-editable value lives in SettingsState/SettingsPersistence.kt (the
-    // real settings screen + its prefs round-trip). Those are two different SharedPreferences-
-    // backed values that would silently drift apart. WatermelonApplication constructs
+    // getMp3OutputPath()/getCompressedOutputPath()/getTrimmedOutputPath() methods, but the
+    // actual user-editable values live in SettingsState/SettingsPersistence.kt (the real
+    // settings screen + its prefs round-trip). Those are different SharedPreferences-backed
+    // values that would silently drift apart. WatermelonApplication constructs
     // OutputFileStore once at startup using FolderVisibilityStoreImpl's values, which won't
     // reflect changes made in the Settings screen without restarting the app. Not fixed here
     // (would mean either removing the FolderVisibilityStoreImpl methods or restructuring
     // WatermelonApplication to observe settingsState) -- flagging rather than leaving this
-    // silently wrong.
+    // silently wrong. Now three instances of this same duplication (mp3/compressed/trimmed),
+    // worth actually fixing properly rather than adding a fourth copy next time.
     private val mediaJobManager by lazy {
         (application as com.watermelon.app.WatermelonApplication).mediaJobManager
     }
@@ -588,7 +589,14 @@ class MainActivity : ComponentActivity() {
         var settingsState by remember {
             mutableStateOf(loadSettingsState(prefs, pureDarkTheme))
         }
+        // Premium gating is temporarily disabled everywhere (product decision: full-featured
+        // for now, limitations reintroduced later) -- nothing currently sets this to true,
+        // so PremiumUpsellDialog never renders. Left wired rather than deleted so
+        // re-enabling gating later doesn't require re-plumbing this state + the dialog.
         var showPremiumUpsell by remember { mutableStateOf(false) }
+        // Extract Audio now asks for a bitrate first (product request) -- this holds the
+        // (uri, displayName) of whichever video was tapped while Mp3BitrateDialog is open.
+        var pendingExtractAudio by remember { mutableStateOf<Pair<String, String>?>(null) }
 
         val savedBrightness = remember { prefs.getFloat("brightness", -1f) }
 
@@ -660,11 +668,11 @@ class MainActivity : ComponentActivity() {
                         folderName = "Videos",
                         onBack = { navController.popBackStack() },
                         onExtractAudio = { item ->
-                            if (!settingsState.isPremiumUnlocked) {
-                                showPremiumUpsell = true
-                            } else {
-                                mediaJobManager.extractAudio(audioExtractor, item.uri, item.displayName)
-                            }
+                            // Premium gating temporarily disabled -- everything unlocked
+                            // for now, gating comes back deliberately later. Bitrate is
+                            // now chosen via Mp3BitrateDialog before the job actually starts
+                            // (see pendingExtractAudio below).
+                            pendingExtractAudio = item.uri to item.displayName
                         },
                         onTrimVideo = { item ->
                             navController.navigate(
@@ -744,11 +752,11 @@ class MainActivity : ComponentActivity() {
                         folderName = screenTitle,
                         onBack = { navController.popBackStack() },
                         onExtractAudio = { item ->
-                            if (!settingsState.isPremiumUnlocked) {
-                                showPremiumUpsell = true
-                            } else {
-                                mediaJobManager.extractAudio(audioExtractor, item.uri, item.displayName)
-                            }
+                            // Premium gating temporarily disabled -- everything unlocked
+                            // for now, gating comes back deliberately later. Bitrate is
+                            // now chosen via Mp3BitrateDialog before the job actually starts
+                            // (see pendingExtractAudio below).
+                            pendingExtractAudio = item.uri to item.displayName
                         },
                         onTrimVideo = { item ->
                             navController.navigate(
@@ -973,14 +981,12 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onExtractAudio = {
-                            if (!settingsState.isPremiumUnlocked) {
-                                showPremiumUpsell = true
-                            } else {
-                                lifecycleScope.launch {
-                                    val displayName = runCatching { mediaRepository.getByUri(mediaUri)?.displayName }
-                                        .getOrNull() ?: mediaUri.substringAfterLast('/')
-                                    mediaJobManager.extractAudio(audioExtractor, mediaUri, displayName)
-                                }
+                            // Premium gating temporarily disabled -- see VideoListScreen's
+                            // identical note above.
+                            lifecycleScope.launch {
+                                val displayName = runCatching { mediaRepository.getByUri(mediaUri)?.displayName }
+                                    .getOrNull() ?: mediaUri.substringAfterLast('/')
+                                pendingExtractAudio = mediaUri to displayName
                             }
                         },
                         onTrimVideo = {
@@ -1124,6 +1130,16 @@ class MainActivity : ComponentActivity() {
         if (showPremiumUpsell) {
             com.watermelon.ui.components.PremiumUpsellDialog(
                 onDismiss = { showPremiumUpsell = false }
+            )
+        }
+
+        pendingExtractAudio?.let { (uri, displayName) ->
+            com.watermelon.ui.components.Mp3BitrateDialog(
+                onSelect = { preset ->
+                    mediaJobManager.extractAudio(audioExtractor, uri, displayName, preset.kbps)
+                    pendingExtractAudio = null
+                },
+                onDismiss = { pendingExtractAudio = null }
             )
         }
     }

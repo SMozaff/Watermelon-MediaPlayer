@@ -114,11 +114,11 @@ fun TrimScreen(
 
         Button(
             onClick = {
-                if (!isPremiumUnlocked) {
-                    onRequestUpsell()
-                } else {
-                    activeJobId = trimViewModel.startTrim(inputUri, originalDisplayName, startMs, endMs)
-                }
+                // Premium gating temporarily disabled -- everything is fully unlocked for
+                // now per product decision; isPremiumUnlocked/onRequestUpsell stay wired
+                // through the call chain so re-enabling later is a one-line change here,
+                // not a re-plumbing job.
+                activeJobId = trimViewModel.startTrim(inputUri, originalDisplayName, startMs, endMs)
             },
             enabled = (endMs - startMs) >= MIN_TRIM_RANGE_MS,
             shape = WatermelonShapes.control,
@@ -141,6 +141,7 @@ fun TrimScreen(
                     outputFileName = state.outputUri.substringAfterLast('/'),
                     isTrim = true,
                     isPendingSystemConsent = pendingDeleteConsent,
+                    actualTrimRangeMs = state.actualTrimRangeMs,
                     onKeepOriginal = {
                         mediaJobsViewModel.resolveOriginalFileDecision(job.id, deleteOriginal = false, contentResolver)
                         activeJobId = null

@@ -90,7 +90,7 @@ class VideoTrimmer(private val context: Context, private val outputFileStore: Ou
             })
             .build()
 
-        jobId = jobManager.register(MediaJobType.TRIM, inputUri.toString(), outputPath, transformer)
+        jobId = jobManager.register(MediaJobType.TRIM, inputUri.toString(), outputPath, transformer, requestedStartMs = startMs)
         transformer.start(editedMediaItem, outputPath)
         return jobId
     }

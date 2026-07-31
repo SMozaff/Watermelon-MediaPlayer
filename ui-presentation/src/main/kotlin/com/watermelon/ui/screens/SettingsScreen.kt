@@ -70,10 +70,14 @@ data class SettingsState(
     /** media-tools output paths (MediaStore RELATIVE_PATH strings). See OutputFileStore's
      *  doc for the API<29 limitation: custom subfolders are silently ignored on those OS
      *  versions, so the settings UI should surface that rather than pretend it works. */
+    val mp3OutputPath: String = "Music/Watermelon",
     val compressedOutputPath: String = "Movies/Watermelon/compressed",
     val trimmedOutputPath: String = "Movies/Watermelon/trimmed",
-    /** Phase 5 gating flag -- placeholder only, no real purchase flow (Phase 6). */
-    val isPremiumUnlocked: Boolean = false,
+    /** Phase 5 gating flag -- gating itself is currently disabled at every call site
+     *  (product decision: full-featured for now), so this defaults to true to match
+     *  actual behavior. Toggle still persists/works if you want to test the gated UI
+     *  path later without re-wiring the checks. */
+    val isPremiumUnlocked: Boolean = true,
 )
 
 enum class VhsIntensity { OFF, LOW, MED, HIGH }
@@ -158,6 +162,11 @@ fun SettingsScreen(
                         checked = state.isPremiumUnlocked
                     ) { onStateChange(state.copy(isPremiumUnlocked = it)) }
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        TextFieldRow(
+                            label = "MP3 audio folder",
+                            value = state.mp3OutputPath,
+                            onValueChange = { onStateChange(state.copy(mp3OutputPath = it)) },
+                        )
                         TextFieldRow(
                             label = "Compressed video folder",
                             value = state.compressedOutputPath,

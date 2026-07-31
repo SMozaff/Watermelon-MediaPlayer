@@ -37,6 +37,10 @@ import com.watermelon.ui.theme.WatermelonSpacing
  * callback fires with deleted=false -- per the manifest, that should be treated the same as
  * "Keep Original" was chosen, not surfaced as an error. This composable doesn't need special
  * handling for that case itself; it just won't be shown anymore once the caller resolves it.
+ *
+ * [actualTrimRangeMs]: trim-only, per product request -- shows the real post-keyframe-snap
+ * (start, end) so the user isn't surprised the cut shifted slightly from their exact
+ * selection. Null/ignored for compress.
  */
 @Composable
 fun KeepOrDeleteOriginalDialog(
@@ -46,6 +50,7 @@ fun KeepOrDeleteOriginalDialog(
     isPendingSystemConsent: Boolean,
     onKeepOriginal: () -> Unit,
     onDeleteOriginal: () -> Unit,
+    actualTrimRangeMs: Pair<Long, Long>? = null,
 ) {
     val actionWord = if (isTrim) "trimmed" else "compressed"
 
@@ -76,6 +81,16 @@ fun KeepOrDeleteOriginalDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                if (isTrim && actualTrimRangeMs != null) {
+                    val (actualStart, actualEnd) = actualTrimRangeMs
+                    Text(
+                        "Actual trimmed range: ${formatMsForDialog(actualStart)} – ${formatMsForDialog(actualEnd)} " +
+                            "(cut points snap to the nearest keyframe, so this may differ slightly from your selection)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 if (isPendingSystemConsent) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -116,4 +131,12 @@ fun KeepOrDeleteOriginalDialog(
             }
         }
     }
+}
+
+private fun formatMsForDialog(ms: Long): String {
+    val totalSec = (ms / 1000).coerceAtLeast(0)
+    val h = totalSec / 3600
+    val m = (totalSec % 3600) / 60
+    val s = totalSec % 60
+    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
 }
