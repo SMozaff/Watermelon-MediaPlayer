@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +75,7 @@ fun VideoListItem(
     // Confirmed via user report: tapping the 3-dot icon showed nothing at all.
     // Fix: menu state + the actual DropdownMenu now live HERE, inside the same Box as the
     // 3-dot button that triggers it, so Compose anchors it correctly.
-    var showMenu by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     val thumbH: Dp = when (itemSize) {
         VideoItemSize.SMALL -> if (isGrid) 72.dp else 48.dp
         VideoItemSize.LARGE -> if (isGrid) 180.dp else 96.dp
