@@ -54,8 +54,24 @@ fun VideoListItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onContextMenuClick: () -> Unit = {},
+    // media-tools entry points (real bug fix -- see file-level note below for what was
+    // wrong before). Nullable/optional, same pattern as VideoListScreen previously used,
+    // so callers that haven't wired media-tools yet just don't show these items.
+    onExtractAudio: ((MediaItem) -> Unit)? = null,
+    onTrimVideo: ((MediaItem) -> Unit)? = null,
+    onCompressVideo: ((MediaItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    // FIXED REAL BUG: the context menu (Extract Audio/Trim/Compress) used to be a
+    // DropdownMenu rendered at VideoListScreen's root level, entirely disconnected from
+    // the 3-dot button that was supposed to open it. Compose's DropdownMenu anchors to
+    // whatever's directly above it in its own parent's layout -- placed at screen-root
+    // scope, it had no real anchor relationship to the tapped item, so it rendered
+    // somewhere wrong (effectively invisible/unreachable) instead of near the button.
+    // Confirmed via user report: tapping the 3-dot icon showed nothing at all.
+    // Fix: menu state + the actual DropdownMenu now live HERE, inside the same Box as the
+    // 3-dot button that triggers it, so Compose anchors it correctly.
+    var showMenu by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val thumbH: Dp = when (itemSize) {
         VideoItemSize.SMALL -> if (isGrid) 72.dp else 48.dp
         VideoItemSize.LARGE -> if (isGrid) 180.dp else 96.dp
@@ -93,17 +109,27 @@ fun VideoListItem(
                 )
 
                 if (!selectionActive) {
-                    androidx.compose.material3.IconButton(
-                        onClick = onContextMenuClick,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(WatermelonSpacing.xs)
-                            .size(32.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_more_vertical),
-                            contentDescription = "More options",
-                            tint = WatermelonColors.DarkSurface
+                    Box {
+                        androidx.compose.material3.IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(WatermelonSpacing.xs)
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_more_vertical),
+                                contentDescription = "More options",
+                                tint = WatermelonColors.DarkSurface
+                            )
+                        }
+                        VideoItemContextMenu(
+                            expanded = showMenu,
+                            onDismiss = { showMenu = false },
+                            item = item,
+                            onExtractAudio = onExtractAudio,
+                            onTrimVideo = onTrimVideo,
+                            onCompressVideo = onCompressVideo,
                         )
                     }
                 }
@@ -148,6 +174,17 @@ fun VideoListItem(
                 )
 
                 if (!selectionActive) {
+                    // FLAGGED, NOT FIXED (separate from the DropdownMenu anchor bug above,
+                    // pre-existing before this session's media-tools work): this button
+                    // shows a Play icon but is wired to onContextMenuClick, opening the
+                    // context menu instead of playing the video. Whole thumbnail Box
+                    // already has onClick=onClick (play) via the outer combinedClickable
+                    // on the Row, so tapping the thumbnail center currently opens the
+                    // context menu twice-over via two different triggers, and never
+                    // actually offers a distinct "tap play icon to play" action. Not
+                    // changing this without confirming the intended behavior first --
+                    // could be "remove this button" or "wire it to onClick" depending on
+                    // what was originally meant here.
                     androidx.compose.material3.IconButton(
                         onClick = onContextMenuClick,
                         modifier = Modifier
@@ -203,16 +240,69 @@ fun VideoListItem(
             }
 
             if (!selectionActive) {
-                androidx.compose.material3.IconButton(
-                    onClick = onContextMenuClick,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_more_vertical),
-                        contentDescription = "More options",
-                        tint = WatermelonColors.DarkOnSurfaceVariant
+                Box {
+                    androidx.compose.material3.IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_more_vertical),
+                            contentDescription = "More options",
+                            tint = WatermelonColors.DarkOnSurfaceVariant
+                        )
+                    }
+                    VideoItemContextMenu(
+                        expanded = showMenu,
+                        onDismiss = { showMenu = false },
+                        item = item,
+                        onExtractAudio = onExtractAudio,
+                        onTrimVideo = onTrimVideo,
+                        onCompressVideo = onCompressVideo,
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * The actual per-item context menu (Extract Audio/Trim/Compress), factored out so both the
+ * grid and list layout variants of VideoListItem can render it identically. Must be called
+ * from inside a Box alongside the IconButton that triggers it -- DropdownMenu anchors to
+ * its position in the composition tree, so this can't be hoisted up to VideoListScreen's
+ * root scope (that was the original bug: see VideoListItem's file-level fix note).
+ */
+@Composable
+private fun VideoItemContextMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    item: MediaItem,
+    onExtractAudio: ((MediaItem) -> Unit)?,
+    onTrimVideo: ((MediaItem) -> Unit)?,
+    onCompressVideo: ((MediaItem) -> Unit)?,
+) {
+    if (expanded) {
+        androidx.compose.material3.DropdownMenu(
+            expanded = true,
+            onDismissRequest = onDismiss
+        ) {
+            onExtractAudio?.let { action ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text("Extract Audio", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { onDismiss(); action(item) }
+                )
+            }
+            onTrimVideo?.let { action ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text("Trim", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { onDismiss(); action(item) }
+                )
+            }
+            onCompressVideo?.let { action ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text("Compress", color = WatermelonColors.DarkOnSurface) },
+                    onClick = { onDismiss(); action(item) }
+                )
             }
         }
     }

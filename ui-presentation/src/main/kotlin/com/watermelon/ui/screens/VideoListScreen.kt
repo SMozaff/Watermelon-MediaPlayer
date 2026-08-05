@@ -119,8 +119,9 @@ fun VideoListScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPlaylistPicker by remember { mutableStateOf(false) }
-    var contextMenuItem by remember { mutableStateOf<MediaItem?>(null) }
-    var showContextMenu by remember { mutableStateOf(false) }
+    // (contextMenuItem/showContextMenu removed -- the context menu now lives inside
+    // VideoListItem itself, correctly anchored to its own 3-dot button. See VideoListItem's
+    // file-level fix note for why the old root-level approach never actually worked.)
 
     val deleteLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
@@ -301,10 +302,9 @@ fun VideoListScreen(
                                     }
                                 },
                                 onLongClick = { viewModel.onLongPress(item.uri) },
-                                onContextMenuClick = {
-                                    contextMenuItem = item
-                                    showContextMenu = true
-                                }
+                                onExtractAudio = onExtractAudio,
+                                onTrimVideo = onTrimVideo,
+                                onCompressVideo = onCompressVideo
                             )
                         }
                     }
@@ -339,10 +339,9 @@ fun VideoListScreen(
                                     }
                                 },
                                 onLongClick = { viewModel.onLongPress(item.uri) },
-                                onContextMenuClick = {
-                                    contextMenuItem = item
-                                    showContextMenu = true
-                                }
+                                onExtractAudio = onExtractAudio,
+                                onTrimVideo = onTrimVideo,
+                                onCompressVideo = onCompressVideo
                             )
                         }
                     }
@@ -449,37 +448,5 @@ fun VideoListScreen(
                 }
             }
         )
-    }
-
-    // Per-item context menu. This fills in an existing hook (contextMenuItem/showContextMenu
-    // were already set by VideoListItem's onContextMenuClick, but nothing previously rendered
-    // a menu for them) -- media-tools entry points per UI_MANIFEST.md §2.1, gated on the
-    // corresponding callback being non-null so callers that haven't wired media-tools yet
-    // don't see broken/no-op items.
-    if (showContextMenu && contextMenuItem != null) {
-        val item = contextMenuItem!!
-        DropdownMenu(
-            expanded = true,
-            onDismissRequest = { showContextMenu = false; contextMenuItem = null }
-        ) {
-            onExtractAudio?.let { action ->
-                DropdownMenuItem(
-                    text = { Text("Extract Audio", color = WatermelonColors.DarkOnSurface) },
-                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
-                )
-            }
-            onTrimVideo?.let { action ->
-                DropdownMenuItem(
-                    text = { Text("Trim", color = WatermelonColors.DarkOnSurface) },
-                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
-                )
-            }
-            onCompressVideo?.let { action ->
-                DropdownMenuItem(
-                    text = { Text("Compress", color = WatermelonColors.DarkOnSurface) },
-                    onClick = { showContextMenu = false; contextMenuItem = null; action(item) }
-                )
-            }
-        }
     }
 }
