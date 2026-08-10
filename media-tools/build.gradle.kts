@@ -30,6 +30,9 @@ dependencies {
     implementation(libs.androidx.media3.muxer)
     implementation(libs.androidx.media3.common)
     implementation(libs.kotlinx.coroutines.android)
+    // Bridges ExperimentalFrameExtractor.getFrame()'s ListenableFuture to a suspend call in
+    // FilmstripExtractor -- see that file's doc and the libs.versions.toml entry for why.
+    implementation(libs.kotlinx.coroutines.guava)
     // Pure-Java MP3 encoder (LGPL, port of LAME) -- no NDK/JNI needed, replacing the
     // previous libmp3lame-via-JNI plan that was blocked on this sandbox having no
     // network access to fetch and vendor libmp3lame's C source.

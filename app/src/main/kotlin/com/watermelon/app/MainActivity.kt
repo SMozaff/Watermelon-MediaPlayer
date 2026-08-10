@@ -131,6 +131,14 @@ class MainActivity : ComponentActivity() {
     private val videoCompressor by lazy {
         com.watermelon.mediatools.engine.VideoCompressor(applicationContext, outputFileStore)
     }
+    // Backs TrimScreen's redesigned UX (filmstrip + haptic keyframe snapping) -- see
+    // TrimViewModel's class doc.
+    private val keyframeIndexer by lazy {
+        com.watermelon.mediatools.engine.KeyframeIndexer(applicationContext)
+    }
+    private val filmstripExtractor by lazy {
+        com.watermelon.mediatools.engine.FilmstripExtractor(applicationContext)
+    }
     private val mediaJobsViewModel by lazy {
         com.watermelon.ui.viewmodel.MediaJobsViewModel(mediaJobManager)
     }
@@ -1042,7 +1050,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     val playerVm = remember(pbController) { PlayerViewModel(pbController) }
                     LaunchedEffect(mediaUri) { playerVm.onIntent(UserIntent.Play(mediaUri)) }
-                    val trimVm = remember { com.watermelon.ui.viewmodel.TrimViewModel(mediaJobManager, videoTrimmer) }
+                    val trimVm = remember { com.watermelon.ui.viewmodel.TrimViewModel(mediaJobManager, videoTrimmer, keyframeIndexer, filmstripExtractor) }
 
                     com.watermelon.ui.screens.TrimScreen(
                         playerViewModel = playerVm,

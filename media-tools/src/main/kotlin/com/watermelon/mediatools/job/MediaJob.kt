@@ -9,6 +9,11 @@ package com.watermelon.mediatools.job
  * [requestedStartMs]: TRIM-only, null for other job types. The start time the user actually
  * asked for, before keyframe-snapping — needed by MediaJobManager to compute
  * [MediaJobState.Completed.actualTrimRangeMs] once the real output duration is known.
+ *
+ * [sourceSizeBytes]: COMPRESS-only, null for other job types. The source file's size at job
+ * start, used by MediaJobManager.onCompleted to reject any output that isn't actually
+ * smaller than the source (see VideoCompressor's class doc for why this check exists in
+ * addition to setEnableFallback(false)).
  */
 data class MediaJob(
     val id: String,
@@ -18,6 +23,7 @@ data class MediaJob(
     val state: MediaJobState,
     val progressPercent: Int = 0,
     val requestedStartMs: Long? = null,
+    val sourceSizeBytes: Long? = null,
 )
 
 enum class MediaJobType { EXTRACT_AUDIO, TRIM, COMPRESS }

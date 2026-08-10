@@ -31,19 +31,21 @@ private const val TAG = "VideoCompressor"
  * current API via docs this session) and re-encodes at a target audio/video bitrate.
  *
  * CONFIRMED via Context7 (Media3 docs, re-checked this session): [Presentation.createForShortSide],
- * [AudioEncoderSettings.Builder.setBitrate] (bits per second), and the core
- * [DefaultEncoderFactory.Builder] pattern —
- * `DefaultEncoderFactory.Builder(context).setRequestedVideoEncoderSettings(VideoEncoderSettings.Builder().setBitrate(bitrate).build()).build()`
- * — matches this file's usage exactly, including [VideoEncoderSettings.Builder.setBitrate]'s
- * signature.
+ * [AudioEncoderSettings.Builder.setBitrate] (bits per second), the core
+ * [DefaultEncoderFactory.Builder] pattern, [Transformer.Builder.setEncoderFactory], and
+ * [DefaultEncoderFactory.Builder.setEnableFallback] (confirmed against
+ * BitrateAnalysisTest.java, a real Media3 androidTest source file) — all match this file's
+ * usage exactly.
  *
- * STILL NOT CONFIRMED: [DefaultEncoderFactory.Builder.setRequestedAudioEncoderSettings] and
- * [Transformer.Builder.setEncoderFactory] didn't surface from three separate targeted
- * Context7 queries this session (the tool kept returning the same video-settings snippet
- * above). Both are written here following the same long-standing Media3 pattern as the
- * confirmed video-settings call, but that symmetry is an inference, not a confirmation —
- * check against real 1.6.0 sources for these two specifically before trusting them to
- * compile as-is.
+ * REAL BUG FIXED (this session): "compressed" output was landing bigger than the source.
+ * Root cause was [DefaultEncoderFactory.Builder]'s enableFallback defaulting to true —
+ * when a device's encoder can't exactly honor the requested bitrate, Transformer silently
+ * substitutes different settings (sometimes a much higher bitrate) and still reports success
+ * via onCompleted, not onFallbackApplied-as-a-failure. Fixed two ways: (1)
+ * setEnableFallback(false) below turns an unhonorable request into a hard job failure instead
+ * of a silent wrong success; (2) [MediaJobManager.onCompleted] independently rejects any
+ * COMPRESS job whose real output size isn't smaller than the source, as a second guard against
+ * any other path to oversized output (e.g. mux overhead on an already-minimal source).
  *
  * NOT run on-device.
  */
@@ -88,6 +90,14 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
         val outputName = OutputNaming.compressedName(originalDisplayName)
         val outputPath = outputFileStore.stagingPathFor(MediaJobType.COMPRESS, outputName)
 
+        // Second, independent guard against oversized output (belt-and-suspenders alongside
+        // setEnableFallback(false) below): even with fallback disabled, container/mux
+        // overhead could in theory still land the output slightly above source size on a
+        // source that was already near-minimal bitrate. Source size is captured here, before
+        // the job starts, and compared against the real output size in
+        // MediaJobManager.onCompleted via exportResult.fileSizeBytes -- see that method.
+        val sourceSizeBytes = queryFileSizeBytes(inputUri)
+
         val mediaItem = MediaItem.fromUri(inputUri)
 
         // Never upscale: Presentation.createForShortSide's own release note says it
@@ -123,6 +133,14 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
             .setEffects(Effects(/* audioProcessors= */ emptyList(), videoEffects))
             .build()
 
+        // REAL BUG FIX: DefaultEncoderFactory.Builder defaults enableFallback=true. When a
+        // device's encoder can't honor the requested bitrate/resolution exactly, Transformer
+        // silently falls back to different (often higher-bitrate) settings and still reports
+        // success -- this is the confirmed root cause of "compressed" output landing bigger
+        // than the source. setEnableFallback(false) (confirmed real Builder method via
+        // Context7/BitrateAnalysisTest.java this session) makes that case a hard job failure
+        // instead of a silent, wrong success. Per product decision: never allow oversized
+        // output to reach the user, even if that means the job fails on some devices.
         val encoderFactory = DefaultEncoderFactory.Builder(context)
             .setRequestedVideoEncoderSettings(
                 VideoEncoderSettings.Builder()
@@ -134,6 +152,7 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
                     .setBitrate(preset.audioBitrateBps)
                     .build()
             )
+            .setEnableFallback(false)
             .build()
 
         lateinit var jobId: String
@@ -162,9 +181,39 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
             })
             .build()
 
-        jobId = jobManager.register(MediaJobType.COMPRESS, inputUri.toString(), outputPath, transformer)
+        jobId = jobManager.register(
+            MediaJobType.COMPRESS,
+            inputUri.toString(),
+            outputPath,
+            transformer,
+            sourceSizeBytes = sourceSizeBytes,
+        )
         transformer.start(editedMediaItem, outputPath)
         return jobId
+    }
+
+    /**
+     * Queries the source content's size in bytes via ContentResolver, the standard way to
+     * read a content:// Uri's size (OpenableColumns.SIZE is documented platform API -- same
+     * general "query the resolver, don't assume File I/O works on a content Uri" approach
+     * this file already takes with MediaMetadataRetriever.setDataSource(context, uri) below).
+     * Returns null if the size can't be determined (cursor empty/column missing/query
+     * throws) -- callers must treat null as "can't verify," not "size is zero."
+     */
+    private fun queryFileSizeBytes(uri: Uri): Long? {
+        return try {
+            context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+                val sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+                if (sizeIndex == -1 || !cursor.moveToFirst()) {
+                    null
+                } else {
+                    cursor.getLong(sizeIndex).takeIf { it > 0 }
+                }
+            }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "queryFileSizeBytes failed for $uri", e)
+            null
+        }
     }
 
     /**

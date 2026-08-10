@@ -70,6 +70,14 @@ fun TrimScreen(
     var activeJobId by remember { mutableStateOf<String?>(null) }
     var pendingDeleteConsent by remember { mutableStateOf(false) }
 
+    // Kicks off keyframe indexing + filmstrip extraction once per (inputUri, durationMs) --
+    // see TrimViewModel.loadTrimAids's doc for why this is the intended call site.
+    LaunchedEffect(inputUri, durationMs) {
+        trimViewModel.loadTrimAids(inputUri, durationMs)
+    }
+    val keyframeTimestampsMs by trimViewModel.keyframeTimestampsMs.collectAsStateWithLifecycle()
+    val filmstripFrames by trimViewModel.filmstripFrames.collectAsStateWithLifecycle()
+
     val position by playerViewModel.currentPositionMs.collectAsStateWithLifecycle()
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val jobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
@@ -107,6 +115,8 @@ fun TrimScreen(
                 endMs = newEnd
                 playerViewModel.onIntent(UserIntent.Seek(newStart))
             },
+            keyframeTimestampsMs = keyframeTimestampsMs,
+            filmstripFrames = filmstripFrames,
             modifier = Modifier.fillMaxWidth()
         )
 

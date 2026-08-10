@@ -72,10 +72,11 @@ class MediaJobManager(
         outputPath: String,
         transformer: Transformer,
         requestedStartMs: Long? = null,
+        sourceSizeBytes: Long? = null,
     ): String {
         val id = UUID.randomUUID().toString()
         transformers[id] = transformer
-        _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued, requestedStartMs = requestedStartMs) }
+        _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued, requestedStartMs = requestedStartMs, sourceSizeBytes = sourceSizeBytes) }
         setState(id, MediaJobState.Running)
         pollProgress(id, transformer)
         startJobServiceIfNeeded()
@@ -226,6 +227,36 @@ class MediaJobManager(
     fun onCompleted(id: String, exportResult: ExportResult) {
         stopPolling(id)
         FileLogger.i(TAG, "transformer job export done id=$id sizeBytes=${exportResult.fileSizeBytes}")
+
+        // REAL BUG FIX (compress-oversized-output): reject as a hard failure any COMPRESS
+        // job whose real output size (exportResult.fileSizeBytes, confirmed real ExportResult
+        // field) isn't actually smaller than the source. Checked here in addition to
+        // VideoCompressor's setEnableFallback(false), since that only guards the
+        // encoder-settings fallback path, not other ways output could land >= source (e.g.
+        // container/mux overhead on an already near-minimal-bitrate source). Per product
+        // decision: never let oversized "compressed" output reach the user silently.
+        val job = _jobs.value.find { it.id == id }
+        val sourceSizeBytes = job?.sourceSizeBytes
+        if (job?.type == MediaJobType.COMPRESS && sourceSizeBytes != null &&
+            exportResult.fileSizeBytes >= sourceSizeBytes
+        ) {
+            failCleanup(id)
+            setState(
+                id,
+                MediaJobState.Failed(
+                    "Compression produced a file (${exportResult.fileSizeBytes} bytes) that " +
+                        "isn't smaller than the original ($sourceSizeBytes bytes). Try a more " +
+                        "aggressive preset."
+                )
+            )
+            FileLogger.e(
+                TAG,
+                "job id=$id rejected: compressed size=${exportResult.fileSizeBytes} >= source size=$sourceSizeBytes"
+            )
+            transformers.remove(id)
+            return
+        }
+
         completeJob(id)
         transformers.remove(id)
     }
