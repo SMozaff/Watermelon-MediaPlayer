@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -52,7 +53,7 @@ fun WatermelonHeader(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back),
+                    imageVector = WatermelonIcons.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -92,7 +93,7 @@ fun WatermelonHeader(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_settings),
+                        imageVector = WatermelonIcons.Settings,
                         contentDescription = "Settings",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -104,7 +105,7 @@ fun WatermelonHeader(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_more_vertical),
+                        imageVector = WatermelonIcons.MoreVert,
                         contentDescription = "Menu",
                         tint = MaterialTheme.colorScheme.onSurface
                     )

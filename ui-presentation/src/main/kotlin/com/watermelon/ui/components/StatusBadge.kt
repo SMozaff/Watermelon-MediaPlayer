@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -43,7 +44,7 @@ object StatusBadge {
     @Composable
     fun New(modifier: Modifier = Modifier, compact: Boolean = false) {
         IconBadge(
-            iconRes = R.drawable.ic_badge_new,
+            icon = WatermelonIcons.New,
             contentDescription = "New",
             tint = WatermelonColors.Accent,
             compact = compact,
@@ -54,7 +55,7 @@ object StatusBadge {
     @Composable
     fun Favorite(modifier: Modifier = Modifier, compact: Boolean = false) {
         IconBadge(
-            iconRes = R.drawable.ic_star,
+            icon = WatermelonIcons.Star,
             contentDescription = "Favorite",
             tint = WatermelonColors.Warning,
             compact = compact,
@@ -96,14 +97,14 @@ object StatusBadge {
 
     @Composable
     private fun IconBadge(
-        iconRes: Int,
+        icon: androidx.compose.ui.graphics.vector.ImageVector,
         contentDescription: String,
         tint: Color,
         compact: Boolean,
         modifier: Modifier = Modifier
     ) {
         Icon(
-            painter = painterResource(iconRes),
+            imageVector = icon,
             contentDescription = contentDescription,
             tint = tint,
             modifier = modifier.size(if (compact) 12.dp else 14.dp)

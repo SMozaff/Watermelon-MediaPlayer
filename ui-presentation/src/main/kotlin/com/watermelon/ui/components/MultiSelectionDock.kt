@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -86,7 +87,7 @@ fun MultiSelectionDock(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_check_circle),
+                        imageVector = WatermelonIcons.CheckCircle,
                         contentDescription = "Selected",
                         tint = WatermelonColors.Accent,
                         modifier = Modifier.size(20.dp)
@@ -111,7 +112,7 @@ fun MultiSelectionDock(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_close),
+                            imageVector = WatermelonIcons.Close,
                             contentDescription = "Deselect all",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -125,7 +126,7 @@ fun MultiSelectionDock(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_playlist_add),
+                            imageVector = WatermelonIcons.PlaylistAdd,
                             contentDescription = "Add to playlist",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -138,7 +139,7 @@ fun MultiSelectionDock(
                             modifier = Modifier.size(40.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_playlist_remove),
+                                imageVector = WatermelonIcons.RemoveFromPlaylist,
                                 contentDescription = "Remove from this playlist",
                                 tint = WatermelonColors.DarkOnSurface
                             )
@@ -153,7 +154,7 @@ fun MultiSelectionDock(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_share),
+                            imageVector = WatermelonIcons.Share,
                             contentDescription = "Share",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -167,7 +168,7 @@ fun MultiSelectionDock(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_delete),
+                            imageVector = WatermelonIcons.Delete,
                             contentDescription = "Delete",
                             tint = WatermelonColors.Error
                         )

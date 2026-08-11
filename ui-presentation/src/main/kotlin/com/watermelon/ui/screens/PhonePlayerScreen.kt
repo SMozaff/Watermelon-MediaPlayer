@@ -48,7 +48,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.SleepTimerMode
 import com.watermelon.common.model.UserIntent
-import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.LevelIndicator
 import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.components.SubtitleOverlay
@@ -507,14 +506,14 @@ fun PhonePlayerScreen(
                 IconButton(onClick = {
                     if (showControlPanel) showControlPanel = false else onBack()
                 }) {
-                    Icon(painterResource(R.drawable.ic_arrow_back), "Back", tint = PlayerColors.current.iconDefault)
+                    Icon(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
                 }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { ui.lock(); onLockChanged?.invoke(true) }) {
-                    Icon(painterResource(R.drawable.ic_lock), "Lock", tint = PlayerColors.current.iconDefault)
+                    Icon(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
                 }
                 IconButton(onClick = { showControlPanel = !showControlPanel }) {
-                    Icon(painterResource(R.drawable.ic_settings_outline), "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
+                    Icon(WatermelonIcons.Settings, "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
                 }
             }
 
@@ -587,7 +586,7 @@ fun PhonePlayerScreen(
                         }
                         run { lastInteraction = System.nanoTime(); ui.showControls() }
                     }) {
-                        Icon(painterResource(R.drawable.ic_skip_previous), "Previous track",
+                        Icon(WatermelonIcons.SkipPrevious, "Previous track",
                             tint = PlayerColors.current.iconDefault, modifier = Modifier.width(30.dp).height(30.dp))
                     }
                     IconButton(
@@ -597,7 +596,7 @@ fun PhonePlayerScreen(
                             .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
                     ) {
                         Icon(
-                            painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                            if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
                             if (isPlaying) "Pause" else "Play",
                             tint = Color.White,
                             modifier = Modifier.width(32.dp).height(32.dp)
@@ -610,7 +609,7 @@ fun PhonePlayerScreen(
                             PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
                             run { lastInteraction = System.nanoTime(); ui.showControls() }
                         }) {
-                            Icon(painterResource(R.drawable.ic_skip_next), "Next track",
+                        Icon(WatermelonIcons.SkipNext, "Next track",
                                 tint = PlayerColors.current.iconDefault, modifier = Modifier.width(30.dp).height(30.dp))
                         }
                     } else {
@@ -703,9 +702,9 @@ fun PhonePlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (holdIsLeft) Icon(painterResource(R.drawable.ic_rewind), null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
+                if (holdIsLeft) Icon(WatermelonIcons.Rewind, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
                 Text("${holdSpeed.toInt()}×", color = PlayerColors.current.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                if (!holdIsLeft) Icon(painterResource(R.drawable.ic_fast_forward), null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
+                if (!holdIsLeft) Icon(WatermelonIcons.FastForward, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
             }
         }
         if (showVolumeIndicator) {

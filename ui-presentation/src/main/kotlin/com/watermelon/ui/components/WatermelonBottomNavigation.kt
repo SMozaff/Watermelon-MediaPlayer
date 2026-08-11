@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -19,7 +18,8 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.watermelon.ui.R
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -29,38 +29,38 @@ import com.watermelon.ui.theme.WatermelonTypography
  */
 enum class BottomNavItem(
     val route: String,
-    val iconRes: Int,
-    val selectedIconRes: Int,
+    val icon: ImageVector,
+    val selectedIcon: ImageVector,
     val label: String
 ) {
     FOLDERS(
         route = "folders",
-        iconRes = R.drawable.ic_folder,
-        selectedIconRes = R.drawable.ic_folder_open,
+        icon = WatermelonIcons.Folder,
+        selectedIcon = WatermelonIcons.FolderOpen,
         label = "Folders"
     ),
     VIDEOS(
         route = "all_videos",
-        iconRes = R.drawable.ic_video_file,
-        selectedIconRes = R.drawable.ic_video_file,
+        icon = WatermelonIcons.VideoLibrary,
+        selectedIcon = WatermelonIcons.VideoLibrary,
         label = "Videos"
     ),
     PLAYLISTS(
         route = "playlists",
-        iconRes = R.drawable.ic_playlist,
-        selectedIconRes = R.drawable.ic_playlist,
+        icon = WatermelonIcons.Playlist,
+        selectedIcon = WatermelonIcons.Playlist,
         label = "Playlists"
     ),
     FAVORITES(
         route = "favorites",
-        iconRes = R.drawable.ic_star_off,
-        selectedIconRes = R.drawable.ic_star,
+        icon = WatermelonIcons.StarBorder,
+        selectedIcon = WatermelonIcons.Star,
         label = "Favorites"
     ),
     SETTINGS(
         route = "settings",
-        iconRes = R.drawable.ic_settings,
-        selectedIconRes = R.drawable.ic_settings,
+        icon = WatermelonIcons.Settings,
+        selectedIcon = WatermelonIcons.Settings,
         label = "Settings"
     )
 }
@@ -103,9 +103,7 @@ fun WatermelonBottomNavigation(
                 },
                 icon = {
                     Icon(
-                        painter = painterResource(
-                            if (selected) item.selectedIconRes else item.iconRes
-                        ),
+                        imageVector = if (selected) item.selectedIcon else item.icon,
                         contentDescription = item.label,
                         tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.Playlist
 import com.watermelon.common.model.PlaylistType
 import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -89,7 +90,7 @@ fun PlaylistsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_playlist_add),
+                imageVector = WatermelonIcons.PlaylistAdd,
                 contentDescription = null,
                 tint = WatermelonColors.Accent,
                 modifier = Modifier.size(20.dp)
@@ -149,7 +150,7 @@ fun PlaylistsScreen(
                             if (isUserPlaylist) {
                                 IconButton(onClick = { menuTarget = playlist }) {
                                     Icon(
-                                        painter = painterResource(R.drawable.ic_more_vertical),
+                                        imageVector = WatermelonIcons.MoreVert,
                                         contentDescription = "Playlist options",
                                         tint = WatermelonColors.DarkOnSurfaceVariant
                                     )

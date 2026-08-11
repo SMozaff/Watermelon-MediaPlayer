@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.MediaItem
 import com.watermelon.ui.R
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -126,7 +127,7 @@ fun VideoListItem(
                                 .size(32.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_more_vertical),
+                                imageVector = WatermelonIcons.MoreVert,
                                 contentDescription = "More options",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -189,7 +190,7 @@ fun VideoListItem(
                                 .size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_play_arrow),
+                            imageVector = WatermelonIcons.Play,
                             contentDescription = "Play",
                             tint = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.8f)
                         )
@@ -243,7 +244,7 @@ fun VideoListItem(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_more_vertical),
+                            imageVector = WatermelonIcons.MoreVert,
                             contentDescription = "More options",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
