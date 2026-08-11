@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -81,8 +82,8 @@ fun WatermelonBottomNavigation(
         modifier = modifier
             .fillMaxWidth()
             .height(64.dp),
-        containerColor = WatermelonColors.DarkSurface,
-        contentColor = WatermelonColors.DarkOnSurface
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         items.forEach { item ->
             val selected = navController.currentBackStackEntry?.destination?.hierarchy?.any {
@@ -106,24 +107,24 @@ fun WatermelonBottomNavigation(
                             if (selected) item.selectedIconRes else item.iconRes
                         ),
                         contentDescription = item.label,
-                        tint = if (selected) WatermelonColors.Accent else WatermelonColors.DarkOnSurfaceVariant
+                        tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 label = {
                     Text(
                         text = item.label,
                         style = WatermelonTypography.typography.labelSmall,
-                        color = if (selected) WatermelonColors.Accent else WatermelonColors.DarkOnSurfaceVariant,
+                        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = WatermelonColors.Accent,
-                    unselectedIconColor = WatermelonColors.DarkOnSurfaceVariant,
-                    selectedTextColor = WatermelonColors.Accent,
-                    unselectedTextColor = WatermelonColors.DarkOnSurfaceVariant,
-                    indicatorColor = WatermelonColors.Accent.copy(alpha = 0.12f)
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
                 )
             )
         }

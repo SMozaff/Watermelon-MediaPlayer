@@ -1,6 +1,7 @@
 package com.watermelon.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -86,7 +88,9 @@ fun VideoListItem(
     }
 
     val selectedBorder = if (isSelected) {
-        Modifier.border(2.dp, WatermelonColors.Accent, WatermelonShapes.control)
+        Modifier
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), WatermelonShapes.control)
+            .border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
     } else {
         Modifier
     }
@@ -124,7 +128,7 @@ fun VideoListItem(
                             Icon(
                                 painter = painterResource(R.drawable.ic_more_vertical),
                                 contentDescription = "More options",
-                                tint = WatermelonColors.DarkSurface
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         VideoItemContextMenu(
@@ -143,7 +147,7 @@ fun VideoListItem(
                 Text(
                     text = item.displayName,
                     style = textStyle,
-                    color = WatermelonColors.DarkOnSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -156,7 +160,7 @@ fun VideoListItem(
             Text(
                 text = formatDuration(item.durationMs),
                 style = WatermelonTypography.timecode,
-                color = WatermelonColors.DarkOnSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     } else {
@@ -178,22 +182,11 @@ fun VideoListItem(
                 )
 
                 if (!selectionActive) {
-                    // FLAGGED, NOT FIXED (separate from the DropdownMenu anchor bug above,
-                    // pre-existing before this session's media-tools work): this button
-                    // shows a Play icon but is wired to onContextMenuClick, opening the
-                    // context menu instead of playing the video. Whole thumbnail Box
-                    // already has onClick=onClick (play) via the outer combinedClickable
-                    // on the Row, so tapping the thumbnail center currently opens the
-                    // context menu twice-over via two different triggers, and never
-                    // actually offers a distinct "tap play icon to play" action. Not
-                    // changing this without confirming the intended behavior first --
-                    // could be "remove this button" or "wire it to onClick" depending on
-                    // what was originally meant here.
                     androidx.compose.material3.IconButton(
-                        onClick = onContextMenuClick,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(40.dp)
+                        onClick = onClick,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(48.dp)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_play_arrow),
@@ -211,7 +204,7 @@ fun VideoListItem(
                     Text(
                         text = item.displayName,
                         style = textStyle,
-                        color = WatermelonColors.DarkOnSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)
@@ -228,7 +221,7 @@ fun VideoListItem(
                 Text(
                     text = formatDuration(item.durationMs) + if (itemSize == VideoItemSize.LARGE) folderSuffix else "",
                     style = WatermelonTypography.timecode,
-                    color = WatermelonColors.DarkOnSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -236,7 +229,7 @@ fun VideoListItem(
                     Text(
                         text = formatDetailLine(item) + folderSuffix,
                         style = WatermelonTypography.typography.bodySmall,
-                        color = WatermelonColors.DarkOnSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -252,7 +245,7 @@ fun VideoListItem(
                         Icon(
                             painter = painterResource(R.drawable.ic_more_vertical),
                             contentDescription = "More options",
-                            tint = WatermelonColors.DarkOnSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     VideoItemContextMenu(
@@ -292,19 +285,19 @@ private fun VideoItemContextMenu(
         ) {
             onExtractAudio?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Extract Audio", color = WatermelonColors.DarkOnSurface) },
+                    text = { Text("Extract Audio", color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }
             onTrimVideo?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Trim", color = WatermelonColors.DarkOnSurface) },
+                    text = { Text("Trim", color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }
             onCompressVideo?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Compress", color = WatermelonColors.DarkOnSurface) },
+                    text = { Text("Compress", color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,7 +41,7 @@ fun WatermelonHeader(
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(WatermelonColors.DarkSurface)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = WatermelonSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -48,12 +49,12 @@ fun WatermelonHeader(
         if (showBackButton) {
             IconButton(
                 onClick = onBackClick,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_back),
                     contentDescription = "Back",
-                    tint = WatermelonColors.DarkOnSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         } else {
@@ -76,7 +77,7 @@ fun WatermelonHeader(
             Text(
                 text = title,
                 style = WatermelonTypography.typography.titleMedium,
-                color = WatermelonColors.DarkOnSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -88,24 +89,24 @@ fun WatermelonHeader(
             if (showSettingsButton) {
                 IconButton(
                     onClick = onSettingsClick,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
                         contentDescription = "Settings",
-                        tint = WatermelonColors.DarkOnSurface
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
             if (showMenuButton) {
                 IconButton(
                     onClick = onMenuClick,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_more_vertical),
                         contentDescription = "Menu",
-                        tint = WatermelonColors.DarkOnSurface
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -148,7 +149,7 @@ fun FolderBrowserScreen(
                                 Text(
                                     opt.label(),
                                     style = WatermelonTypography.typography.bodyMedium,
-                                    color = WatermelonColors.DarkOnSurface
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             onClick = { currentSort = opt; sortMenuOpen = false }
@@ -177,7 +178,7 @@ fun FolderBrowserScreen(
 
         HorizontalDivider(
             thickness = WatermelonSpacing.hairline,
-            color = WatermelonColors.DarkOutline
+            color = MaterialTheme.colorScheme.outlineVariant
         )
 
         if (rows.isEmpty()) {
@@ -185,7 +186,7 @@ fun FolderBrowserScreen(
                 Text(
                     "No media folders found",
                     style = WatermelonTypography.typography.bodyLarge,
-                    color = WatermelonColors.DarkOnSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             return@Column
@@ -250,7 +251,7 @@ fun FolderBrowserScreen(
 private fun SectionHeader(title: String) {
     Text(
         text = title.uppercase(),
-        color = WatermelonColors.DarkOnSurfaceVariant,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = WatermelonTypography.typography.labelSmall,
         fontWeight = FontWeight.Bold,
         modifier = Modifier

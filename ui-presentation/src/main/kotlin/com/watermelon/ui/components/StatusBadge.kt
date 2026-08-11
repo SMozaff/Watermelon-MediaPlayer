@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -66,10 +67,10 @@ object StatusBadge {
         Text(
             text = text,
             style = WatermelonTypography.timecode,
-            color = WatermelonColors.DarkOnSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = modifier
                 .clip(WatermelonShapes.small)
-                .background(WatermelonColors.DarkBackground.copy(alpha = 0.72f))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
                 .padding(horizontal = WatermelonSpacing.xs, vertical = WatermelonSpacing.xs / 2)
         )
     }
