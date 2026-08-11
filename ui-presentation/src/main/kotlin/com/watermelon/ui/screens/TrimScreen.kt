@@ -42,8 +42,11 @@ private const val MIN_TRIM_RANGE_MS = 500L
  * live range preview -- no new playback primitive, same mechanism PhonePlayerScreen uses,
  * just driven through the lighter MVI surface rather than PhonePlayerScreen's full UI.
  *
- * Thumbnail strip under the scrubber is deliberately NOT built here -- blueprint scopes it
- * as a nice-to-have, out for v1.
+ * Filmstrip + haptic keyframe-snapping (both real, decoded/extracted data -- see
+ * KeyframeIndexer/FilmstripExtractor) are now built and passed into TrimRangeScrubber below.
+ * This corrects an earlier doc comment here that said the filmstrip was deliberately out of
+ * scope for v1 -- that was true when TrimScreen only had a plain scrubber; it's stale now
+ * that TrimViewModel.loadTrimAids actually populates both.
  *
  * @param surface the video render surface, same pattern as PhonePlayerScreen's `surface` param
  *   (caller supplies the actual Compose surface hookup; this screen doesn't own that).

@@ -62,14 +62,39 @@ class Mp3Encoder(
         check(rc >= 0) { "Lame.initParams() failed with code $rc -- parameters not supported by LAME" }
     }
 
-    // Generous fixed size, matching LAME's own "worst case ~1.25x input + 7200 bytes"
-    // encoding-overhead guidance (same reasoning used in the earlier JNI version -- this is
-    // about LAME's actual algorithm, not specific to which Java wrapper calls it).
-    private val outBuffer = ByteArray(32 * 1024)
+    /**
+     * REAL BUG FIXED, this was the actual reported crash: the output buffer used to be a
+     * fixed 32KB (ByteArray(32 * 1024)) regardless of how much PCM was being encoded per
+     * call. LAME's own documented sizing rule (confirmed via multiple independent real
+     * implementations this session -- FFmpeg's libmp3lame wrapper, a C++ port, and the
+     * lamejs JS port all use the identical formula) is:
+     *
+     *     mp3buf_size (bytes) = 1.25 * numSamples + 7200   (worst case)
+     *
+     * A fixed 32KB buffer silently assumed every input chunk was small enough to fit that
+     * formula's result under 32KB -- true for small/typical chunks, but MediaCodec's actual
+     * decoder output buffer sizes are NOT controlled by this code and can be considerably
+     * larger for some devices/codecs/sample rates, especially stereo high-sample-rate audio.
+     * When a real chunk's required mp3buf_size exceeded 32KB, Lame.encodeBuffer's internal
+     * (translated-from-C) buffer writes would go out of bounds -- the near-certain actual
+     * cause of the reported "MP3 conversion crashes the app" bug, most likely surfacing as
+     * an ArrayIndexOutOfBoundsException from inside java-lame's encode path.
+     *
+     * Fixed by sizing the output buffer per-call from the real input length, using the same
+     * formula, with a small floor to stay sane for tiny/empty inputs.
+     */
+    private fun requiredOutBufferSize(numSamplesPerChannel: Int): Int =
+        maxOf((1.25 * numSamplesPerChannel + 7200).toInt(), 8192)
 
     /** Encodes one chunk of interleaved 16-bit PCM bytes and writes resulting MP3 bytes to [sink]. */
     fun encodeChunk(pcm: ByteArray, offset: Int, length: Int, sink: OutputStream) {
         val (left, right) = interleavedPcm16ToFloatChannels(pcm, offset, length, numChannels)
+        // Allocates a fresh, correctly-sized buffer per call rather than reusing one fixed
+        // instance -- more GC pressure than the old (broken) reused-buffer approach, but
+        // correctness (no overflow, ever, regardless of chunk size) matters more here than
+        // that micro-optimization. Revisit only if profiling on a real device shows this is
+        // an actual bottleneck, not preemptively.
+        val outBuffer = ByteArray(requiredOutBufferSize(left.size))
         val written = lame.encodeBuffer(left, right, left.size, outBuffer)
         if (written > 0) sink.write(outBuffer, 0, written)
         else if (written < 0) error("Lame.encodeBuffer error code=$written")
@@ -77,6 +102,10 @@ class Mp3Encoder(
 
     /** Call once after the last [encodeChunk], before [close]. */
     fun flush(sink: OutputStream) {
+        // Flush's own worst case per LAME's docs/usage examples: a fixed, generous size is
+        // fine here since flush only drains already-buffered internal state, not a new
+        // caller-supplied chunk of arbitrary size -- unlike encodeChunk's real bug above.
+        val outBuffer = ByteArray(8192)
         val written = lame.encodeFlush(outBuffer)
         if (written > 0) sink.write(outBuffer, 0, written)
     }

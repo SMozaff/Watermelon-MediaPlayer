@@ -37,6 +37,18 @@ private const val TAG = "FilmstripExtractor"
  * off-main-thread by the caller (TrimViewModel), one extractor instance reused across all
  * requested timestamps rather than one per frame.
  *
+ * THREADING CAVEAT, flagged not resolved: Android's own official FrameExtractor docs
+ * (developer.android.com/media/media3/inspector/extract-frames, checked via web search this
+ * session) state "FrameExtractor instances must be accessed from a single application
+ * thread" -- but their own example code calls it from inside `withContext(Dispatchers.IO)`,
+ * which is a thread *pool*, not one fixed OS thread. TrimViewModel.loadTrimAids calls this
+ * extractor's full sequence of getFrame().await() calls within one continuous
+ * viewModelScope.launch(Dispatchers.IO) block without hopping dispatchers mid-flight, which
+ * should keep it on one thread in practice for a single coroutine -- but this hasn't been
+ * verified against Kotlin coroutines' actual thread-continuity guarantees for IO dispatcher
+ * work, only reasoned through. If filmstrip extraction crashes or behaves oddly on a real
+ * device, this constraint is the first thing to check.
+ *
  * NOT run on-device -- signature/shape confirmed via docs, not verified against a real
  * device or emulator this session.
  */
