@@ -48,6 +48,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +66,7 @@ import com.watermelon.ui.components.WatermelonTunerSeekBar
 import com.watermelon.ui.components.WatermelonIcon
 import com.watermelon.ui.player.VhsEffectController
 import com.watermelon.ui.theme.PlayerColors
+import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.utils.ScreenshotManager
 import com.watermelon.ui.utils.ScreenshotResult
 import com.watermelon.ui.viewmodel.PlayerViewModel
@@ -127,6 +130,7 @@ fun PhonePlayerScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val activity = context as? Activity
     val audioManager = remember { context.getSystemService(AudioManager::class.java) }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }
@@ -186,6 +190,7 @@ fun PhonePlayerScreen(
     // Gesture transient state
     var isHolding by remember { mutableStateOf(false) }
     var isPointerDown by remember { mutableStateOf(false) }
+    var isGestureMoving by remember { mutableStateOf(false) }
     var holdIsLeft by remember { mutableStateOf(false) }
     var holdSpeed by remember { mutableFloatStateOf(2f) }
     var seekFrac by remember { mutableFloatStateOf(0f) }
@@ -200,6 +205,12 @@ fun PhonePlayerScreen(
     // the seek bars' onScrubChange callbacks instead of round-tripping through the
     // controller.
     var isScrubbingSeekBar by remember { mutableStateOf(false) }
+    var tunerPreviewPosition by remember { mutableLongStateOf(position) }
+    var lastGestureTapNanos by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(position, isScrubbingSeekBar) {
+        if (!isScrubbingSeekBar) tunerPreviewPosition = position
+    }
 
     var currentVolume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
     var volumeFraction by remember {
@@ -263,11 +274,12 @@ fun PhonePlayerScreen(
     }
 
     // FF/FR hold gesture (CORE — independent of VHS). Notifies vhs.setRewind for the effect.
-    LaunchedEffect(isPointerDown) {
-        if (isPointerDown) {
+    LaunchedEffect(isPointerDown, isGestureMoving) {
+        if (isPointerDown && !isGestureMoving) {
             kotlinx.coroutines.delay(500L)
-            if (isPointerDown) {
+            if (isPointerDown && !isGestureMoving) {
                 isHolding = true
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 while (isPointerDown) {
                     if (holdIsLeft) {
                         vhs.setRewind(active = true, forward = false, speed = holdSpeed)
@@ -379,16 +391,6 @@ fun PhonePlayerScreen(
         // it can't steal taps/drags meant for buttons or the seek bar (see Layer 3 tap-catcher).
         Box(
             Modifier.fillMaxSize()
-                .pointerInput(ui.gesturesEnabled, showControlPanel) {
-                    if (!ui.gesturesEnabled || showControlPanel) return@pointerInput
-                    detectTapGestures(
-                        onTap = { lastInteraction = System.nanoTime(); ui.toggleControls(); if (!ui.controlsVisible) showControlPanel = false },
-                        onDoubleTap = {
-                            viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                            run { lastInteraction = System.nanoTime(); ui.showControls() }
-                        }
-                    )
-                }
                 .pointerInput(durationMs, ui.gesturesEnabled, showControlPanel) {
                     if (!ui.gesturesEnabled || showControlPanel) return@pointerInput
                     awaitEachGesture {
@@ -396,6 +398,7 @@ fun PhonePlayerScreen(
                         val holdOriginX = firstDown.position.x
                         holdIsLeft = firstDown.position.x < size.width / 2f
                         isPointerDown = true
+                        isGestureMoving = false
                         var isHorizontal: Boolean? = null
                         var isMultiTouch = false
                         seekFrac = if (durationMs > 0) position.toFloat() / durationMs else 0f
@@ -418,6 +421,7 @@ fun PhonePlayerScreen(
 
                             if (pointerCount >= 2) {
                                 isMultiTouch = true
+                                isGestureMoving = true
                                 val zoom = event.calculateZoom()
                                 val pan = event.calculatePan()
                                 if (zoom != 1f) scale = (scale * zoom).coerceIn(1f, 4f)
@@ -428,6 +432,7 @@ fun PhonePlayerScreen(
                                 val drag = change.positionChange()
                                 if (isHorizontal == null && (abs(drag.x) > 10f || abs(drag.y) > 10f)) {
                                     isHorizontal = abs(drag.x) > abs(drag.y)
+                                    isGestureMoving = true
                                 }
                                 when (isHorizontal) {
                                     true -> {
@@ -458,7 +463,17 @@ fun PhonePlayerScreen(
                         } while (event.changes.any { it.pressed })
 
                         isPointerDown = false
-                        run { lastInteraction = System.nanoTime(); ui.showControls() }
+                        val isTap = !isGestureMoving && !isMultiTouch && !isHolding
+                        val now = System.nanoTime()
+                        if (isTap && now - lastGestureTapNanos < 300_000_000L) {
+                            viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            lastGestureTapNanos = 0L
+                        } else if (isTap) {
+                            lastGestureTapNanos = now
+                            ui.showControls()
+                        }
+                        lastInteraction = now
                     }
                 }
         )
@@ -505,15 +520,22 @@ fun PhonePlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     if (showControlPanel) showControlPanel = false else onBack()
                 }) {
                     WatermelonIcon(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
                 }
                 Spacer(Modifier.weight(1f))
-                IconButton(onClick = { ui.lock(); onLockChanged?.invoke(true) }) {
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    ui.lock(); onLockChanged?.invoke(true)
+                }) {
                     WatermelonIcon(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
                 }
-                IconButton(onClick = { showControlPanel = !showControlPanel }) {
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    showControlPanel = !showControlPanel
+                }) {
                     WatermelonIcon(WatermelonIcons.Settings, "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
                 }
             }
@@ -529,6 +551,30 @@ fun PhonePlayerScreen(
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Transport is above the dial; the tuner and its timecode remain nearest the
+                // bottom edge, giving the thumb a predictable "control, then seek" order.
+                PlayerTransportControls(
+                    isPlaying = isPlaying,
+                    hasNextTrack = hasNextTrack,
+                    onPrevious = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        if (position > 3_000L) viewModel.onIntent(UserIntent.Seek(0L))
+                        else PlaybackQueue.previousOf(uri)?.let { onSkipToTrack?.invoke(it) }
+                            ?: viewModel.onIntent(UserIntent.Seek(0L))
+                        lastInteraction = System.nanoTime(); ui.showControls()
+                    },
+                    onPlayPause = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
+                        lastInteraction = System.nanoTime(); ui.showControls()
+                    },
+                    onNext = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
+                        lastInteraction = System.nanoTime(); ui.showControls()
+                    },
+                    modifier = Modifier.padding(bottom = WatermelonSpacing.md)
+                )
                 if (tunerSeekBarEnabled) {
                     WatermelonTunerSeekBar(
                         positionMs = position,
@@ -540,12 +586,16 @@ fun PhonePlayerScreen(
                             isScrubbingSeekBar = scrubbing
                             ui.showControls()
                         },
+                        onPreviewPositionChanged = { tunerPreviewPosition = it },
+                        onDetent = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        },
                         modifier = Modifier
                     )
                     Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp)) {
-                        Text(formatTime(position), color = PlayerColors.current.textPrimary)
+                        Text(formatTime(tunerPreviewPosition), color = PlayerColors.current.textPrimary)
                         Spacer(Modifier.weight(1f))
-                        Text("-${formatTime((durationMs - position).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
+                        Text("-${formatTime((durationMs - tunerPreviewPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
                     }
                 } else {
                     Row(Modifier.fillMaxWidth()) {
@@ -566,57 +616,6 @@ fun PhonePlayerScreen(
                     )
                 }
 
-                // Playback cluster: previous · play/pause (big, red) · next. Nothing else —
-                // the 10s skip buttons live in the swipe-to-seek gesture and the seek bar
-                // itself, so this row stays to exactly the three controls that matter here.
-                // Placed beneath the seek bar (tuner or classic) rather than above it, so
-                // the seeking surface — whichever mode is active — is the first thing your
-                // thumb reaches, with transport controls anchored below as a secondary row.
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(28.dp)
-                ) {
-                    IconButton(onClick = {
-                        // Previous track: if >3s in, restart current; else go to previous file.
-                        if (position > 3_000L) {
-                            viewModel.onIntent(UserIntent.Seek(0L))
-                        } else {
-                            val prev = PlaybackQueue.previousOf(uri)
-                            if (prev != null) onSkipToTrack?.invoke(prev)
-                            else viewModel.onIntent(UserIntent.Seek(0L))
-                        }
-                        run { lastInteraction = System.nanoTime(); ui.showControls() }
-                    }) {
-                        WatermelonIcon(WatermelonIcons.SkipPrevious, "Previous track",
-                            tint = PlayerColors.current.iconDefault, modifier = Modifier.width(30.dp).height(30.dp))
-                    }
-                    IconButton(
-                        onClick = { viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume) },
-                        modifier = Modifier
-                            .width(64.dp).height(64.dp)
-                            .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
-                    ) {
-                        WatermelonIcon(
-                            if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
-                            if (isPlaying) "Pause" else "Play",
-                            tint = Color.White,
-                            modifier = Modifier.width(32.dp).height(32.dp)
-                        )
-                    }
-                    // Next track: INVISIBLE when there is no adjacent next file — keeps the
-                    // cluster centered rather than showing a dead button.
-                    if (hasNextTrack) {
-                        IconButton(onClick = {
-                            PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
-                            run { lastInteraction = System.nanoTime(); ui.showControls() }
-                        }) {
-                        WatermelonIcon(WatermelonIcons.SkipNext, "Next track",
-                                tint = PlayerColors.current.iconDefault, modifier = Modifier.width(30.dp).height(30.dp))
-                        }
-                    } else {
-                        Spacer(Modifier.width(30.dp))
-                    }
-                }
             }
 
             // Control panel
@@ -759,6 +758,56 @@ fun PhonePlayerScreen(
                 showSleepTimerDialog = false
             }
         )
+    }
+}
+
+@Composable
+private fun PlayerTransportControls(
+    isPlaying: Boolean,
+    hasNextTrack: Boolean,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(28.dp)
+    ) {
+        IconButton(onClick = onPrevious) {
+            WatermelonIcon(
+                WatermelonIcons.SkipPrevious,
+                "Previous track",
+                tint = PlayerColors.current.iconDefault,
+                modifier = Modifier.width(30.dp).height(30.dp)
+            )
+        }
+        IconButton(
+            onClick = onPlayPause,
+            modifier = Modifier
+                .width(64.dp).height(64.dp)
+                .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
+        ) {
+            WatermelonIcon(
+                if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
+                if (isPlaying) "Pause" else "Play",
+                tint = Color.White,
+                modifier = Modifier.width(32.dp).height(32.dp)
+            )
+        }
+        if (hasNextTrack) {
+            IconButton(onClick = onNext) {
+                WatermelonIcon(
+                    WatermelonIcons.SkipNext,
+                    "Next track",
+                    tint = PlayerColors.current.iconDefault,
+                    modifier = Modifier.width(30.dp).height(30.dp)
+                )
+            }
+        } else {
+            Spacer(Modifier.width(48.dp))
+        }
     }
 }
 

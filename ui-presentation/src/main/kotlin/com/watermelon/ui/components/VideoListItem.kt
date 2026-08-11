@@ -94,6 +94,8 @@ fun VideoListItem(
             .border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
     } else {
         Modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f), WatermelonShapes.control)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.42f), WatermelonShapes.control)
     }
 
     val clickModifier = Modifier
@@ -103,7 +105,7 @@ fun VideoListItem(
 
     if (isGrid) {
         Column(
-            modifier = modifier.then(clickModifier).padding(WatermelonSpacing.xs),
+            modifier = modifier.then(clickModifier).padding(WatermelonSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)
         ) {
             Box {
@@ -141,6 +143,19 @@ fun VideoListItem(
                             onCompressVideo = onCompressVideo,
                         )
                     }
+                    androidx.compose.material3.IconButton(
+                        onClick = onClick,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(48.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f), androidx.compose.foundation.shape.CircleShape)
+                    ) {
+                        WatermelonIcon(
+                            icon = WatermelonIcons.Play,
+                            contentDescription = "Play",
+                            tint = WatermelonColors.Palette.PaperWhite
+                        )
+                    }
                 }
             }
 
@@ -168,7 +183,7 @@ fun VideoListItem(
         Row(
             modifier = modifier.then(clickModifier)
                 .fillMaxWidth()
-                .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
+                .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box {

@@ -41,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -102,6 +104,7 @@ fun VideoListScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val selection by viewModel.selection.collectAsStateWithLifecycle()
@@ -291,6 +294,7 @@ fun VideoListScreen(
                                 selectionActive = selection.isActive,
                                 onClick = {
                                     if (selection.isActive) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         viewModel.onToggleSelect(item.uri)
                                     } else {
                                         viewModel.markPlayed(item.uri)
@@ -301,7 +305,10 @@ fun VideoListScreen(
                                         }
                                     }
                                 },
-                                onLongClick = { viewModel.onLongPress(item.uri) },
+                                onLongClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.onLongPress(item.uri)
+                                },
                                 onExtractAudio = onExtractAudio,
                                 onTrimVideo = onTrimVideo,
                                 onCompressVideo = onCompressVideo
@@ -328,6 +335,7 @@ fun VideoListScreen(
                                 selectionActive = selection.isActive,
                                 onClick = {
                                     if (selection.isActive) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         viewModel.onToggleSelect(item.uri)
                                     } else {
                                         viewModel.markPlayed(item.uri)
@@ -338,7 +346,10 @@ fun VideoListScreen(
                                         }
                                     }
                                 },
-                                onLongClick = { viewModel.onLongPress(item.uri) },
+                                onLongClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.onLongPress(item.uri)
+                                },
                                 onExtractAudio = onExtractAudio,
                                 onTrimVideo = onTrimVideo,
                                 onCompressVideo = onCompressVideo

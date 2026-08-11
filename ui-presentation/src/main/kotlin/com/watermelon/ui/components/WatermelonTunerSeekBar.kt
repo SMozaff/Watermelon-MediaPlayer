@@ -42,6 +42,9 @@ import kotlin.math.roundToLong
  * @param durationMs total duration
  * @param onSeek invoked with the target position while scrubbing / on drag end
  * @param onScrubChange true when scrubbing starts, false when it ends
+ * @param onPreviewPositionChanged gives the host an immediate tape-counter value while the
+ *   player catches up to each detent seek.
+ * @param onDetent crossed once per physical tick; the host should use this for light haptics.
  * @param secondsPerTick how many seconds each tick crossing the pointer represents (1-20,
  *   adjustable in Settings)
  * @param dialWidth visual width of the tuner strip — intentionally narrower than the
@@ -56,7 +59,9 @@ fun WatermelonTunerSeekBar(
     dialWidth: Dp = 260.dp,
     dialHeight: Dp = 40.dp,
     secondsPerTick: Int = 5,
-    onScrubChange: (Boolean) -> Unit = {}
+    onScrubChange: (Boolean) -> Unit = {},
+    onPreviewPositionChanged: (Long) -> Unit = {},
+    onDetent: () -> Unit = {}
 ) {
     var scrubbing by remember { mutableStateOf(false) }
     // While scrubbing, position is tracked as an absolute ms offset from the drag start —
@@ -110,6 +115,7 @@ fun WatermelonTunerSeekBar(
                         scrubbing = true
                         onScrubChange(true)
                         scrubPositionMs = livePositionMs
+                        onPreviewPositionChanged(scrubPositionMs)
                         pendingDragPx = 0f
                     },
                     onDragEnd = {
@@ -131,11 +137,23 @@ fun WatermelonTunerSeekBar(
                     // still advances by the correct number of steps, not just one.
                     while (pendingDragPx >= tickSpacingPx) {
                         pendingDragPx -= tickSpacingPx
-                        scrubPositionMs = (scrubPositionMs + stepMs).coerceAtMost(durationMs.coerceAtLeast(0L))
+                        val next = (scrubPositionMs + stepMs).coerceAtMost(durationMs.coerceAtLeast(0L))
+                        if (next != scrubPositionMs) {
+                            scrubPositionMs = next
+                            onPreviewPositionChanged(scrubPositionMs)
+                            onSeek(scrubPositionMs)
+                            onDetent()
+                        }
                     }
                     while (pendingDragPx <= -tickSpacingPx) {
                         pendingDragPx += tickSpacingPx
-                        scrubPositionMs = (scrubPositionMs - stepMs).coerceAtLeast(0L)
+                        val next = (scrubPositionMs - stepMs).coerceAtLeast(0L)
+                        if (next != scrubPositionMs) {
+                            scrubPositionMs = next
+                            onPreviewPositionChanged(scrubPositionMs)
+                            onSeek(scrubPositionMs)
+                            onDetent()
+                        }
                     }
                 }
             }
