@@ -11,6 +11,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,8 @@ fun MediaJobProgressSheet(
     job: MediaJob,
     onCancel: () -> Unit,
     onDismiss: () -> Unit,
+    outputLocation: String? = null,
+    onOpenSettings: (() -> Unit)? = null,
 ) {
     Dialog(
         onDismissRequest = { /* no-op while running; Failed/simple-success dismiss via button */ },
@@ -76,7 +79,7 @@ fun MediaJobProgressSheet(
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            "${job.progressPercent}%",
+                            "${job.progressPercent}% · ${jobProgressLabel(job.type)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -99,10 +102,25 @@ fun MediaJobProgressSheet(
                         // covers the simple-success case (extract audio, or after the
                         // decision has already been resolved).
                         Text(
-                            "Done",
+                            if (job.type == MediaJobType.EXTRACT_AUDIO) "MP3 ready" else "Done",
                             style = MaterialTheme.typography.bodyLarge,
                             color = PlayerColors.current.textPrimary
                         )
+                        if (job.type == MediaJobType.EXTRACT_AUDIO && outputLocation != null) {
+                            Text(
+                                text = "Saved to $outputLocation",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "You can change this folder in Settings › Media tools.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            onOpenSettings?.let { openSettings ->
+                                TextButton(onClick = openSettings) { Text("Open settings") }
+                            }
+                        }
                         Button(
                             onClick = onDismiss,
                             shape = WatermelonShapes.control,
@@ -117,6 +135,15 @@ fun MediaJobProgressSheet(
                     }
 
                     is MediaJobState.Failed -> {
+                        Text(
+                            if (job.type == MediaJobType.EXTRACT_AUDIO) {
+                                "MP3 conversion failed"
+                            } else {
+                                "Couldn’t finish"
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = PlayerColors.current.textPrimary
+                        )
                         Text(
                             state.reason,
                             style = MaterialTheme.typography.bodyMedium,
@@ -146,7 +173,13 @@ fun MediaJobProgressSheet(
 }
 
 private fun jobTypeLabel(type: MediaJobType): String = when (type) {
-    MediaJobType.EXTRACT_AUDIO -> "Extracting Audio"
+    MediaJobType.EXTRACT_AUDIO -> "Converting to MP3"
     MediaJobType.TRIM -> "Trimming Video"
     MediaJobType.COMPRESS -> "Compressing Video"
+}
+
+private fun jobProgressLabel(type: MediaJobType): String = when (type) {
+    MediaJobType.EXTRACT_AUDIO -> "Encoding audio"
+    MediaJobType.TRIM -> "Processing video"
+    MediaJobType.COMPRESS -> "Compressing video"
 }

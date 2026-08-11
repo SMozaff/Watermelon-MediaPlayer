@@ -107,17 +107,8 @@ class MainActivity : ComponentActivity() {
     // WatermelonApplication (see that class's doc — no DI framework in this app, so this
     // Activity just reads the Application-scoped instances rather than constructing new ones).
     //
-    // NOTE ON A REAL INCONSISTENCY FOUND WHILE WIRING THIS: FolderVisibilityStoreImpl has
-    // getMp3OutputPath()/getCompressedOutputPath()/getTrimmedOutputPath() methods, but the
-    // actual user-editable values live in SettingsState/SettingsPersistence.kt (the real
-    // settings screen + its prefs round-trip). Those are different SharedPreferences-backed
-    // values that would silently drift apart. WatermelonApplication constructs
-    // OutputFileStore once at startup using FolderVisibilityStoreImpl's values, which won't
-    // reflect changes made in the Settings screen without restarting the app. Not fixed here
-    // (would mean either removing the FolderVisibilityStoreImpl methods or restructuring
-    // WatermelonApplication to observe settingsState) -- flagging rather than leaving this
-    // silently wrong. Now three instances of this same duplication (mp3/compressed/trimmed),
-    // worth actually fixing properly rather than adding a fourth copy next time.
+    // OutputFileStore reads the same watermelon_prefs keys written by SettingsPersistence,
+    // so exports use the destination currently shown in the Settings screen.
     private val mediaJobManager by lazy {
         (application as com.watermelon.app.WatermelonApplication).mediaJobManager
     }
@@ -607,6 +598,16 @@ class MainActivity : ComponentActivity() {
         // Extract Audio now asks for a bitrate first (product request) -- this holds the
         // (uri, displayName) of whichever video was tapped while Mp3BitrateDialog is open.
         var pendingExtractAudio by remember { mutableStateOf<Pair<String, String>?>(null) }
+        // Kept by id rather than by a snapshot of MediaJob so the sheet follows every
+        // progress/state update emitted by the application-scoped MediaJobManager.
+        var activeMp3JobId by rememberSaveable { mutableStateOf<String?>(null) }
+        val mediaJobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
+        val activeMp3Job = mediaJobs.firstOrNull { it.id == activeMp3JobId }
+        LaunchedEffect(activeMp3Job?.state) {
+            if (activeMp3Job?.state is com.watermelon.mediatools.job.MediaJobState.Cancelled) {
+                activeMp3JobId = null
+            }
+        }
 
         val savedBrightness = remember { prefs.getFloat("brightness", -1f) }
 
@@ -1146,10 +1147,29 @@ class MainActivity : ComponentActivity() {
         pendingExtractAudio?.let { (uri, displayName) ->
             com.watermelon.ui.components.Mp3BitrateDialog(
                 onSelect = { preset ->
-                    mediaJobManager.extractAudio(audioExtractor, uri, displayName, preset.kbps)
+                    activeMp3JobId = mediaJobManager.extractAudio(
+                        audioExtractor, uri, displayName, preset.kbps
+                    )
                     pendingExtractAudio = null
                 },
                 onDismiss = { pendingExtractAudio = null }
+            )
+        }
+
+        activeMp3Job?.let { job ->
+            com.watermelon.ui.components.MediaJobProgressSheet(
+                job = job,
+                outputLocation = if (job.type == com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO) {
+                    settingsState.mp3OutputPath
+                } else {
+                    null
+                },
+                onCancel = { mediaJobsViewModel.cancel(job.id) },
+                onDismiss = { activeMp3JobId = null },
+                onOpenSettings = {
+                    activeMp3JobId = null
+                    navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
+                }
             )
         }
     }

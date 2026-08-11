@@ -36,9 +36,22 @@ class WatermelonApplication : Application() {
 
         outputFileStore = OutputFileStore(
             context = applicationContext,
-            mp3RelativePath = { settingsStore.getMp3OutputPath() },
-            compressedRelativePath = { settingsStore.getCompressedOutputPath() },
-            trimmedRelativePath = { settingsStore.getTrimmedOutputPath() },
+            // These match SettingsPersistence exactly, so an export uses the destination the
+            // user just selected in Settings rather than a stale duplicate preference store.
+            mp3RelativePath = {
+                getSharedPreferences("watermelon_prefs", MODE_PRIVATE)
+                    .getString("mt_mp3_output_path", "Music/Watermelon") ?: "Music/Watermelon"
+            },
+            compressedRelativePath = {
+                getSharedPreferences("watermelon_prefs", MODE_PRIVATE)
+                    .getString("mt_compressed_output_path", "Movies/Watermelon/compressed")
+                    ?: "Movies/Watermelon/compressed"
+            },
+            trimmedRelativePath = {
+                getSharedPreferences("watermelon_prefs", MODE_PRIVATE)
+                    .getString("mt_trimmed_output_path", "Movies/Watermelon/trimmed")
+                    ?: "Movies/Watermelon/trimmed"
+            },
         )
 
         mediaJobManager = MediaJobManager(outputFileStore, appContext = applicationContext)

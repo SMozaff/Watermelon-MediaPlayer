@@ -1,6 +1,11 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -368,36 +374,60 @@ private fun SettingsIntro() {
 private fun SettingsGroup(
     title: String,
     summary: String,
+    initiallyExpanded: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)) {
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = WatermelonSpacing.xs)
-        )
-        Text(
-            text = summary,
-            style = WatermelonTypography.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = WatermelonSpacing.xs)
-        )
-        Surface(
-            shape = RoundedCornerShape(18.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
-        ) {
-            Column(
-                modifier = Modifier.padding(
-                    horizontal = WatermelonSpacing.md,
-                    vertical = WatermelonSpacing.xs / 2
-                )
+    var expanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
+    val shape = RoundedCornerShape(18.dp)
+    Surface(
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), shape)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button) { expanded = !expanded }
+                    .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.md),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                content()
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = summary,
+                        style = WatermelonTypography.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = WatermelonSpacing.xs / 2)
+                    )
+                }
+                WatermelonIcon(
+                    icon = R.drawable.ic_arrow_back,
+                    contentDescription = if (expanded) "Collapse $title" else "Expand $title",
+                    modifier = Modifier.graphicsLayer { rotationZ = if (expanded) 90f else -90f }
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+                    Column(
+                        modifier = Modifier.padding(
+                            horizontal = WatermelonSpacing.md,
+                            vertical = WatermelonSpacing.xs / 2
+                        )
+                    ) { content() }
+                }
             }
         }
     }

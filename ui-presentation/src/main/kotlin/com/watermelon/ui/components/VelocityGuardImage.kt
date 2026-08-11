@@ -39,6 +39,8 @@ private sealed interface ThumbnailResult {
  * scroll speed. Uses an in-memory [LruCache] so each frame is extracted only once —
  * subsequent loads are instant, and no thumbnail ever changes during scroll. Requests are
  * measured from each card's pixel bounds, so large grid/list cards do not stretch a 128px bitmap.
+ * Portrait and landscape frames are fitted inside the card rather than cropped into a false
+ * 16:9 image; the black matte keeps the video's native composition intact.
  *
  * Replaces the previous fast/slow dual-source approach which caused jarring thumbnail
  * switches because MediaStore and Coil extracted different frames.
@@ -84,7 +86,9 @@ fun VelocityGuardImage(
             is ThumbnailResult.Loaded -> Image(
                 bitmap             = r.bitmap.asImageBitmap(),
                 contentDescription = null,
-                contentScale       = ContentScale.Crop,
+                // Phone videos are often 9:16 while the thumbnail slots are wider. Fitting
+                // preserves what was recorded; unused space becomes a deliberate black matte.
+                contentScale       = ContentScale.Fit,
                 modifier           = Modifier.fillMaxSize()
             )
             ThumbnailResult.Loading -> CircularProgressIndicator(
