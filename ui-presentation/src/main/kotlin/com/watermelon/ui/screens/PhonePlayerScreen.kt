@@ -70,10 +70,6 @@ import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.utils.ScreenshotManager
 import com.watermelon.ui.utils.ScreenshotResult
 import com.watermelon.ui.viewmodel.PlayerViewModel
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrightnessHigh
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToLong
@@ -710,7 +706,7 @@ fun PhonePlayerScreen(
         if (showVolumeIndicator) {
             LevelIndicator(
                 fraction = volumeFraction,
-                icon = if (currentVolume == 0) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                icon = if (currentVolume == 0) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
                 contentDescription = "Volume",
                 modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp)
             )
@@ -718,7 +714,7 @@ fun PhonePlayerScreen(
         if (showBrightnessIndicator) {
             LevelIndicator(
                 fraction = currentBrightness,
-                icon = Icons.Filled.BrightnessHigh,
+                icon = WatermelonIcons.BrightnessHigh,
                 contentDescription = "Brightness",
                 modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp)
             )

@@ -18,14 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -144,7 +136,7 @@ fun MiniPlayerBar(
                 }
                 IconButton(onClick = onMuteToggle) {
                     WatermelonIcon(
-                        if (isMuted) WatermelonIcons.VolumeHigh else WatermelonIcons.VolumeMute,
+                        if (isMuted) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
                         contentDescription = if (isMuted) "Unmute" else "Mute"
                     )
                 }

@@ -16,6 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -96,7 +97,7 @@ fun ControlPanel(
                 val active = orientation == currentOrientation
                 IconButton(onClick = { onOrientationChange(orientation) }) {
                     Icon(painterResource(orientation.iconRes), orientation.name,
-                        tint = if (active) PlayerColors.current.iconActive else PlayerColors.current.iconDefault,
+                        tint = Color.Unspecified,
                         modifier = Modifier.width(20.dp).height(20.dp))
                 }
             }
@@ -143,9 +144,9 @@ fun ControlPanel(
                 // Reusing existing generic icons as honest placeholders rather than
                 // referencing drawable resources that don't exist; swap for real icons
                 // when available.
-                onExtractAudio?.let { IconStub(WatermelonIcons.VolumeHigh, "Extract audio", false, it) }
+                onExtractAudio?.let { IconStub(WatermelonIcons.ExtractAudio, "Extract audio", false, it) }
                 onTrimVideo?.let { IconStub(R.drawable.ic_screenshot_single, "Trim", false, it) }
-                onCompressVideo?.let { IconStub(WatermelonIcons.Share, "Compress", false, it) }
+                onCompressVideo?.let { IconStub(WatermelonIcons.CompressVideo, "Compress", false, it) }
             }
         }
     }
@@ -180,7 +181,7 @@ private fun IconStub(
                 Icon(icon, description, tint = tint, modifier = Modifier.width(22.dp).height(22.dp))
             }
             is Int -> {
-                Icon(painterResource(icon), description, tint = tint, modifier = Modifier.width(22.dp).height(22.dp))
+                Icon(painterResource(icon), description, tint = Color.Unspecified, modifier = Modifier.width(22.dp).height(22.dp))
             }
             else -> {}
         }

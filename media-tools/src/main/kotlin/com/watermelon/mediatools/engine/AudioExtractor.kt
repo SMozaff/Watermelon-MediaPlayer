@@ -3,6 +3,8 @@ package com.watermelon.mediatools.engine
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.content.Context
+import android.net.Uri
 import com.watermelon.common.util.FileLogger
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -30,7 +32,7 @@ private const val TIMEOUT_US = 10_000L
  * NOT tested on-device. MediaCodec's synchronous API shape here is the standard decode-loop
  * pattern, but this specific file has not been run against a real device/emulator.
  */
-class AudioExtractor {
+class AudioExtractor(private val context: Context) {
 
     class Result(val outputPath: String, val durationUs: Long)
 
@@ -72,7 +74,17 @@ class AudioExtractor {
         onProgress: (Int) -> Unit = {},
     ): Result {
         val extractor = MediaExtractor()
-        extractor.setDataSource(inputPath)
+        // Video rows supply MediaStore content:// URIs. Treating one as a filesystem path
+        // makes MediaExtractor fail on scoped-storage devices before the job can report an
+        // error. Let ContentResolver open it for content/resource schemes instead.
+        val inputUri = Uri.parse(inputPath)
+        if (inputUri.scheme == "content" || inputUri.scheme == "android.resource") {
+            extractor.setDataSource(context, inputUri, null)
+        } else if (inputUri.scheme == "file") {
+            extractor.setDataSource(requireNotNull(inputUri.path))
+        } else {
+            extractor.setDataSource(inputPath)
+        }
 
         val (trackIndex, format) = findAudioTrack(extractor)
             ?: error("No audio track found in $inputPath")
@@ -166,6 +178,8 @@ class AudioExtractor {
                     // on a real device, check KEY_PCM_ENCODING on the decoder's output
                     // format first.
                     val pcmBytes = ByteArray(bufferInfo.size)
+                    outBuffer.position(bufferInfo.offset)
+                    outBuffer.limit(bufferInfo.offset + bufferInfo.size)
                     outBuffer.get(pcmBytes)
                     encoder.encodeChunk(pcmBytes, 0, pcmBytes.size, out)
                 }

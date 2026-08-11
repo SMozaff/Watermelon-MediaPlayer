@@ -21,6 +21,9 @@ object WatermelonIcons {
     @DrawableRes val VolumeLow = R.drawable.ic_volume_low
     @DrawableRes val VolumeMute = R.drawable.ic_volume_mute
     @DrawableRes val VolumeMuteOff = R.drawable.ic_volume_high
+    @DrawableRes val BrightnessHigh = R.drawable.ic_brightness_high
+    @DrawableRes val ExtractAudio = R.drawable.ic_audio_extract
+    @DrawableRes val CompressVideo = R.drawable.ic_compress_video
 
     @DrawableRes val RepeatOff = R.drawable.ic_repeat_off
     @DrawableRes val RepeatOne = R.drawable.ic_repeat_one
@@ -50,6 +53,7 @@ object WatermelonIcons {
     @DrawableRes val FolderOpen = R.drawable.ic_folder_open
     @DrawableRes val Playlist = R.drawable.ic_playlist
     @DrawableRes val VideoLibrary = R.drawable.ic_video_file
+    @DrawableRes val VideoUnavailable = R.drawable.ic_video_unavailable
     @DrawableRes val Star = R.drawable.ic_star
     @DrawableRes val StarBorder = R.drawable.ic_star_off
 

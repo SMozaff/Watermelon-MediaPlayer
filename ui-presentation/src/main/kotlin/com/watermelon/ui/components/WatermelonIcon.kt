@@ -13,12 +13,15 @@ fun WatermelonIcon(
     @DrawableRes icon: Int,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    tint: Color = Color.Unspecified
+    tint: Color = Color.Unspecified,
+    preserveArtworkColors: Boolean = true
 ) {
     Icon(
         painter = painterResource(icon),
         contentDescription = contentDescription,
         modifier = modifier,
-        tint = tint
+        // App icons are multi-layer watermelon artwork. Applying a Compose tint replaces
+        // every layer with one flat colour, which is why the rebuilt vectors looked unchanged.
+        tint = if (preserveArtworkColors) Color.Unspecified else tint
     )
 }

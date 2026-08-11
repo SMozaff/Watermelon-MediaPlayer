@@ -79,7 +79,7 @@ fun LabeledIconButton(
                 Icon(
                     painter            = painterResource(icon),
                     contentDescription = label,
-                    tint               = resolvedTint,
+                    tint               = Color.Unspecified,
                     modifier           = Modifier.size(24.dp)
                 )
             }

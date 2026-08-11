@@ -34,6 +34,10 @@ class VideoListViewModel(
     private val folderVisibilityStore: com.watermelon.common.repository.FolderVisibilityStore? = null
 ) : ViewModel() {
 
+    /** Recently Added is a date feed and must open newest-first. */
+    val isRecentlyAddedPlaylist: Boolean
+        get() = isPlaylist && folderPath == com.watermelon.common.model.SystemPlaylist.ID_RECENTLY_ADDED
+
     private val _isShuffled   = MutableStateFlow(false)
     private val _selection    = MutableStateFlow(SelectionState())
 

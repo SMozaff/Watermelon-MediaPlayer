@@ -109,7 +109,11 @@ fun VideoListScreen(
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val selection by viewModel.selection.collectAsStateWithLifecycle()
 
-    var currentSort by rememberSaveable(stateSaver = SortSaver) { mutableStateOf(VideoSort.NAME) }
+    // Recently Added is a computed chronological feed. Users may select another sort later,
+    // but its first render must preserve the repository's newest-first order.
+    var currentSort by rememberSaveable(stateSaver = SortSaver) {
+        mutableStateOf(if (viewModel.isRecentlyAddedPlaylist) VideoSort.DATE else VideoSort.NAME)
+    }
     var ascending by rememberSaveable { mutableStateOf(true) }
     var currentItemSize by rememberSaveable(stateSaver = ItemSizeSaver) {
         mutableStateOf(VideoItemSize.SMALL)

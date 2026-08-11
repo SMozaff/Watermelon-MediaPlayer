@@ -124,7 +124,9 @@ class MainActivity : ComponentActivity() {
     private val outputFileStore by lazy {
         (application as com.watermelon.app.WatermelonApplication).outputFileStore
     }
-    private val audioExtractor by lazy { com.watermelon.mediatools.engine.AudioExtractor() }
+    private val audioExtractor by lazy {
+        com.watermelon.mediatools.engine.AudioExtractor(applicationContext)
+    }
     private val videoTrimmer by lazy {
         com.watermelon.mediatools.engine.VideoTrimmer(applicationContext, outputFileStore)
     }

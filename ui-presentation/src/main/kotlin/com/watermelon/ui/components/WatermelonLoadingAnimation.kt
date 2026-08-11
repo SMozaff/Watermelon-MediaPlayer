@@ -1,6 +1,7 @@
 package com.watermelon.ui.components
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -12,33 +13,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.theme.WatermelonColors
+import kotlin.math.cos
+import kotlin.math.sin
 
-/** A rotating watermelon slice: rind, cream pith, red flesh and three moving seeds. */
+/** Animated watermelon play-disc based on the product loading mark. */
 @Composable
 fun VideoLoadingAnimation(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "video-loader")
-    val angle by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(1300, easing = LinearEasing)), label = "watermelon-slice")
+    val angle by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(2100, easing = LinearEasing)), label = "seed-ring")
+    val pulse by transition.animateFloat(
+        .94f, 1.02f,
+        infiniteRepeatable(tween(820), RepeatMode.Reverse),
+        label = "watermelon-pulse"
+    )
     Canvas(modifier = modifier) {
-        val stroke = size.minDimension * .105f
         val centre = center
-        val radius = size.minDimension * .33f
-        drawCircle(WatermelonColors.Palette.DeepCarbon, radius = radius + stroke * 1.75f, center = centre)
+        val radius = size.minDimension * .37f * pulse
+        drawCircle(Color(0x22000000), radius = radius * 1.14f, center = centre)
+        drawCircle(Color(0xFF197A58), radius = radius, center = centre)
+        drawCircle(Color(0xFFB7EA83), radius = radius * .84f, center = centre)
+        drawCircle(WatermelonColors.Accent, radius = radius * .73f, center = centre)
         rotate(angle, centre) {
-            val bounds = Offset(centre.x - radius, centre.y - radius)
-            val diameter = Size(radius * 2, radius * 2)
-            drawArc(Color(0xFF1F8B68), -35f, 282f, false, bounds, diameter, style = Stroke(stroke * 1.75f, cap = StrokeCap.Round))
-            drawArc(WatermelonColors.Palette.PaperWhite, -35f, 282f, false, bounds, diameter, style = Stroke(stroke * 1.1f, cap = StrokeCap.Round))
-            drawArc(WatermelonColors.Accent, -35f, 282f, false, bounds, diameter, style = Stroke(stroke * .67f, cap = StrokeCap.Round))
-            drawCircle(Color(0xFF101614), radius = stroke * .33f, center = Offset(centre.x, centre.y - radius * .45f))
-            drawCircle(Color(0xFF101614), radius = stroke * .33f, center = Offset(centre.x - radius * .43f, centre.y + radius * .18f))
-            drawCircle(Color(0xFF101614), radius = stroke * .33f, center = Offset(centre.x + radius * .43f, centre.y + radius * .18f))
+            repeat(12) { index ->
+                val theta = Math.toRadians((index * 30.0) - 90.0)
+                val seedCentre = Offset(
+                    centre.x + cos(theta).toFloat() * radius * .54f,
+                    centre.y + sin(theta).toFloat() * radius * .54f
+                )
+                drawCircle(Color(0xFF202124), radius = radius * .062f, center = seedCentre)
+            }
+            drawArc(
+                Color(0x55FFFFFF), -145f, 88f, false,
+                Offset(centre.x - radius * .62f, centre.y - radius * .62f),
+                Size(radius * 1.24f, radius * 1.24f),
+                style = Stroke(radius * .09f, cap = StrokeCap.Round)
+            )
         }
-        drawCircle(Color(0xFF101614), radius = stroke * .48f, center = centre)
+        val playSize = radius * .36f
+        val play = Path().apply {
+            moveTo(centre.x - playSize * .46f, centre.y - playSize * .66f)
+            lineTo(centre.x + playSize * .72f, centre.y)
+            lineTo(centre.x - playSize * .46f, centre.y + playSize * .66f)
+            close()
+        }
+        drawPath(play, Color(0xFFF7FAF4))
     }
 }
 

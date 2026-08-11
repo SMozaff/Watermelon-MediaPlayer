@@ -15,12 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
-import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -70,7 +70,7 @@ fun WatermelonHeader(
             Icon(
                 painter = painterResource(R.drawable.ic_watermelon_logo),
                 contentDescription = "Watermelon MediaPlayer",
-                tint = WatermelonColors.Accent,
+                tint = Color.Unspecified,
                 modifier = Modifier
                     .size(24.dp)
                     .padding(end = WatermelonSpacing.sm)

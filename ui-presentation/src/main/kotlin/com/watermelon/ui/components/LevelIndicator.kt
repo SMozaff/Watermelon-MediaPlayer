@@ -2,7 +2,6 @@ package com.watermelon.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -10,7 +9,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -30,7 +28,7 @@ import com.watermelon.ui.theme.WatermelonSpacing
 @Composable
 fun LevelIndicator(
     fraction: Float,
-    icon: ImageVector,
+    icon: Int,
     contentDescription: String,
     modifier: Modifier = Modifier,
     isWarning: Boolean = false
@@ -43,8 +41,8 @@ fun LevelIndicator(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
     ) {
-        Icon(
-            imageVector = icon,
+        WatermelonIcon(
+            icon = icon,
             contentDescription = contentDescription,
             tint = if (isWarning) colors.warning else colors.levelIcon,
             modifier = Modifier.size(24.dp)

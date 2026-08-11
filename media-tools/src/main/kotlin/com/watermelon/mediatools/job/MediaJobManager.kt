@@ -119,6 +119,12 @@ class MediaJobManager(
                 failCleanup(id)
                 setState(id, MediaJobState.Failed(e.message ?: "Unknown error"))
                 FileLogger.e(TAG, "coroutine job failed id=$id", e)
+            } catch (e: LinkageError) {
+                // A third-party codec/encoder class failing to link must fail this job, not
+                // take down the process. Deliberately do not catch VirtualMachineError.
+                failCleanup(id)
+                setState(id, MediaJobState.Failed("Audio encoder is unavailable on this device"))
+                FileLogger.e(TAG, "coroutine job encoder linkage failed id=$id", e)
             }
         }
         return id
