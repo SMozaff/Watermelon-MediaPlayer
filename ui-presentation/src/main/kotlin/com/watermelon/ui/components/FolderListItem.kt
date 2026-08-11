@@ -171,8 +171,8 @@ fun FolderListItem(
 @Composable
 private fun FolderIcon(size: Dp, isPlaylist: Boolean) {
     if (isPlaylist) {
-        Icon(
-            imageVector = WatermelonIcons.Playlist,
+        WatermelonIcon(
+            icon = WatermelonIcons.Playlist,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(size)

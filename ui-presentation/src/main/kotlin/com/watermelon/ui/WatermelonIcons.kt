@@ -1,112 +1,61 @@
 package com.watermelon.ui
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.NewReleases
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlaylistAdd
-import androidx.compose.material.icons.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.RemoveCircleOutline
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.ViewList
-import androidx.compose.material.icons.filled.ViewModule
-import androidx.compose.material.icons.filled.VolumeDown
-import androidx.compose.material.icons.filled.VolumeMute
-import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.annotation.DrawableRes
+import com.watermelon.ui.R
 
 /**
- * Single visual language for app-owned controls.  These are all Material Icons from one
- * family and one 24dp grid; custom Android vector files previously mixed incompatible
- * geometry, viewports and stroke weights, making controls look distorted side-by-side.
+ * App-owned icons. Every entry resolves to a purpose-built 24dp VectorDrawable, so playback,
+ * library and action surfaces share the Watermelon red / rind green visual language instead of
+ * falling back to unrelated system glyphs.
  */
 object WatermelonIcons {
-    // Playback
-    val Play: ImageVector = Icons.Filled.PlayArrow
-    val Pause: ImageVector = Icons.Filled.Pause
-    val SkipNext: ImageVector = Icons.Filled.SkipNext
-    val SkipPrevious: ImageVector = Icons.Filled.SkipPrevious
-    val FastForward: ImageVector = Icons.Filled.FastForward
-    val Rewind: ImageVector = Icons.Filled.FastRewind
+    @DrawableRes val Play = R.drawable.ic_play
+    @DrawableRes val Pause = R.drawable.ic_pause
+    @DrawableRes val SkipNext = R.drawable.ic_skip_next
+    @DrawableRes val SkipPrevious = R.drawable.ic_skip_previous
+    @DrawableRes val FastForward = R.drawable.ic_fast_forward
+    @DrawableRes val Rewind = R.drawable.ic_rewind
 
-    // Volume & Audio — four distinct levels, not two glyphs shared across four names.
-    val VolumeHigh: ImageVector = Icons.Filled.VolumeUp
-    val VolumeMedium: ImageVector = Icons.Filled.VolumeDown
-    val VolumeLow: ImageVector = Icons.Filled.VolumeDown
-    val VolumeMute: ImageVector = Icons.Filled.VolumeMute
-    val VolumeMuteOff: ImageVector = Icons.Filled.VolumeUp
+    @DrawableRes val VolumeHigh = R.drawable.ic_volume_high
+    @DrawableRes val VolumeMedium = R.drawable.ic_volume_medium
+    @DrawableRes val VolumeLow = R.drawable.ic_volume_low
+    @DrawableRes val VolumeMute = R.drawable.ic_volume_mute
+    @DrawableRes val VolumeMuteOff = R.drawable.ic_volume_high
 
-    // Repeat & Shuffle — repeat-all is now its own asset, not aliased to repeat-off.
-    val RepeatOff: ImageVector = Icons.Filled.Repeat
-    val RepeatOne: ImageVector = Icons.Filled.RepeatOne
-    val RepeatAll: ImageVector = Icons.Filled.Repeat
-    val ShuffleOn: ImageVector = Icons.Filled.Shuffle
-    val ShuffleOff: ImageVector = Icons.Filled.Shuffle
+    @DrawableRes val RepeatOff = R.drawable.ic_repeat_off
+    @DrawableRes val RepeatOne = R.drawable.ic_repeat_one
+    @DrawableRes val RepeatAll = R.drawable.ic_repeat_all
+    @DrawableRes val ShuffleOn = R.drawable.ic_shuffle_on
+    @DrawableRes val ShuffleOff = R.drawable.ic_shuffle_off
 
-    // Common actions
-    val Share: ImageVector = Icons.Filled.Share
-    val Favorite: ImageVector = Icons.Filled.Favorite
-    val FavoriteBorder: ImageVector = Icons.Filled.FavoriteBorder
-    val Delete: ImageVector = Icons.Filled.Delete
-    val PlaylistAdd: ImageVector = Icons.Filled.PlaylistAdd
-    val Search: ImageVector = Icons.Filled.Search
-    val Settings: ImageVector = Icons.Filled.Settings
-    val Close: ImageVector = Icons.Filled.Close
-    val Check: ImageVector = Icons.Filled.Check
-    val CheckCircle: ImageVector = Icons.Filled.CheckCircle
-    val Edit: ImageVector = Icons.Filled.Edit
-    val Refresh: ImageVector = Icons.Filled.Refresh
-    val RemoveFromPlaylist: ImageVector = Icons.Filled.RemoveCircleOutline
-    val New: ImageVector = Icons.Filled.NewReleases
+    @DrawableRes val Share = R.drawable.ic_share
+    @DrawableRes val Favorite = R.drawable.ic_favorite
+    @DrawableRes val FavoriteBorder = R.drawable.ic_favorite_off
+    @DrawableRes val Delete = R.drawable.ic_delete
+    @DrawableRes val PlaylistAdd = R.drawable.ic_playlist_add
+    @DrawableRes val Search = R.drawable.ic_search
+    @DrawableRes val Settings = R.drawable.ic_settings
+    @DrawableRes val Close = R.drawable.ic_close
+    @DrawableRes val Check = R.drawable.ic_confirm
+    @DrawableRes val CheckCircle = R.drawable.ic_check_circle
+    @DrawableRes val Edit = R.drawable.ic_edit
+    @DrawableRes val Refresh = R.drawable.ic_refresh
+    @DrawableRes val RemoveFromPlaylist = R.drawable.ic_playlist_remove
+    @DrawableRes val New = R.drawable.ic_badge_new
 
-    // Layout & View
-    val ViewList: ImageVector = Icons.Filled.ViewList
-    val ViewGrid: ImageVector = Icons.Filled.ViewModule
-    val Sort: ImageVector = Icons.Filled.Sort
-    val Folder: ImageVector = Icons.Filled.Folder
-    val FolderOpen: ImageVector = Icons.Filled.FolderOpen
-    val Playlist: ImageVector = Icons.Filled.PlaylistPlay
-    val VideoLibrary: ImageVector = Icons.Filled.VideoLibrary
-    val Star: ImageVector = Icons.Filled.Star
-    val StarBorder: ImageVector = Icons.Filled.StarBorder
+    @DrawableRes val ViewList = R.drawable.ic_view_list
+    @DrawableRes val ViewGrid = R.drawable.ic_view_grid
+    @DrawableRes val Sort = R.drawable.ic_sort_ascending
+    @DrawableRes val Folder = R.drawable.ic_folder
+    @DrawableRes val FolderOpen = R.drawable.ic_folder_open
+    @DrawableRes val Playlist = R.drawable.ic_playlist
+    @DrawableRes val VideoLibrary = R.drawable.ic_video_file
+    @DrawableRes val Star = R.drawable.ic_star
+    @DrawableRes val StarBorder = R.drawable.ic_star_off
 
-    // Player specific
-    val ArrowBack: ImageVector = Icons.AutoMirrored.Filled.ArrowBack
-    val Lock: ImageVector = Icons.Filled.Lock
-    val LockOpen: ImageVector = Icons.Filled.LockOpen
-    val MoreVert: ImageVector = Icons.Filled.MoreVert
-    val MoreHoriz: ImageVector = Icons.Filled.MoreHoriz
-
-    // Note: highly specialized one-off icons (VHS effect, sleep timer, PiP, screenshot,
-    // badge_new, size_*, sort variants, orientation, ratio) are still referenced directly
-    // via painterResource(R.drawable.ic_*) at their call sites rather than aliased here,
-    // since they're each used in exactly one place.
+    @DrawableRes val ArrowBack = R.drawable.ic_arrow_back
+    @DrawableRes val Lock = R.drawable.ic_lock
+    @DrawableRes val LockOpen = R.drawable.ic_lock_open
+    @DrawableRes val MoreVert = R.drawable.ic_more_vertical
+    @DrawableRes val MoreHoriz = R.drawable.ic_more_horizontal
 }

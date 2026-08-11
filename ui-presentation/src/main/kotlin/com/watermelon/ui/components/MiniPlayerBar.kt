@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -120,35 +121,35 @@ fun MiniPlayerBar(
                 )
 
                 IconButton(onClick = onPrevious, enabled = hasPrevious) {
-                    Icon(
-                        Icons.Filled.SkipPrevious,
+                    WatermelonIcon(
+                        WatermelonIcons.SkipPrevious,
                         contentDescription = "Previous",
                         tint = if (hasPrevious) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
                 IconButton(onClick = onPlayPause) {
-                    Icon(
-                        if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    WatermelonIcon(
+                        if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
                         contentDescription = if (isPlaying) "Pause" else "Play"
                     )
                 }
                 IconButton(onClick = onNext, enabled = hasNext) {
-                    Icon(
-                        Icons.Filled.SkipNext,
+                    WatermelonIcon(
+                        WatermelonIcons.SkipNext,
                         contentDescription = "Next",
                         tint = if (hasNext) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
                 IconButton(onClick = onMuteToggle) {
-                    Icon(
-                        if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                    WatermelonIcon(
+                        if (isMuted) WatermelonIcons.VolumeHigh else WatermelonIcons.VolumeMute,
                         contentDescription = if (isMuted) "Unmute" else "Mute"
                     )
                 }
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                    WatermelonIcon(WatermelonIcons.Close, contentDescription = "Close")
                 }
             }
 

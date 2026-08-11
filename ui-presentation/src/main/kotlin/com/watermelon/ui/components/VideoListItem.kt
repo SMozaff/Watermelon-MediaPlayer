@@ -126,8 +126,8 @@ fun VideoListItem(
                                 .padding(WatermelonSpacing.xs)
                                 .size(32.dp)
                         ) {
-                            Icon(
-                                imageVector = WatermelonIcons.MoreVert,
+                            WatermelonIcon(
+                                icon = WatermelonIcons.MoreVert,
                                 contentDescription = "More options",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -189,8 +189,8 @@ fun VideoListItem(
                                 .align(Alignment.Center)
                                 .size(48.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.Play,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.Play,
                             contentDescription = "Play",
                             tint = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.8f)
                         )
@@ -243,8 +243,8 @@ fun VideoListItem(
                         onClick = { showMenu = true },
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.MoreVert,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.MoreVert,
                             contentDescription = "More options",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )

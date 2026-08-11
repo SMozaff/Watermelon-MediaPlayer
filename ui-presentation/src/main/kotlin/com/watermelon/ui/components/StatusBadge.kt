@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,14 +96,14 @@ object StatusBadge {
 
     @Composable
     private fun IconBadge(
-        icon: androidx.compose.ui.graphics.vector.ImageVector,
+        icon: Int,
         contentDescription: String,
         tint: Color,
         compact: Boolean,
         modifier: Modifier = Modifier
     ) {
-        Icon(
-            imageVector = icon,
+        WatermelonIcon(
+            icon = icon,
             contentDescription = contentDescription,
             tint = tint,
             modifier = modifier.size(if (compact) 12.dp else 14.dp)

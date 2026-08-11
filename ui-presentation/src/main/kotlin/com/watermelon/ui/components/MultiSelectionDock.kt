@@ -86,8 +86,8 @@ fun MultiSelectionDock(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    Icon(
-                        imageVector = WatermelonIcons.CheckCircle,
+                    WatermelonIcon(
+                        icon = WatermelonIcons.CheckCircle,
                         contentDescription = "Selected",
                         tint = WatermelonColors.Accent,
                         modifier = Modifier.size(20.dp)
@@ -111,8 +111,8 @@ fun MultiSelectionDock(
                         onClick = onDeselectAll,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.Close,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.Close,
                             contentDescription = "Deselect all",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -125,8 +125,8 @@ fun MultiSelectionDock(
                         onClick = onAddToPlaylist,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.PlaylistAdd,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.PlaylistAdd,
                             contentDescription = "Add to playlist",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -138,8 +138,8 @@ fun MultiSelectionDock(
                             onClick = onRemoveFromPlaylist,
                             modifier = Modifier.size(40.dp)
                         ) {
-                            Icon(
-                                imageVector = WatermelonIcons.RemoveFromPlaylist,
+                            WatermelonIcon(
+                                icon = WatermelonIcons.RemoveFromPlaylist,
                                 contentDescription = "Remove from this playlist",
                                 tint = WatermelonColors.DarkOnSurface
                             )
@@ -153,8 +153,8 @@ fun MultiSelectionDock(
                         onClick = onShare,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.Share,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.Share,
                             contentDescription = "Share",
                             tint = WatermelonColors.DarkOnSurface
                         )
@@ -167,8 +167,8 @@ fun MultiSelectionDock(
                         onClick = onDelete,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = WatermelonIcons.Delete,
+                        WatermelonIcon(
+                            icon = WatermelonIcons.Delete,
                             contentDescription = "Delete",
                             tint = WatermelonColors.Error
                         )

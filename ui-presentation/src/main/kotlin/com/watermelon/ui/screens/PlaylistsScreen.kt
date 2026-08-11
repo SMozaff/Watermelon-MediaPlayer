@@ -36,6 +36,7 @@ import com.watermelon.common.model.PlaylistType
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.WatermelonIcon
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -89,8 +90,8 @@ fun PlaylistsScreen(
                 .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = WatermelonIcons.PlaylistAdd,
+            WatermelonIcon(
+                icon = WatermelonIcons.PlaylistAdd,
                 contentDescription = null,
                 tint = WatermelonColors.Accent,
                 modifier = Modifier.size(20.dp)
@@ -149,8 +150,8 @@ fun PlaylistsScreen(
                             // is easy to miss as a discoverable affordance.
                             if (isUserPlaylist) {
                                 IconButton(onClick = { menuTarget = playlist }) {
-                                    Icon(
-                                        imageVector = WatermelonIcons.MoreVert,
+                                    WatermelonIcon(
+                                        icon = WatermelonIcons.MoreVert,
                                         contentDescription = "Playlist options",
                                         tint = WatermelonColors.DarkOnSurfaceVariant
                                     )

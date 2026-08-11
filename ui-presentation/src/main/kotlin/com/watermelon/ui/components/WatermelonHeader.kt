@@ -52,8 +52,8 @@ fun WatermelonHeader(
                 onClick = onBackClick,
                 modifier = Modifier.size(48.dp)
             ) {
-                Icon(
-                    imageVector = WatermelonIcons.ArrowBack,
+                WatermelonIcon(
+                    icon = WatermelonIcons.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -92,8 +92,8 @@ fun WatermelonHeader(
                     onClick = onSettingsClick,
                     modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(
-                        imageVector = WatermelonIcons.Settings,
+                    WatermelonIcon(
+                        icon = WatermelonIcons.Settings,
                         contentDescription = "Settings",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -104,8 +104,8 @@ fun WatermelonHeader(
                     onClick = onMenuClick,
                     modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(
-                        imageVector = WatermelonIcons.MoreVert,
+                    WatermelonIcon(
+                        icon = WatermelonIcons.MoreVert,
                         contentDescription = "Menu",
                         tint = MaterialTheme.colorScheme.onSurface
                     )

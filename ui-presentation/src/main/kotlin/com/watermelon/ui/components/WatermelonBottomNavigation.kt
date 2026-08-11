@@ -18,7 +18,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonTypography
@@ -29,8 +28,8 @@ import com.watermelon.ui.theme.WatermelonTypography
  */
 enum class BottomNavItem(
     val route: String,
-    val icon: ImageVector,
-    val selectedIcon: ImageVector,
+    val icon: Int,
+    val selectedIcon: Int,
     val label: String
 ) {
     FOLDERS(
@@ -102,8 +101,8 @@ fun WatermelonBottomNavigation(
                     }
                 },
                 icon = {
-                    Icon(
-                        imageVector = if (selected) item.selectedIcon else item.icon,
+                    WatermelonIcon(
+                        icon = if (selected) item.selectedIcon else item.icon,
                         contentDescription = item.label,
                         tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
