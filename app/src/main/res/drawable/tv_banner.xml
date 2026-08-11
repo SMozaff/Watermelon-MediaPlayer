@@ -1,30 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-    Android TV banner (required size: 320x180dp — a 16:9 aspect, NOT the square launcher icon).
-    The manifest previously pointed android:banner at @mipmap/ic_launcher, which is a square
-    adaptive icon; Android TV would either reject it or badly stretch/crop it in the launcher
-    row. This is a minimal placeholder built from the app's own brand tokens (Deep Carbon
-    background, Watermelon Red wordmark bar) so the manifest reference is at least correctly
-    shaped and on-brand until a designed banner asset replaces it.
--->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="320dp"
-    android:height="180dp"
-    android:viewportWidth="320"
-    android:viewportHeight="180">
-
-    <!-- Deep Carbon background — matches WatermelonColors.Palette.DeepCarbon -->
-    <path
-        android:pathData="M0,0h320v180h-320z"
-        android:fillColor="#0D0D0D" />
-
-    <!-- Watermelon Red accent bar — matches WatermelonColors.Palette.WatermelonRed -->
-    <path
-        android:pathData="M0,150h320v30h-320z"
-        android:fillColor="#E63946" />
-
-    <!-- Simple wordmark mark: a rounded "W" glyph substitute (two triangles) in Paper White -->
-    <path
-        android:pathData="M110,60 L130,120 L145,80 L160,120 L180,60 L168,60 L155,98 L145,70 L135,98 L122,60 Z"
-        android:fillColor="#F1FAEE" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="320dp" android:height="180dp" android:viewportWidth="320" android:viewportHeight="180">
+    <path android:fillColor="#0D0D0D" android:pathData="M0,0h320v180H0z"/>
+    <path android:fillColor="#1F8B68" android:pathData="M38,55c0,-8 7,-15 15,-15h48l14,14h55c8,0 15,7 15,15v55c0,8 -7,15 -15,15H53c-8,0 -15,-7 -15,-15z"/>
+    <path android:fillColor="#F1FAEE" android:pathData="M52,92h119v29H52z"/>
+    <path android:fillColor="#E63946" android:pathData="M56,91h111v26H56z"/>
+    <path android:fillColor="#101614" android:pathData="M82,98h8v12h-8zM109,96h8v12h-8zM137,98h8v12h-8z"/>
+    <path android:fillColor="#F1FAEE" android:pathData="M205,68h12l10,33l10,-22l10,22l10,-33h12l-18,58h-9l-15,-29l-15,29h-9z"/>
+    <path android:fillColor="#E63946" android:pathData="M205,126h66v5h-66z"/>
 </vector>
