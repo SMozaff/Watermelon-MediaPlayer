@@ -42,6 +42,7 @@ import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.FolderListItem
 import com.watermelon.ui.components.LabeledIconButton
 import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.FolderLoadingAnimation
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -183,11 +184,11 @@ fun FolderBrowserScreen(
 
         if (rows.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    "No media folders found",
-                    style = WatermelonTypography.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)) {
+                    FolderLoadingAnimation(Modifier.size(112.dp))
+                    Text("Scanning your media library", style = WatermelonTypography.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Folders will appear as indexing finishes", style = WatermelonTypography.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             return@Column
         }

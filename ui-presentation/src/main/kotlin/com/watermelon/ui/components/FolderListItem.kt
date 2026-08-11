@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import androidx.compose.runtime.Composable
@@ -168,11 +170,19 @@ fun FolderListItem(
 
 @Composable
 private fun FolderIcon(size: Dp, isPlaylist: Boolean) {
-    val icon = if (isPlaylist) WatermelonIcons.Playlist else WatermelonIcons.Folder
+    if (isPlaylist) {
+        Icon(
+            imageVector = WatermelonIcons.Playlist,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(size)
+        )
+        return
+    }
     Icon(
-        imageVector        = icon,
+        painter            = painterResource(R.drawable.ic_folder),
         contentDescription = null,
-        tint               = MaterialTheme.colorScheme.primary,
+        tint               = Color.Unspecified,
         modifier          = Modifier.size(size)
     )
 }
