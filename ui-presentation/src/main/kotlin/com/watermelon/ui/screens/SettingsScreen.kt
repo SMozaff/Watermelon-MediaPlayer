@@ -1,6 +1,8 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,20 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,11 +33,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.WatermelonIcon
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -99,17 +106,17 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(WatermelonSpacing.md))
-
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = WatermelonSpacing.md
+                horizontal = WatermelonSpacing.md,
+                vertical = WatermelonSpacing.md
             ),
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
         ) {
+            item { SettingsIntro() }
             item {
-                SettingsGroup(title = "APPEARANCE") {
+                SettingsGroup(title = "Appearance", summary = "Theme and reading direction") {
                     ToggleRow(
                         label = "Pure dark theme",
                         checked = state.pureDark
@@ -123,7 +130,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "VIEW DEFAULTS") {
+                SettingsGroup(title = "Library & browsing", summary = "How your media library is displayed") {
                     ToggleRow(
                         label = "Grid layout by default",
                         checked = state.gridDefault
@@ -147,7 +154,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "LIBRARY") {
+                SettingsGroup(title = "Continue watching", summary = "Resume and playlist behaviour") {
                     ToggleRow(
                         label = "Continue Watching playlist",
                         checked = state.continueWatchingEnabled
@@ -156,7 +163,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "MEDIA TOOLS") {
+                SettingsGroup(title = "Media tools", summary = "Export destinations and premium tools") {
                     ToggleRow(
                         label = "Premium unlocked (placeholder -- no purchase flow yet)",
                         checked = state.isPremiumUnlocked
@@ -196,7 +203,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "PLAYER") {
+                SettingsGroup(title = "Player", summary = "Playback controls and retro effects") {
                     ToggleRow(
                         label = "Burst screenshot (9 frames)",
                         checked = state.screenshotMode == ScreenshotMode.BURST
@@ -247,7 +254,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "SUBTITLES") {
+                SettingsGroup(title = "Subtitles", summary = "Text style and reading direction") {
                     val st = state.subtitleStyle
                     fun up(new: com.watermelon.common.model.SubtitleStyle) {
                         onStateChange(state.copy(subtitleStyle = new))
@@ -311,7 +318,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "SYSTEM") {
+                SettingsGroup(title = "Advanced", summary = "Storage access and performance safeguards") {
                     ToggleRow(
                         label = "Memory-safety (force Tier B)",
                         checked = state.memorySafety
@@ -334,24 +341,60 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+private fun SettingsIntro() {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = WatermelonColors.Accent,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(WatermelonSpacing.lg)) {
+            Text(
+                text = "Make Watermelon yours",
+                style = WatermelonTypography.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = WatermelonColors.Palette.PaperWhite
+            )
+            Text(
+                text = "Tune playback, subtitles, library browsing and exports from one place.",
+                style = WatermelonTypography.typography.bodyMedium,
+                color = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.84f),
+                modifier = Modifier.padding(top = WatermelonSpacing.xs)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsGroup(
+    title: String,
+    summary: String,
+    content: @Composable () -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)) {
         Text(
             text = title,
-            color = WatermelonColors.Accent,
-            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = WatermelonSpacing.xs)
         )
+        Text(
+            text = summary,
+            style = WatermelonTypography.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = WatermelonSpacing.xs)
+        )
         Surface(
-            shape = WatermelonShapes.control,
-            color = WatermelonColors.DarkSurface,
-            modifier = Modifier.fillMaxWidth()
+            shape = RoundedCornerShape(18.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
         ) {
             Column(
                 modifier = Modifier.padding(
                     horizontal = WatermelonSpacing.md,
-                    vertical = WatermelonSpacing.xs
+                    vertical = WatermelonSpacing.xs / 2
                 )
             ) {
                 content()
@@ -369,29 +412,30 @@ private fun ToggleRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
             .toggleable(
                 value = checked,
                 onValueChange = onChange,
                 role = Role.Switch
             )
-            .padding(vertical = WatermelonSpacing.sm),
+            .padding(vertical = WatermelonSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
             style = WatermelonTypography.typography.bodyLarge,
-            color = WatermelonColors.DarkOnSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f).padding(end = WatermelonSpacing.md)
         )
         Switch(
             checked = checked,
             onCheckedChange = null,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = WatermelonColors.Accent,
-                checkedTrackColor = WatermelonColors.Accent.copy(alpha = 0.5f),
-                uncheckedThumbColor = WatermelonColors.DarkOnSurfaceVariant,
-                uncheckedTrackColor = WatermelonColors.DarkSurface
+                checkedThumbColor = WatermelonColors.Palette.PaperWhite,
+                checkedTrackColor = WatermelonColors.Accent,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         )
     }
@@ -408,19 +452,22 @@ private fun TextFieldRow(
         Text(
             text = label,
             style = WatermelonTypography.typography.bodyLarge,
-            color = WatermelonColors.DarkOnSurface
+            color = MaterialTheme.colorScheme.onSurface
         )
-        androidx.compose.material3.TextField(
+        OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = WatermelonSpacing.xs),
+            shape = RoundedCornerShape(12.dp)
         )
         if (supportingText != null) {
             Text(
                 text = supportingText,
                 style = WatermelonTypography.typography.bodySmall,
-                color = WatermelonColors.DarkOnSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = WatermelonSpacing.xs)
             )
         }
@@ -439,27 +486,31 @@ private fun DropdownNavRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .defaultMinSize(minHeight = 56.dp)
                 .clickable(role = Role.Button) { expanded = true }
-                .padding(vertical = WatermelonSpacing.sm),
+                .padding(vertical = WatermelonSpacing.xs),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = label,
                 style = WatermelonTypography.typography.bodyLarge,
-                color = WatermelonColors.DarkOnSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = value,
                     style = WatermelonTypography.typography.bodyMedium,
-                    color = WatermelonColors.DarkOnSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Icon(
-                    Icons.Filled.ArrowDropDown,
+                WatermelonIcon(
+                    icon = R.drawable.ic_arrow_back,
                     contentDescription = null,
-                    tint = WatermelonColors.DarkOnSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(start = WatermelonSpacing.xs)
+                        .graphicsLayer(rotationZ = -90f)
                 )
             }
         }
@@ -470,7 +521,7 @@ private fun DropdownNavRow(
                         Text(
                             text = option,
                             style = WatermelonTypography.typography.bodyMedium,
-                            color = WatermelonColors.DarkOnSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     },
                     onClick = {
@@ -492,22 +543,33 @@ private fun NavRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
             .clickable(onClick = onClick)
-            .padding(vertical = WatermelonSpacing.sm),
+            .padding(vertical = WatermelonSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
             style = WatermelonTypography.typography.bodyLarge,
-            color = WatermelonColors.DarkOnSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = "$value >",
-            style = WatermelonTypography.typography.bodyMedium,
-            color = WatermelonColors.DarkOnSurfaceVariant
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = value,
+                style = WatermelonTypography.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            WatermelonIcon(
+                icon = R.drawable.ic_arrow_back,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(start = WatermelonSpacing.xs)
+                    .graphicsLayer(rotationZ = 180f)
+            )
+        }
     }
 }
 
@@ -521,6 +583,7 @@ private fun StepperRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
             .padding(vertical = WatermelonSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -528,27 +591,28 @@ private fun StepperRow(
         Text(
             text = label,
             style = WatermelonTypography.typography.bodyLarge,
-            color = WatermelonColors.DarkOnSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onMinus) {
+            TextButton(onClick = onMinus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
                 Text(
                     text = "-",
                     fontSize = 20.sp,
-                    color = WatermelonColors.DarkOnSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
                 text = value,
                 style = WatermelonTypography.typography.bodyMedium,
-                color = WatermelonColors.DarkOnSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = WatermelonSpacing.sm)
             )
-            TextButton(onClick = onPlus) {
+            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
                 Text(
                     text = "+",
                     fontSize = 20.sp,
-                    color = WatermelonColors.DarkOnSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
