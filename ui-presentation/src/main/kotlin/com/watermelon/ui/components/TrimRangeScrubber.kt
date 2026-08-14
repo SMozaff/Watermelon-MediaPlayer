@@ -96,7 +96,7 @@ fun TrimRangeScrubber(
                 .semantics {
                     contentDescription = "Trim range, start ${formatMs(startMs)}, end ${formatMs(endMs)}"
                 }
-                .pointerInput(durationMs, keyframeTimestampsMs) {
+                .pointerInput(durationMs, startMs, endMs, keyframeTimestampsMs) {
                     detectHorizontalDragGestures(
                         onDragStart = { offset ->
                             val usableW = size.width - 2 * handleRadius.toPx()

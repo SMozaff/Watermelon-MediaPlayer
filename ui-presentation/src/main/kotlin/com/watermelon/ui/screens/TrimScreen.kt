@@ -85,6 +85,7 @@ fun TrimScreen(
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val jobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
     val activeJob: MediaJob? = jobs.find { it.id == activeJobId }
+    val hasSelectedCut = startMs > 0L || endMs < durationMs
 
     // Auto-pause at endMs while previewing the selected range -- same seek/play/pause
     // mechanism PhonePlayerScreen already uses, just driven from this screen's own state.
@@ -133,7 +134,7 @@ fun TrimScreen(
                 // not a re-plumbing job.
                 activeJobId = trimViewModel.startTrim(inputUri, originalDisplayName, startMs, endMs)
             },
-            enabled = (endMs - startMs) >= MIN_TRIM_RANGE_MS,
+            enabled = hasSelectedCut && (endMs - startMs) >= MIN_TRIM_RANGE_MS,
             shape = WatermelonShapes.control,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,

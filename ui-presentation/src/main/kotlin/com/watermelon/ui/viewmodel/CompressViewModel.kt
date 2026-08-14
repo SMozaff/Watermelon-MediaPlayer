@@ -15,4 +15,8 @@ class CompressViewModel(
     fun startCompress(inputUri: Uri, originalDisplayName: String, preset: VideoCompressor.Preset): String {
         return compressor.compress(jobManager, inputUri, preset, originalDisplayName)
     }
+
+    fun startTargetSizeCompress(inputUri: Uri, originalDisplayName: String, targetSizeMb: Int): String {
+        return compressor.compressToTargetSize(jobManager, inputUri, targetSizeMb, originalDisplayName)
+    }
 }

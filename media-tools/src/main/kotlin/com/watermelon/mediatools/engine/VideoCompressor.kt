@@ -55,13 +55,10 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
     /**
      * Four tiers per product spec, distinct in *how* they shrink the file, not just how
      * much:
-     * - HIGH_QUALITY: resolution downscale only (1080p -> 720p), bitrate stays high/near-
-     *   original -- "smaller size with the same quality bitrate."
-     * - MEDIUM: moderate downscale (720p) + moderate bitrate cut -- balanced size/quality.
-     * - SMALL: more aggressive downscale (480p) + lower bitrate -- noticeably lower quality
-     *   for a meaningfully smaller file.
-     * - TINY: WhatsApp-style aggressive compression (480p, very low bitrate) -- prioritizes
-     *   file size above all, still watchable but visibly compressed.
+     * - BEST_QUALITY: gentle compression, never above 1080p.
+     * - BALANCED: everyday 720p output.
+     * - SMALL_FILE: aggressive 480p output for storage saving.
+     * - SHARE_READY: very small 480p output for messaging/upload.
      *
      * Bitrate ranges are grounded in general H.264 VOD guidance (e.g. ~4-6 Mbps for good-
      * quality 720p, ~1-2 Mbps for acceptable 480p — checked via web search this session,
@@ -71,21 +68,93 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
      */
     enum class Preset(
         val label: String,
+        val description: String,
         val targetShortSidePx: Int,
         val videoBitrateBps: Int,
         val audioBitrateBps: Int,
     ) {
-        HIGH_QUALITY("High Quality", 720, 6_000_000, 192_000),
-        MEDIUM("Medium", 720, 2_500_000, 128_000),
-        SMALL("Small", 480, 1_000_000, 96_000),
-        TINY("Tiny", 480, 400_000, 64_000),
+        BEST_QUALITY("Best Quality", "Gentle compression, keeps detail when the source is already good.", 1080, 6_000_000, 192_000),
+        BALANCED("Balanced", "Good everyday size reduction without making the file look cheap.", 720, 2_500_000, 128_000),
+        SMALL_FILE("Small File", "Aggressive 480p compression for storage saving.", 480, 1_000_000, 96_000),
+        SHARE_READY("Share Ready", "Very small output for quick messaging and upload.", 480, 550_000, 64_000),
     }
+
+    private data class SourceInfo(
+        val shortSidePx: Int?,
+        val durationMs: Long?,
+        val sizeBytes: Long?,
+    )
+
+    private data class CompressionPlan(
+        val targetShortSidePx: Int,
+        val videoBitrateBps: Int,
+        val audioBitrateBps: Int,
+        val targetSizeBytes: Long? = null,
+    )
 
     fun compress(
         jobManager: MediaJobManager,
         inputUri: Uri,
         preset: Preset,
         originalDisplayName: String,
+    ): String {
+        val sourceInfo = readSourceInfo(inputUri)
+        val plan = CompressionPlan(
+            targetShortSidePx = preset.targetShortSidePx,
+            videoBitrateBps = preset.videoBitrateBps,
+            audioBitrateBps = preset.audioBitrateBps,
+        )
+        return compressWithPlan(jobManager, inputUri, plan, originalDisplayName, sourceInfo)
+    }
+
+    fun compressToTargetSize(
+        jobManager: MediaJobManager,
+        inputUri: Uri,
+        targetSizeMb: Int,
+        originalDisplayName: String,
+    ): String {
+        require(targetSizeMb > 0) { "targetSizeMb must be positive" }
+
+        val sourceInfo = readSourceInfo(inputUri)
+        val targetSizeBytes = targetSizeMb * 1024L * 1024L
+        val durationMs = sourceInfo.durationMs ?: run {
+            FileLogger.e(TAG, "duration unknown for target-size compression; using conservative small-file plan")
+            val fallbackPlan = CompressionPlan(
+                targetShortSidePx = 480,
+                videoBitrateBps = 1_000_000,
+                audioBitrateBps = 96_000,
+            )
+            return compressWithPlan(jobManager, inputUri, fallbackPlan, originalDisplayName, sourceInfo)
+        }
+        val audioBitrateBps = when {
+            targetSizeMb <= 12 -> 64_000
+            targetSizeMb <= 50 -> 96_000
+            else -> 128_000
+        }
+        val totalBitrateBps = ((targetSizeBytes * 8_000L) / durationMs).toInt()
+        val videoBitrateBps = (totalBitrateBps - audioBitrateBps).coerceAtLeast(250_000)
+        val targetShortSidePx = when {
+            videoBitrateBps >= 4_000_000 -> 1080
+            videoBitrateBps >= 1_500_000 -> 720
+            videoBitrateBps >= 600_000 -> 480
+            else -> 360
+        }
+
+        val plan = CompressionPlan(
+            targetShortSidePx = targetShortSidePx,
+            videoBitrateBps = videoBitrateBps,
+            audioBitrateBps = audioBitrateBps,
+            targetSizeBytes = targetSizeBytes,
+        )
+        return compressWithPlan(jobManager, inputUri, plan, originalDisplayName, sourceInfo)
+    }
+
+    private fun compressWithPlan(
+        jobManager: MediaJobManager,
+        inputUri: Uri,
+        plan: CompressionPlan,
+        originalDisplayName: String,
+        sourceInfo: SourceInfo,
     ): String {
         val outputName = OutputNaming.compressedName(originalDisplayName)
         val outputPath = outputFileStore.stagingPathFor(MediaJobType.COMPRESS, outputName)
@@ -96,7 +165,7 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
         // source that was already near-minimal bitrate. Source size is captured here, before
         // the job starts, and compared against the real output size in
         // MediaJobManager.onCompleted via exportResult.fileSizeBytes -- see that method.
-        val sourceSizeBytes = queryFileSizeBytes(inputUri)
+        val sourceSizeBytes = sourceInfo.sizeBytes
 
         val mediaItem = MediaItem.fromUri(inputUri)
 
@@ -110,10 +179,10 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
         // only apply the resolution effect if the source is genuinely larger than the
         // preset's target. If the source is already <= target, skip the resolution effect
         // entirely (bitrate/audio settings still apply as normal) -- per product decision.
-        val sourceShortSide = detectShortSidePx(inputUri)
+        val sourceShortSide = sourceInfo.shortSidePx
         val videoEffects: List<Effect> = when {
-            sourceShortSide != null && sourceShortSide <= preset.targetShortSidePx -> {
-                FileLogger.i(TAG, "source shortSide=$sourceShortSide <= preset target=${preset.targetShortSidePx}, skipping resolution effect")
+            sourceShortSide != null && sourceShortSide <= plan.targetShortSidePx -> {
+                FileLogger.i(TAG, "source shortSide=$sourceShortSide <= target=${plan.targetShortSidePx}, skipping resolution effect")
                 emptyList()
             }
             sourceShortSide == null -> {
@@ -124,9 +193,9 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
                 // practice, flipping to fail-safe (skip the effect when unknown) is a
                 // one-line change here.
                 FileLogger.e(TAG, "source resolution unknown, applying resolution effect anyway (may upscale in rare cases)")
-                listOf(Presentation.createForShortSide(preset.targetShortSidePx))
+                listOf(Presentation.createForShortSide(plan.targetShortSidePx))
             }
-            else -> listOf(Presentation.createForShortSide(preset.targetShortSidePx))
+            else -> listOf(Presentation.createForShortSide(plan.targetShortSidePx))
         }
 
         val editedMediaItem = EditedMediaItem.Builder(mediaItem)
@@ -144,12 +213,12 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
         val encoderFactory = DefaultEncoderFactory.Builder(context)
             .setRequestedVideoEncoderSettings(
                 VideoEncoderSettings.Builder()
-                    .setBitrate(preset.videoBitrateBps)
+                    .setBitrate(plan.videoBitrateBps)
                     .build()
             )
             .setRequestedAudioEncoderSettings(
                 AudioEncoderSettings.Builder()
-                    .setBitrate(preset.audioBitrateBps)
+                    .setBitrate(plan.audioBitrateBps)
                     .build()
             )
             .setEnableFallback(false)
@@ -187,9 +256,17 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
             outputPath,
             transformer,
             sourceSizeBytes = sourceSizeBytes,
+            targetSizeBytes = plan.targetSizeBytes,
         )
         transformer.start(editedMediaItem, outputPath)
         return jobId
+    }
+
+    fun estimateTargetSizeBytes(inputUri: Uri, preset: Preset): Long? {
+        val sourceInfo = readSourceInfo(inputUri)
+        val durationMs = sourceInfo.durationMs ?: return null
+        val estimated = ((preset.videoBitrateBps + preset.audioBitrateBps) * durationMs) / 8_000L
+        return sourceInfo.sizeBytes?.let { minOf(estimated, it) } ?: estimated
     }
 
     /**
@@ -213,6 +290,26 @@ class VideoCompressor(private val context: Context, private val outputFileStore:
         } catch (e: Exception) {
             FileLogger.e(TAG, "queryFileSizeBytes failed for $uri", e)
             null
+        }
+    }
+
+    private fun readSourceInfo(uri: Uri): SourceInfo {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(context, uri)
+            val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull()
+            val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull()
+            val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            SourceInfo(
+                shortSidePx = if (width != null && height != null) minOf(width, height) else null,
+                durationMs = durationMs,
+                sizeBytes = queryFileSizeBytes(uri),
+            )
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "readSourceInfo failed for $uri", e)
+            SourceInfo(shortSidePx = null, durationMs = null, sizeBytes = queryFileSizeBytes(uri))
+        } finally {
+            retriever.release()
         }
     }
 

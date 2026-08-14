@@ -51,6 +51,7 @@ fun KeepOrDeleteOriginalDialog(
     onKeepOriginal: () -> Unit,
     onDeleteOriginal: () -> Unit,
     actualTrimRangeMs: Pair<Long, Long>? = null,
+    compressionSizeBytes: Pair<Long, Long>? = null,
 ) {
     val actionWord = if (isTrim) "trimmed" else "compressed"
 
@@ -87,6 +88,18 @@ fun KeepOrDeleteOriginalDialog(
                     Text(
                         "Actual trimmed range: ${formatMsForDialog(actualStart)} – ${formatMsForDialog(actualEnd)} " +
                             "(cut points snap to the nearest keyframe, so this may differ slightly from your selection)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (!isTrim && compressionSizeBytes != null) {
+                    val (originalSize, compressedSize) = compressionSizeBytes
+                    val savedPercent = if (originalSize > 0L) {
+                        (((originalSize - compressedSize).coerceAtLeast(0L) * 100L) / originalSize).toInt()
+                    } else 0
+                    Text(
+                        "Original ${formatBytes(originalSize)} → compressed ${formatBytes(compressedSize)} · saved $savedPercent%",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -139,4 +152,13 @@ private fun formatMsForDialog(ms: Long): String {
     val m = (totalSec % 3600) / 60
     val s = totalSec % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+}
+
+private fun formatBytes(bytes: Long): String {
+    val mb = bytes / (1024.0 * 1024.0)
+    return if (mb >= 100) {
+        "${mb.toInt()} MB"
+    } else {
+        "%.1f MB".format(mb)
+    }
 }

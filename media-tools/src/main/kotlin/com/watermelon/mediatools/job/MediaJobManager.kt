@@ -72,11 +72,25 @@ class MediaJobManager(
         outputPath: String,
         transformer: Transformer,
         requestedStartMs: Long? = null,
+        requestedEndMs: Long? = null,
         sourceSizeBytes: Long? = null,
+        targetSizeBytes: Long? = null,
     ): String {
         val id = UUID.randomUUID().toString()
         transformers[id] = transformer
-        _jobs.update { it + MediaJob(id, type, inputUri, outputPath, MediaJobState.Queued, requestedStartMs = requestedStartMs, sourceSizeBytes = sourceSizeBytes) }
+        _jobs.update {
+            it + MediaJob(
+                id = id,
+                type = type,
+                inputUri = inputUri,
+                outputPath = outputPath,
+                state = MediaJobState.Queued,
+                requestedStartMs = requestedStartMs,
+                requestedEndMs = requestedEndMs,
+                sourceSizeBytes = sourceSizeBytes,
+                targetSizeBytes = targetSizeBytes,
+            )
+        }
         setState(id, MediaJobState.Running)
         pollProgress(id, transformer)
         startJobServiceIfNeeded()
@@ -146,11 +160,40 @@ class MediaJobManager(
                 readActualTrimRange(job.outputPath, job.requestedStartMs)
             } else null
 
+        if (job.type == MediaJobType.TRIM && job.requestedStartMs != null && job.requestedEndMs != null) {
+            val requestedDurationMs = (job.requestedEndMs - job.requestedStartMs).coerceAtLeast(0L)
+            val actualDurationMs = actualTrimRangeMs?.let { (actualStart, actualEnd) ->
+                (actualEnd - actualStart).coerceAtLeast(0L)
+            }
+
+            // A successful trim should be close to the selected range. Allow one generous GOP
+            // worth of keyframe drift, but never publish a full-length/unclipped copy as
+            // "trimmed"; that is the user-visible bug this guard prevents.
+            val maxExpectedDurationMs = requestedDurationMs + 5_000L
+            if (actualDurationMs == null || actualDurationMs > maxExpectedDurationMs) {
+                failCleanup(id)
+                setState(
+                    id,
+                    MediaJobState.Failed(
+                        "Trim export did not produce the selected range. Nothing was saved; " +
+                            "please try a shorter range or a different video file."
+                    )
+                )
+                FileLogger.e(
+                    TAG,
+                    "trim rejected id=$id requested=${job.requestedStartMs}-${job.requestedEndMs} " +
+                        "requestedDurationMs=$requestedDurationMs actualDurationMs=$actualDurationMs"
+                )
+                return
+            }
+        }
+
+        val outputSizeBytes = if (job.type == MediaJobType.COMPRESS) File(job.outputPath).length() else null
         val displayName = File(job.outputPath).name
         val publishedUri = outputFileStore.publish(job.type, job.outputPath, displayName)
         if (publishedUri != null) {
             val awaitingDecision = job.type == MediaJobType.TRIM || job.type == MediaJobType.COMPRESS
-            setState(id, MediaJobState.Completed(publishedUri.toString(), awaitingDecision, actualTrimRangeMs))
+            setState(id, MediaJobState.Completed(publishedUri.toString(), awaitingDecision, actualTrimRangeMs, outputSizeBytes))
             FileLogger.i(TAG, "job completed id=$id uri=$publishedUri awaitingDecision=$awaitingDecision actualTrimRangeMs=$actualTrimRangeMs")
         } else {
             setState(id, MediaJobState.Failed("Job finished but publishing the output file failed"))
@@ -258,6 +301,26 @@ class MediaJobManager(
             FileLogger.e(
                 TAG,
                 "job id=$id rejected: compressed size=${exportResult.fileSizeBytes} >= source size=$sourceSizeBytes"
+            )
+            transformers.remove(id)
+            return
+        }
+
+        val targetSizeBytes = job?.targetSizeBytes
+        if (job?.type == MediaJobType.COMPRESS && targetSizeBytes != null &&
+            exportResult.fileSizeBytes > (targetSizeBytes * 1.05).toLong()
+        ) {
+            failCleanup(id)
+            setState(
+                id,
+                MediaJobState.Failed(
+                    "Compression finished above the requested target size. Try a smaller " +
+                        "target only if lower quality is acceptable."
+                )
+            )
+            FileLogger.e(
+                TAG,
+                "job id=$id rejected: compressed size=${exportResult.fileSizeBytes} > target=$targetSizeBytes"
             )
             transformers.remove(id)
             return

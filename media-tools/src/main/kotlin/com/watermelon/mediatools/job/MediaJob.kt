@@ -6,14 +6,18 @@ package com.watermelon.mediatools.job
  * [progressPercent] comes from polling `Transformer.getProgress()` on a timer while
  * [state] is [MediaJobState.Running] — Transformer has no push-based progress stream.
  *
- * [requestedStartMs]: TRIM-only, null for other job types. The start time the user actually
- * asked for, before keyframe-snapping — needed by MediaJobManager to compute
- * [MediaJobState.Completed.actualTrimRangeMs] once the real output duration is known.
+ * [requestedStartMs] / [requestedEndMs]: TRIM-only, null for other job types. The range the
+ * user actually asked for, before keyframe-snapping. MediaJobManager uses this to compute
+ * [MediaJobState.Completed.actualTrimRangeMs] once the real output duration is known and to
+ * reject broken exports that silently publish a full-length copy instead of a trimmed file.
  *
  * [sourceSizeBytes]: COMPRESS-only, null for other job types. The source file's size at job
  * start, used by MediaJobManager.onCompleted to reject any output that isn't actually
  * smaller than the source (see VideoCompressor's class doc for why this check exists in
  * addition to setEnableFallback(false)).
+ *
+ * [targetSizeBytes]: COMPRESS-only for custom-size jobs. When present, completion rejects
+ * output that misses the user's requested size by more than a small muxing tolerance.
  */
 data class MediaJob(
     val id: String,
@@ -23,7 +27,9 @@ data class MediaJob(
     val state: MediaJobState,
     val progressPercent: Int = 0,
     val requestedStartMs: Long? = null,
+    val requestedEndMs: Long? = null,
     val sourceSizeBytes: Long? = null,
+    val targetSizeBytes: Long? = null,
 )
 
 enum class MediaJobType { EXTRACT_AUDIO, TRIM, COMPRESS }
@@ -42,11 +48,15 @@ sealed class MediaJobState {
      * (startMs, endMs) of the output file after a keyframe-snapped cut, which can differ
      * slightly from what the user selected (see VideoTrimmer). UI should show this instead
      * of silently assuming the exact requested range was honored.
+     *
+     * [outputSizeBytes]: COMPRESS-only for now, used by UI to show before/after size and
+     * saved percentage in the original-file decision dialog.
      */
     data class Completed(
         val outputUri: String,
         val awaitingOriginalFileDecision: Boolean = false,
         val actualTrimRangeMs: Pair<Long, Long>? = null,
+        val outputSizeBytes: Long? = null,
     ) : MediaJobState()
     data class Failed(val reason: String) : MediaJobState()
     data object Cancelled : MediaJobState()

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,7 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import com.watermelon.mediatools.engine.VideoCompressor
@@ -53,11 +56,13 @@ fun CompressScreen(
     modifier: Modifier = Modifier,
 ) {
     var selectedPreset by remember { mutableStateOf<VideoCompressor.Preset?>(null) }
+    var customTargetMb by remember { mutableStateOf("") }
     var activeJobId by remember { mutableStateOf<String?>(null) }
     var pendingDeleteConsent by remember { mutableStateOf(false) }
 
     val jobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
     val activeJob: MediaJob? = jobs.find { it.id == activeJobId }
+    val parsedTargetMb = customTargetMb.toIntOrNull()
 
     Column(
         modifier = modifier
@@ -66,9 +71,15 @@ fun CompressScreen(
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
     ) {
         Text(
-            "Choose a quality preset",
+            "Compress video",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Text(
+            "Choose a smart preset, or set a target size when you need the output under a specific MB.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         VideoCompressor.Preset.entries.forEach { preset ->
@@ -93,7 +104,33 @@ fun CompressScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Compress")
+            Text("Compress with preset")
+        }
+
+        OutlinedTextField(
+            value = customTargetMb,
+            onValueChange = { value -> customTargetMb = value.filter { it.isDigit() }.take(4) },
+            label = { Text("Custom target size (MB)") },
+            supportingText = { Text("Watermelon calculates bitrate from duration, then validates the final size.") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(
+            onClick = {
+                val targetMb = parsedTargetMb ?: return@Button
+                activeJobId = compressViewModel.startTargetSizeCompress(inputUri, originalDisplayName, targetMb)
+            },
+            enabled = parsedTargetMb != null && parsedTargetMb > 0,
+            shape = WatermelonShapes.control,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Compress to target size")
         }
     }
 
@@ -106,6 +143,9 @@ fun CompressScreen(
                     outputFileName = state.outputUri.substringAfterLast('/'),
                     isTrim = false,
                     isPendingSystemConsent = pendingDeleteConsent,
+                    compressionSizeBytes = job.sourceSizeBytes?.let { originalSize ->
+                        state.outputSizeBytes?.let { outputSize -> originalSize to outputSize }
+                    },
                     onKeepOriginal = {
                         mediaJobsViewModel.resolveOriginalFileDecision(job.id, deleteOriginal = false, contentResolver)
                         activeJobId = null
@@ -154,11 +194,7 @@ fun CompressScreen(
 @UnstableApi
 @Composable
 private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onClick: () -> Unit) {
-    // Uses preset.label directly (added to the enum itself) rather than a separate
-    // when-mapping here, so this file doesn't need updating every time presets change --
-    // that mapping used to list SMALL/MEDIUM/ORIGINAL_QUALITY by name and would have gone
-    // stale the moment the 4-tier redesign (HIGH_QUALITY/MEDIUM/SMALL/TINY) landed.
-    androidx.compose.foundation.layout.Box(
+    androidx.compose.foundation.layout.Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surfaceVariant, WatermelonShapes.card)
@@ -170,6 +206,12 @@ private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onCl
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            preset.description,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = WatermelonSpacing.xs)
         )
     }
 }

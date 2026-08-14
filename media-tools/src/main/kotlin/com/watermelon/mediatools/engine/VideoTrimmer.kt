@@ -24,9 +24,8 @@ import com.watermelon.mediatools.output.OutputNaming
  *
  * The cut may land a little before/after the user's exact selection as a result (snapped to
  * whichever keyframe precedes it) -- this is the accepted tradeoff for "always fast, never
- * touches the codec." [MediaJobManager.onFallbackApplied] is logged if Transformer still
- * falls back to re-encoding despite the keyframe snap (rare edge case -- corrupt GOP, unusual
- * container); per product decision, that job still completes normally rather than failing.
+ * touches the codec." MediaJobManager validates the output duration before publishing so an
+ * unclipped full-length export can never be presented to the user as a successful trim.
  *
  * v1 deliberately doesn't offer frame-accurate trim (Media3 1.8.0's
  * experimentalSetMp4EditListTrimEnabled depends on player-side edit-list support, not
@@ -90,7 +89,14 @@ class VideoTrimmer(private val context: Context, private val outputFileStore: Ou
             })
             .build()
 
-        jobId = jobManager.register(MediaJobType.TRIM, inputUri.toString(), outputPath, transformer, requestedStartMs = startMs)
+        jobId = jobManager.register(
+            MediaJobType.TRIM,
+            inputUri.toString(),
+            outputPath,
+            transformer,
+            requestedStartMs = startMs,
+            requestedEndMs = endMs,
+        )
         transformer.start(editedMediaItem, outputPath)
         return jobId
     }
