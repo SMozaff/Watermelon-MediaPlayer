@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -139,13 +140,8 @@ fun ControlPanel(
             HorizontalDivider(color = PlayerColors.current.textPrimary.copy(alpha = 0.12f))
             PanelLabel("Media Tools")
             Row(horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2), verticalAlignment = Alignment.CenterVertically) {
-                // No dedicated icons exist yet for these three actions (checked res/drawable
-                // and WatermelonIcons -- neither has an audio-extract/trim/compress glyph).
-                // Reusing existing generic icons as honest placeholders rather than
-                // referencing drawable resources that don't exist; swap for real icons
-                // when available.
                 onExtractAudio?.let { IconStub(WatermelonIcons.ExtractAudio, "Extract audio", false, it) }
-                onTrimVideo?.let { IconStub(R.drawable.ic_screenshot_single, "Trim", false, it) }
+                onTrimVideo?.let { IconStub(WatermelonIcons.Trim, "Trim", false, it) }
                 onCompressVideo?.let { IconStub(WatermelonIcons.CompressVideo, "Compress", false, it) }
             }
         }
@@ -181,7 +177,12 @@ private fun IconStub(
                 Icon(icon, description, tint = tint, modifier = Modifier.width(22.dp).height(22.dp))
             }
             is Int -> {
-                Icon(painterResource(icon), description, tint = Color.Unspecified, modifier = Modifier.width(22.dp).height(22.dp))
+                WatermelonGlyph(
+                    icon = icon,
+                    contentDescription = description,
+                    tint = tint,
+                    modifier = Modifier.width(22.dp).height(22.dp),
+                )
             }
             else -> {}
         }

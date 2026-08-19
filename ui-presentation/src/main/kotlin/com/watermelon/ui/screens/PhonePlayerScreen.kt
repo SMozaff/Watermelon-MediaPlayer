@@ -63,7 +63,7 @@ import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.components.SubtitleOverlay
 import com.watermelon.ui.components.WatermelonSeekBar
 import com.watermelon.ui.components.WatermelonTunerSeekBar
-import com.watermelon.ui.components.WatermelonIcon
+import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.player.VhsEffectController
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -519,20 +519,20 @@ fun PhonePlayerScreen(
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     if (showControlPanel) showControlPanel = false else onBack()
                 }) {
-                    WatermelonIcon(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
+                    WatermelonGlyph(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
                 }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     ui.lock(); onLockChanged?.invoke(true)
                 }) {
-                    WatermelonIcon(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
+                    WatermelonGlyph(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
                 }
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     showControlPanel = !showControlPanel
                 }) {
-                    WatermelonIcon(WatermelonIcons.Settings, "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
+                    WatermelonGlyph(WatermelonIcons.Settings, "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
                 }
             }
 
@@ -698,9 +698,9 @@ fun PhonePlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (holdIsLeft) WatermelonIcon(WatermelonIcons.Rewind, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
+                if (holdIsLeft) WatermelonGlyph(WatermelonIcons.Rewind, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
                 Text("${holdSpeed.toInt()}×", color = PlayerColors.current.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                if (!holdIsLeft) WatermelonIcon(WatermelonIcons.FastForward, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
+                if (!holdIsLeft) WatermelonGlyph(WatermelonIcons.FastForward, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
             }
         }
         if (showVolumeIndicator) {
@@ -772,7 +772,7 @@ private fun PlayerTransportControls(
         horizontalArrangement = Arrangement.spacedBy(28.dp)
     ) {
         IconButton(onClick = onPrevious) {
-            WatermelonIcon(
+            WatermelonGlyph(
                 WatermelonIcons.SkipPrevious,
                 "Previous track",
                 tint = PlayerColors.current.iconDefault,
@@ -785,7 +785,7 @@ private fun PlayerTransportControls(
                 .width(64.dp).height(64.dp)
                 .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
         ) {
-            WatermelonIcon(
+            WatermelonGlyph(
                 if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
                 if (isPlaying) "Pause" else "Play",
                 tint = Color.White,
@@ -794,7 +794,7 @@ private fun PlayerTransportControls(
         }
         if (hasNextTrack) {
             IconButton(onClick = onNext) {
-                WatermelonIcon(
+                WatermelonGlyph(
                     WatermelonIcons.SkipNext,
                     "Next track",
                     tint = PlayerColors.current.iconDefault,

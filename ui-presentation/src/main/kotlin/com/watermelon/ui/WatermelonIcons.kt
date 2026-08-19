@@ -6,7 +6,8 @@ import com.watermelon.ui.R
 /**
  * App-owned icons. Every entry resolves to a purpose-built 24dp VectorDrawable, so playback,
  * library and action surfaces share the Watermelon red / rind green visual language instead of
- * falling back to unrelated system glyphs.
+ * falling back to unrelated system glyphs. The vectors are maintained in three-icon redesign
+ * batches; see Docs/ICON_REDESIGN_BRIEF.md for the shared geometry and colour contract.
  */
 object WatermelonIcons {
     @DrawableRes val Play = R.drawable.ic_play
@@ -23,6 +24,7 @@ object WatermelonIcons {
     @DrawableRes val VolumeMuteOff = R.drawable.ic_volume_high
     @DrawableRes val BrightnessHigh = R.drawable.ic_brightness_high
     @DrawableRes val ExtractAudio = R.drawable.ic_audio_extract
+    @DrawableRes val Trim = R.drawable.ic_trim
     @DrawableRes val CompressVideo = R.drawable.ic_compress_video
 
     @DrawableRes val RepeatOff = R.drawable.ic_repeat_off
@@ -35,6 +37,8 @@ object WatermelonIcons {
     @DrawableRes val Favorite = R.drawable.ic_favorite
     @DrawableRes val FavoriteBorder = R.drawable.ic_favorite_off
     @DrawableRes val Delete = R.drawable.ic_delete
+    @DrawableRes val Download = R.drawable.ic_download
+    @DrawableRes val Error = R.drawable.ic_error
     @DrawableRes val PlaylistAdd = R.drawable.ic_playlist_add
     @DrawableRes val Search = R.drawable.ic_search
     @DrawableRes val Settings = R.drawable.ic_settings

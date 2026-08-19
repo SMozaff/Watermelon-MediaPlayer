@@ -101,10 +101,10 @@ fun WatermelonBottomNavigation(
                     }
                 },
                 icon = {
-                    WatermelonIcon(
+                    WatermelonGlyph(
                         icon = if (selected) item.selectedIcon else item.icon,
                         contentDescription = item.label,
-                        tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 },
                 label = {

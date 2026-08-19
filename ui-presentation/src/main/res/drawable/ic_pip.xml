@@ -1,23 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:pathData="M3,4 L21,4 L21,20 L3,20 Z"
-        android:fillColor="#FF1F8B68"
-        android:fillType="nonZero"/>
-    <path
-        android:pathData="M5,6 L19,6 L19,18 L5,18 Z"
-        android:fillColor="#FF101614"
-        android:fillType="nonZero"/>
-    <path
-        android:pathData="M12,12 L18,12 L18,16 L12,16 Z"
-        android:fillColor="#FFE63946"
-        android:fillType="nonZero"/>
-    <path
-        android:pathData="M13,13 L17,13 L17,15 L13,15 Z"
-        android:fillColor="#FFF4E7C5"
-        android:fillType="nonZero"/>
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M5,5h14q2,0 2,2v10q0,2-2,2h-14q-2,0-2,-2v-10q0-22-2z" android:fillColor="#1F8B68" />
+    <path android:pathData="M14,12h4q1,0 1,1v3q0,1-1,1h-4q-1,0-1,-1v-3q0-11-1z" android:fillColor="#E63946" />
+    <path android:pathData="M7,9L11,9" android:strokeColor="#E63946" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" />
 </vector>
