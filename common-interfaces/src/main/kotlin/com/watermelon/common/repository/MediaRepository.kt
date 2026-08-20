@@ -1,6 +1,7 @@
 package com.watermelon.common.repository
 
 import com.watermelon.common.model.MediaItem
+import com.watermelon.common.model.IndexingState
 import kotlinx.coroutines.flow.Flow
 
 interface MediaRepository {
@@ -9,6 +10,12 @@ interface MediaRepository {
 
     /** Single media item by its content URI. Returns null if not indexed. */
     suspend fun getByUri(uri: String): MediaItem?
+
+    /**
+     * Current index lifecycle. Consumers should combine this with their collection flow rather
+     * than treating an empty collection as proof that indexing is still in progress.
+     */
+    fun observeIndexingState(): Flow<IndexingState>
 
     /** Trigger a re-index. Phase-1 immediate; Phase-2 background. */
     suspend fun refreshIndex()

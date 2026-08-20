@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +50,7 @@ import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.BrowserRow
 import com.watermelon.ui.viewmodel.FolderViewModel
+import com.watermelon.ui.viewmodel.LibraryUiState
 
 enum class FolderLayout { LIST, GRID }
 enum class FolderSort { NAME, SIZE, MODIFIED, VIDEO_COUNT }
@@ -64,11 +66,14 @@ fun FolderBrowserScreen(
     onFolderClick: (FolderNode) -> Unit,
     onSettingsClick: () -> Unit = {},
     layout: FolderLayout = FolderLayout.LIST,
+    showDurations: Boolean = true,
+    showFileSize: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val rowsRaw by viewModel.rows.collectAsStateWithLifecycle()
+    val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
 
-    var currentLayout by rememberSaveable(stateSaver = LayoutSaver) { mutableStateOf(layout) }
+    var currentLayout by rememberSaveable(layout, stateSaver = LayoutSaver) { mutableStateOf(layout) }
     var currentItemSize by rememberSaveable { mutableStateOf(com.watermelon.ui.components.ItemSize.MEDIUM) }
     var ascending by rememberSaveable { mutableStateOf(true) }
     var sortMenuOpen by remember { mutableStateOf(false) }
@@ -183,12 +188,36 @@ fun FolderBrowserScreen(
             color = MaterialTheme.colorScheme.outlineVariant
         )
 
-        if (rows.isEmpty()) {
+        if (libraryState !is LibraryUiState.Content) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)) {
-                    FolderLoadingAnimation(Modifier.size(112.dp))
-                    Text("Scanning your media library", style = WatermelonTypography.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-                    Text("Folders will appear as indexing finishes", style = WatermelonTypography.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                when (val state = libraryState) {
+                    LibraryUiState.Loading -> Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+                    ) {
+                        FolderLoadingAnimation(Modifier.size(112.dp))
+                        Text("Scanning your media library", style = WatermelonTypography.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Folders will appear as indexing finishes", style = WatermelonTypography.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    LibraryUiState.Empty -> Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                        modifier = Modifier.padding(WatermelonSpacing.lg)
+                    ) {
+                        Text("No media folders found", style = WatermelonTypography.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Watermelon could not find eligible videos in your visible folders.", style = WatermelonTypography.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Button(onClick = viewModel::refresh) { Text("Refresh library") }
+                    }
+                    is LibraryUiState.Error -> Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                        modifier = Modifier.padding(WatermelonSpacing.lg)
+                    ) {
+                        Text("Library unavailable", style = WatermelonTypography.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(state.message, style = WatermelonTypography.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Button(onClick = viewModel::refresh) { Text("Try again") }
+                    }
+                    LibraryUiState.Content -> Unit
                 }
             }
             return@Column
@@ -211,6 +240,8 @@ fun FolderBrowserScreen(
                                 onClick = onFolderClick,
                                 itemSize = currentItemSize,
                                 isGrid = false,
+                                showDurations = showDurations,
+                                showFileSize = showFileSize,
                                 isScrollingFast = isScrolling
                             )
                         }
@@ -239,6 +270,8 @@ fun FolderBrowserScreen(
                                 onClick = onFolderClick,
                                 itemSize = currentItemSize,
                                 isGrid = true,
+                                showDurations = showDurations,
+                                showFileSize = showFileSize,
                                 isScrollingFast = isScrolling
                             )
                         }

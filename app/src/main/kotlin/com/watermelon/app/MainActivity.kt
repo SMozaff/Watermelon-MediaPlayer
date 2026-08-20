@@ -91,6 +91,7 @@ import com.watermelon.ui.viewmodel.FolderViewModel
 import com.watermelon.ui.viewmodel.PlayerViewModel
 import com.watermelon.ui.viewmodel.PlaylistViewModel
 import com.watermelon.ui.viewmodel.VideoListViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @UnstableApi
@@ -139,6 +140,23 @@ class MainActivity : ComponentActivity() {
     // unconditionally during Activity initialization (Android's own constraint, not a
     // choice made here), so a `by lazy` field wouldn't reliably register in time.
     private lateinit var originalFileDeleter: com.watermelon.mediatools.output.OriginalFileDeleter
+    private lateinit var playerDeleteLauncher: androidx.activity.result.ActivityResultLauncher<
+        androidx.activity.result.IntentSenderRequest
+    >
+
+    private data class PlayerDeleteTarget(val uri: String, val displayName: String)
+
+    private sealed interface PlayerDeleteOutcome {
+        data class Deleted(val target: PlayerDeleteTarget) : PlayerDeleteOutcome
+        data class Cancelled(val target: PlayerDeleteTarget) : PlayerDeleteOutcome
+        data class Failed(val target: PlayerDeleteTarget, val reason: String) : PlayerDeleteOutcome
+    }
+
+    private var pendingPlayerDelete by mutableStateOf<PlayerDeleteTarget?>(null)
+    private var showPlayerDeleteDialog by mutableStateOf(false)
+    private var showPlayerPlaylistPicker by mutableStateOf(false)
+    private var playerPlaylistUri by mutableStateOf<String?>(null)
+    private var playerDeleteOutcome by mutableStateOf<PlayerDeleteOutcome?>(null)
 
     private val vhsReverseSound by lazy { VhsReverseSound() }
     private val subtitleRepository by lazy {
@@ -232,6 +250,21 @@ class MainActivity : ComponentActivity() {
         originalFileDeleter = com.watermelon.mediatools.output.OriginalFileDeleter(this) { jobId, deleted ->
             mediaJobManager.resolveOriginalFileDecision(jobId, deleteOriginal = deleted, contentResolver)
         }
+        playerDeleteLauncher = registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()
+        ) { result ->
+            val target = pendingPlayerDelete
+            pendingPlayerDelete = null
+            if (target == null) {
+                com.watermelon.common.util.FileLogger.e("Delete", "player delete result arrived with no pending target")
+                return@registerForActivityResult
+            }
+            playerDeleteOutcome = if (result.resultCode == RESULT_OK) {
+                PlayerDeleteOutcome.Deleted(target)
+            } else {
+                PlayerDeleteOutcome.Cancelled(target)
+            }
+        }
 
         val savedVolume = prefs.getInt("volume", -1)
         if (savedVolume >= 0) {
@@ -248,8 +281,11 @@ class MainActivity : ComponentActivity() {
             var pureDarkTheme by remember {
                 mutableStateOf(prefs.getBoolean("pure_dark", true))
             }
+            var forcedRtl by remember {
+                mutableStateOf(prefs.getBoolean("forced_rtl", false))
+            }
 
-            WatermelonTheme(darkTheme = pureDarkTheme) {
+            WatermelonTheme(darkTheme = pureDarkTheme, forceRtl = forcedRtl) {
                 val navController = rememberNavController()
 
                 // Track current destination for bottom navigation
@@ -371,6 +407,7 @@ class MainActivity : ComponentActivity() {
                                     pureDarkTheme = enabled
                                     prefs.edit().putBoolean("pure_dark", enabled).apply()
                                 },
+                                onForcedRtlChange = { enabled -> forcedRtl = enabled },
                                 onPlayerUriChanged = { uri -> miniPlayerUri = uri },
                                 modifier = Modifier.weight(1f)
                             )
@@ -500,7 +537,94 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun triggerInitialIndex() {
-        lifecycleScope.launch { mediaRepository.refreshIndex() }
+        lifecycleScope.launch {
+            runCatching { mediaRepository.refreshIndex() }
+                .onFailure { error ->
+                    com.watermelon.common.util.FileLogger.e(
+                        "App",
+                        "initial library index failed: ${error.message ?: error::class.java.simpleName}"
+                    )
+                }
+        }
+    }
+
+    private fun requestPlayerDelete(target: PlayerDeleteTarget) {
+        val mediaUri = runCatching {
+            val id = android.content.ContentUris.parseId(Uri.parse(target.uri))
+            android.content.ContentUris.withAppendedId(
+                android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                id
+            )
+        }.getOrElse { error ->
+            playerDeleteOutcome = PlayerDeleteOutcome.Failed(
+                target,
+                "This video is no longer available in the media library."
+            )
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            runCatching {
+                val request = android.provider.MediaStore.createDeleteRequest(
+                    contentResolver,
+                    listOf(mediaUri)
+                )
+                playerDeleteLauncher.launch(
+                    androidx.activity.result.IntentSenderRequest.Builder(request.intentSender).build()
+                )
+            }.onFailure { error ->
+                pendingPlayerDelete = null
+                playerDeleteOutcome = PlayerDeleteOutcome.Failed(
+                    target,
+                    error.message ?: "Android could not start the delete request."
+                )
+            }
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val rowsDeleted = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    contentResolver.delete(mediaUri, null, null)
+                }
+                pendingPlayerDelete = null
+                playerDeleteOutcome = if (rowsDeleted > 0) {
+                    PlayerDeleteOutcome.Deleted(target)
+                } else {
+                    PlayerDeleteOutcome.Failed(target, "Watermelon could not delete this video.")
+                }
+            } catch (error: SecurityException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                    error is android.app.RecoverableSecurityException
+                ) {
+                    runCatching {
+                        playerDeleteLauncher.launch(
+                            androidx.activity.result.IntentSenderRequest.Builder(
+                                error.userAction.actionIntent.intentSender
+                            ).build()
+                        )
+                    }.onFailure { launchError ->
+                        pendingPlayerDelete = null
+                        playerDeleteOutcome = PlayerDeleteOutcome.Failed(
+                            target,
+                            launchError.message ?: "Android could not start the delete request."
+                        )
+                    }
+                    return@launch
+                }
+                pendingPlayerDelete = null
+                playerDeleteOutcome = PlayerDeleteOutcome.Failed(
+                    target,
+                    error.message ?: "Watermelon does not have permission to delete this video."
+                )
+            } catch (error: Throwable) {
+                pendingPlayerDelete = null
+                playerDeleteOutcome = PlayerDeleteOutcome.Failed(
+                    target,
+                    error.message ?: "Watermelon could not delete this video."
+                )
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -584,6 +708,7 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController,
         pureDarkTheme: Boolean,
         onPureDarkThemeChange: (Boolean) -> Unit,
+        onForcedRtlChange: (Boolean) -> Unit,
         onPlayerUriChanged: (String) -> Unit,
         modifier: Modifier = Modifier
     ) {
@@ -646,7 +771,14 @@ class MainActivity : ComponentActivity() {
                     FolderBrowserScreen(
                         viewModel = vm,
                         onFolderClick = onFolderClick,
-                        onSettingsClick = { navController.navigate(Routes.SETTINGS) }
+                        onSettingsClick = { navController.navigate(Routes.SETTINGS) },
+                        layout = if (settingsState.gridDefault) {
+                            com.watermelon.ui.screens.FolderLayout.GRID
+                        } else {
+                            com.watermelon.ui.screens.FolderLayout.LIST
+                        },
+                        showDurations = settingsState.showDurations,
+                        showFileSize = settingsState.showFileSize
                     )
                 }
             }
@@ -675,7 +807,12 @@ class MainActivity : ComponentActivity() {
                     VideoListScreen(
                         viewModel = vm,
                         onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        onRefresh = vm::refresh,
                         availablePlaylists = playlists,
+                        defaultGrid = settingsState.gridDefault,
+                        showThumbnails = settingsState.showThumbnails,
+                        showDurations = settingsState.showDurations,
+                        showFileSize = settingsState.showFileSize,
                         folderName = "Videos",
                         onBack = { navController.popBackStack() },
                         onExtractAudio = { item ->
@@ -759,7 +896,12 @@ class MainActivity : ComponentActivity() {
                     VideoListScreen(
                         viewModel = vm,
                         onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        onRefresh = vm::refresh,
                         availablePlaylists = playlists,
+                        defaultGrid = settingsState.gridDefault,
+                        showThumbnails = settingsState.showThumbnails,
+                        showDurations = settingsState.showDurations,
+                        showFileSize = settingsState.showFileSize,
                         folderName = screenTitle,
                         onBack = { navController.popBackStack() },
                         onExtractAudio = { item ->
@@ -976,19 +1118,17 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onAddToPlaylist = {
-                            lifecycleScope.launch { playlistRepository.addToFavourites(mediaUri) }
+                            playerPlaylistUri = mediaUri
+                            showPlayerPlaylistPicker = true
                         },
                         onDelete = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                val id = android.content.ContentUris.parseId(Uri.parse(mediaUri))
-                                val canonical = android.content.ContentUris.withAppendedId(
-                                    android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id
-                                )
-                                val sender = android.provider.MediaStore.createDeleteRequest(
-                                    contentResolver, listOf(canonical)
-                                ).intentSender
-                                startIntentSenderForResult(sender, 4001, null, 0, 0, 0)
-                                navController.popBackStack()
+                            lifecycleScope.launch {
+                                val displayName = runCatching {
+                                    mediaRepository.getByUri(mediaUri)?.displayName
+                                }.getOrNull() ?: mediaUri.substringAfterLast('/')
+                                pendingPlayerDelete = PlayerDeleteTarget(mediaUri, displayName)
+                                playerDeleteOutcome = null
+                                showPlayerDeleteDialog = true
                             }
                         },
                         onExtractAudio = {
@@ -1114,6 +1254,7 @@ class MainActivity : ComponentActivity() {
                         if (newState.pureDark != pureDarkTheme) {
                             onPureDarkThemeChange(newState.pureDark)
                         }
+                        onForcedRtlChange(newState.forcedRtl)
                     },
                     onFolderVisibilityClick = { navController.navigate(Routes.FOLDER_VISIBILITY) },
                     onBack = { navController.popBackStack() }
@@ -1171,6 +1312,139 @@ class MainActivity : ComponentActivity() {
                     navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
                 }
             )
+        }
+
+        val playlistUri = playerPlaylistUri
+        if (showPlayerPlaylistPicker && playlistUri != null) {
+            val playlists by playlistRepository.observeAll()
+                .collectAsStateWithLifecycle(initialValue = emptyList())
+            com.watermelon.ui.components.PlayerPlaylistPickerDialog(
+                playlists = playlists,
+                onSelect = { playlist ->
+                    showPlayerPlaylistPicker = false
+                    playerPlaylistUri = null
+                    lifecycleScope.launch {
+                        runCatching {
+                            val alreadyPresent = playlistRepository.observeVideos(playlist.id)
+                                .first()
+                                .any { it.uri == playlistUri }
+                            if (!alreadyPresent) {
+                                playlistRepository.addToPlaylist(playlist.id, playlistUri)
+                            }
+                            alreadyPresent
+                        }.onSuccess { alreadyPresent ->
+                            android.widget.Toast.makeText(
+                                this@MainActivity,
+                                if (alreadyPresent) {
+                                    "Already in ${playlist.name}"
+                                } else {
+                                    "Added to ${playlist.name}"
+                                },
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }.onFailure {
+                                android.widget.Toast.makeText(
+                                    this@MainActivity,
+                                    "Could not add video to ${playlist.name}",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }
+                },
+                onCreate = { name ->
+                    showPlayerPlaylistPicker = false
+                    playerPlaylistUri = null
+                    lifecycleScope.launch {
+                        runCatching {
+                            val id = playlistRepository.createPlaylist(name)
+                            playlistRepository.addToPlaylist(id, playlistUri)
+                        }.onSuccess {
+                            android.widget.Toast.makeText(
+                                this@MainActivity,
+                                "Created ${name} and added the video",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }.onFailure {
+                            android.widget.Toast.makeText(
+                                this@MainActivity,
+                                "Could not create ${name}",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
+                onDismiss = {
+                    showPlayerPlaylistPicker = false
+                    playerPlaylistUri = null
+                }
+            )
+        }
+
+        val deleteTarget = pendingPlayerDelete
+        if (showPlayerDeleteDialog && deleteTarget != null) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = {
+                    showPlayerDeleteDialog = false
+                    pendingPlayerDelete = null
+                },
+                title = { androidx.compose.material3.Text("Delete from device?") },
+                text = {
+                    androidx.compose.material3.Text(
+                        "${deleteTarget.displayName} will be permanently removed from your device and library."
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        showPlayerDeleteDialog = false
+                        requestPlayerDelete(deleteTarget)
+                    }) {
+                        androidx.compose.material3.Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        showPlayerDeleteDialog = false
+                        pendingPlayerDelete = null
+                    }) {
+                        androidx.compose.material3.Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        playerDeleteOutcome?.let { outcome ->
+            LaunchedEffect(outcome) {
+                when (outcome) {
+                    is PlayerDeleteOutcome.Deleted -> {
+                        playbackController?.pause()
+                        if (miniPlayerUri == outcome.target.uri) miniPlayerUri = null
+                        runCatching { mediaRepository.refreshIndex() }
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "Deleted ${outcome.target.displayName}",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                        if (navController.currentDestination?.route == "player/{uri}") {
+                            navController.popBackStack()
+                        }
+                    }
+                    is PlayerDeleteOutcome.Cancelled -> {
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "Deletion cancelled",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is PlayerDeleteOutcome.Failed -> {
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            outcome.reason,
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+                playerDeleteOutcome = null
+            }
         }
     }
 

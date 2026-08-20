@@ -58,6 +58,9 @@ fun VideoListItem(
     isScrollingFast: Boolean,
     isSelected: Boolean,
     selectionActive: Boolean,
+    showThumbnails: Boolean = true,
+    showDurations: Boolean = true,
+    showFileSize: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onContextMenuClick: () -> Unit = {},
@@ -109,9 +112,9 @@ fun VideoListItem(
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)
         ) {
             Box {
-                VelocityGuardImage(
-                    uri = item.uri,
-                    durationMs = item.durationMs,
+                VideoPreview(
+                    item = item,
+                    showThumbnails = showThumbnails,
                     isScrollingFast = isScrollingFast,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -173,11 +176,13 @@ fun VideoListItem(
                 }
             }
 
-            Text(
-                text = formatDuration(item.durationMs),
-                style = WatermelonTypography.timecode,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (showDurations) {
+                Text(
+                    text = formatDuration(item.durationMs),
+                    style = WatermelonTypography.timecode,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     } else {
         Row(
@@ -187,9 +192,9 @@ fun VideoListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box {
-                VelocityGuardImage(
-                    uri = item.uri,
-                    durationMs = item.durationMs,
+                VideoPreview(
+                    item = item,
+                    showThumbnails = showThumbnails,
                     isScrollingFast = isScrollingFast,
                     modifier = Modifier
                         .width(thumbH * 16f / 9f)
@@ -233,17 +238,27 @@ fun VideoListItem(
                 // and the spec explicitly calls out grid as unaffected). Shown regardless
                 // of Small/Large: Large appends it after duration since that's its only
                 // metadata line; Small appends it to its existing resolution/size/date line.
-                val folderSuffix = if (!isGrid) " · ${item.parentFolder}" else ""
-                Text(
-                    text = formatDuration(item.durationMs) + if (itemSize == VideoItemSize.LARGE) folderSuffix else "",
-                    style = WatermelonTypography.timecode,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                val folderSuffix = if (!isGrid) item.parentFolder else ""
+                val primaryMeta = buildList {
+                    if (showDurations) add(formatDuration(item.durationMs))
+                    if (itemSize == VideoItemSize.LARGE && folderSuffix.isNotBlank()) add(folderSuffix)
+                }.joinToString(" · ")
+                if (primaryMeta.isNotBlank()) {
+                    Text(
+                        text = primaryMeta,
+                        style = WatermelonTypography.timecode,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 if (itemSize == VideoItemSize.SMALL) {
                     Text(
-                        text = formatDetailLine(item) + folderSuffix,
+                        text = buildList {
+                            val detail = formatDetailLine(item, showFileSize)
+                            if (detail.isNotBlank()) add(detail)
+                            if (folderSuffix.isNotBlank()) add(folderSuffix)
+                        }.joinToString(" · "),
                         style = WatermelonTypography.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -321,6 +336,35 @@ private fun VideoItemContextMenu(
     }
 }
 
+@Composable
+private fun VideoPreview(
+    item: MediaItem,
+    showThumbnails: Boolean,
+    isScrollingFast: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (showThumbnails) {
+        VelocityGuardImage(
+            uri = item.uri,
+            durationMs = item.durationMs,
+            isScrollingFast = isScrollingFast,
+            modifier = modifier
+        )
+    } else {
+        Box(
+            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            WatermelonIcon(
+                icon = WatermelonIcons.VideoUnavailable,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
 private fun formatDuration(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
     val h = s / 3600
@@ -333,10 +377,13 @@ private fun formatDuration(ms: Long): String {
  *  piece with no known value (0) is dropped rather than shown as "0x0" or "Jan 1, 1970",
  *  since those are more confusing than just omitting the field for a file the indexer
  *  hasn't fully resolved yet. */
-private fun formatDetailLine(item: com.watermelon.common.model.MediaItem): String {
+private fun formatDetailLine(
+    item: com.watermelon.common.model.MediaItem,
+    showFileSize: Boolean
+): String {
     val parts = mutableListOf<String>()
     if (item.width > 0 && item.height > 0) parts += "${item.width}x${item.height}"
-    if (item.fileSize > 0) parts += formatFileSize(item.fileSize)
+    if (showFileSize && item.fileSize > 0) parts += formatFileSize(item.fileSize)
     if (item.dateAdded > 0) parts += formatDateAdded(item.dateAdded)
     return parts.joinToString(" · ")
 }

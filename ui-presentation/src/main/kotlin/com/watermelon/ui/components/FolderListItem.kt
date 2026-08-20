@@ -43,6 +43,8 @@ fun FolderListItem(
     modifier: Modifier = Modifier,
     itemSize: ItemSize = ItemSize.MEDIUM,
     isGrid: Boolean = false,
+    showDurations: Boolean = true,
+    showFileSize: Boolean = false,
     @Suppress("UNUSED_PARAMETER") isScrollingFast: Boolean = false,
     // Optional shared interaction source: null (default) preserves prior behavior exactly —
     // clickable() creates and owns its own source internally. Callers that need to read this
@@ -71,9 +73,15 @@ fun FolderListItem(
         ItemSize.LARGE  -> WatermelonSpacing.lg - WatermelonSpacing.xs / 2
     }
 
-    val metaText = "${folder.itemCount} files · ${
-        if (folder.totalDurationMs > 0L) formatDuration(folder.totalDurationMs) else "--:--"
-    }"
+    val metaText = buildList {
+        add("${folder.itemCount} files")
+        if (showDurations) {
+            add(if (folder.totalDurationMs > 0L) formatDuration(folder.totalDurationMs) else "--:--")
+        }
+        if (showFileSize && folder.totalSizeBytes > 0L) {
+            add(formatFileSize(folder.totalSizeBytes))
+        }
+    }.joinToString(" · ")
     val smallMetaText = if (itemSize == ItemSize.SMALL && folder.lastModifiedAt > 0L) {
         "$metaText · ${formatLastModified(folder.lastModifiedAt)}"
     } else {
@@ -191,6 +199,17 @@ private fun formatDuration(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
     val h = s / 3600; val m = (s % 3600) / 60; val sec = s % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
+}
+
+private fun formatFileSize(bytes: Long): String {
+    val kb = bytes / 1024.0
+    val mb = kb / 1024.0
+    val gb = mb / 1024.0
+    return when {
+        gb >= 1.0 -> "%.1f GB".format(gb)
+        mb >= 1.0 -> "%.0f MB".format(mb)
+        else -> "%.0f KB".format(kb)
+    }
 }
 
 private fun formatLastModified(epochMs: Long): String {

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.watermelon.common.model.IndexingState
 import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.SelectionState
 import com.watermelon.common.repository.MediaRepository
@@ -87,8 +88,32 @@ class VideoListViewModel(
         if (shuffled) list.shuffled() else list
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Explicit screen state rather than an empty-list-as-loader inference. */
+    val libraryState: StateFlow<LibraryUiState> = combine(
+        videos,
+        mediaRepository.observeIndexingState()
+    ) { currentVideos, indexingState ->
+        when {
+            indexingState == IndexingState.FAILED -> LibraryUiState.Error(
+                "We couldn't refresh your media library. Check access and try again."
+            )
+            currentVideos.isNotEmpty() -> LibraryUiState.Content
+            indexingState == IndexingState.SWEEPING || indexingState == IndexingState.EXTRACTING ||
+                indexingState == IndexingState.IDLE -> LibraryUiState.Loading
+            else -> LibraryUiState.Empty
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState.Loading)
+
     fun refresh() {
-        viewModelScope.launch { mediaRepository.refreshIndex() }
+        viewModelScope.launch {
+            runCatching { mediaRepository.refreshIndex() }
+                .onFailure { error ->
+                    com.watermelon.common.util.FileLogger.e(
+                        "VideoList",
+                        "library refresh failed: ${error.message ?: error::class.java.simpleName}"
+                    )
+                }
+        }
     }
 
     fun markPlayed(uri: String) {

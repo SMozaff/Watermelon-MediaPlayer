@@ -3,6 +3,7 @@ package com.watermelon.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.watermelon.common.model.FolderNode
+import com.watermelon.common.model.IndexingState
 import com.watermelon.common.model.PlaylistType
 import com.watermelon.common.model.SystemPlaylist
 import com.watermelon.common.model.UserIntent
@@ -128,6 +129,27 @@ class FolderViewModel(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
+     * Explicit screen state; an empty row collection is no longer assumed to mean that indexing
+     * is still in progress. This lets the UI offer the correct next action for each state.
+     */
+    val libraryState: StateFlow<LibraryUiState> = combine(
+        rows,
+        mediaRepository.observeIndexingState()
+    ) { currentRows, indexingState ->
+        val hasFolders = currentRows.any { it is BrowserRow.Folder }
+        when {
+            indexingState == IndexingState.FAILED -> LibraryUiState.Error(
+                "We couldn't refresh your media library. Check access and try again."
+            )
+            !hasFolders && (indexingState == IndexingState.SWEEPING ||
+                indexingState == IndexingState.EXTRACTING || indexingState == IndexingState.IDLE) ->
+                LibraryUiState.Loading
+            hasFolders -> LibraryUiState.Content
+            else -> LibraryUiState.Empty
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState.Loading)
+
+    /**
      * Backward-compatible flat folder list (playlists + visible storage folders, no headers).
      * Retained so existing FolderBrowserScreen keeps compiling until Phase E migrates it to [rows].
      */
@@ -160,7 +182,15 @@ class FolderViewModel(
             "hidden set now: ${settingsStore.getHiddenFolders()}")
     }
 
-    private fun refresh() {
-        viewModelScope.launch { mediaRepository.refreshIndex() }
+    fun refresh() {
+        viewModelScope.launch {
+            runCatching { mediaRepository.refreshIndex() }
+                .onFailure { error ->
+                    com.watermelon.common.util.FileLogger.e(
+                        "Folder",
+                        "library refresh failed: ${error.message ?: error::class.java.simpleName}"
+                    )
+                }
+        }
     }
 }

@@ -134,7 +134,7 @@ fun ControlPanel(
                 onClick     = onFavourite
             )
             IconStub(WatermelonIcons.PlaylistAdd, "Add to playlist", false, onAddToPlaylist)
-            IconStub(WatermelonIcons.Delete, "Delete", false, onDelete)
+            IconStub(WatermelonIcons.Delete, "Delete from device", false, onDelete)
         }
         if (onExtractAudio != null || onTrimVideo != null || onCompressVideo != null) {
             HorizontalDivider(color = PlayerColors.current.textPrimary.copy(alpha = 0.12f))

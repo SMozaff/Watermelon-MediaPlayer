@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -62,6 +63,7 @@ import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
+import com.watermelon.ui.viewmodel.LibraryUiState
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
 private enum class VideoSort(val label: String) {
@@ -91,8 +93,12 @@ private val ItemSizeSaver = androidx.compose.runtime.saveable.Saver<VideoItemSiz
 fun VideoListScreen(
     viewModel: VideoListViewModel,
     onVideoClick: (MediaItem) -> Unit,
-    onRefresh: () -> Unit = {},
+    onRefresh: () -> Unit = { viewModel.refresh() },
     availablePlaylists: List<Playlist> = emptyList(),
+    defaultGrid: Boolean = false,
+    showThumbnails: Boolean = true,
+    showDurations: Boolean = true,
+    showFileSize: Boolean = false,
     folderName: String = "Videos",
     onBack: () -> Unit = {},
     // Media tools entry points (extract audio / trim / compress). Null = feature not wired
@@ -107,6 +113,7 @@ fun VideoListScreen(
     val haptic = LocalHapticFeedback.current
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     val videos by viewModel.videos.collectAsStateWithLifecycle()
+    val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
     val selection by viewModel.selection.collectAsStateWithLifecycle()
 
     // Recently Added is a computed chronological feed. Users may select another sort later,
@@ -118,8 +125,8 @@ fun VideoListScreen(
     var currentItemSize by rememberSaveable(stateSaver = ItemSizeSaver) {
         mutableStateOf(VideoItemSize.SMALL)
     }
-    var currentLayout by rememberSaveable(stateSaver = LayoutSaver) {
-        mutableStateOf(VideoLayout.LIST)
+    var currentLayout by rememberSaveable(defaultGrid, stateSaver = LayoutSaver) {
+        mutableStateOf(if (defaultGrid) VideoLayout.GRID else VideoLayout.LIST)
     }
     val isGrid = currentLayout == VideoLayout.GRID
     var sortMenuOpen by remember { mutableStateOf(false) }
@@ -272,9 +279,36 @@ fun VideoListScreen(
                 color = WatermelonColors.DarkOutline
             )
 
-            if (sorted.isEmpty()) {
+            if (libraryState !is LibraryUiState.Content) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    WatermelonLoadingAnimation(modifier = Modifier.size(160.dp))
+                    when (val state = libraryState) {
+                        LibraryUiState.Loading -> Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+                        ) {
+                            WatermelonLoadingAnimation(modifier = Modifier.size(160.dp))
+                            Text("Scanning your videos", style = WatermelonTypography.typography.bodyLarge, color = WatermelonColors.DarkOnSurface)
+                        }
+                        LibraryUiState.Empty -> Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.lg)
+                        ) {
+                            Text("No videos found", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface)
+                            Text("Refresh the library or check which folders Watermelon can see.", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant)
+                            Button(onClick = onRefresh) { Text("Refresh library") }
+                        }
+                        is LibraryUiState.Error -> Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.lg)
+                        ) {
+                            Text("Library unavailable", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface)
+                            Text(state.message, style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant)
+                            Button(onClick = onRefresh) { Text("Try again") }
+                        }
+                        LibraryUiState.Content -> Unit
+                    }
                 }
                 return@Column
             }
@@ -296,6 +330,9 @@ fun VideoListScreen(
                                 isScrollingFast = isScrolling,
                                 isSelected = isSelected,
                                 selectionActive = selection.isActive,
+                                showThumbnails = showThumbnails,
+                                showDurations = showDurations,
+                                showFileSize = showFileSize,
                                 onClick = {
                                     if (selection.isActive) {
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -337,6 +374,9 @@ fun VideoListScreen(
                                 isScrollingFast = isScrolling,
                                 isSelected = isSelected,
                                 selectionActive = selection.isActive,
+                                showThumbnails = showThumbnails,
+                                showDurations = showDurations,
+                                showFileSize = showFileSize,
                                 onClick = {
                                     if (selection.isActive) {
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)

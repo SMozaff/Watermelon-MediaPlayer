@@ -49,13 +49,25 @@ class MediaStoreIndexer(
         // still correct (unlike the previous tryLock() behavior, which could skip scanning
         // *and* still reload a stale cache).
         if (!force && now - lastScanAt < CACHE_WINDOW_MS) return@withLock
-        _indexingState.value = IndexingState.SWEEPING
-        val tree = phase1Sweep.sweep()
-        _folderTree.value = tree
-        _indexingState.value = IndexingState.EXTRACTING
-        phase2Extractor.extract(mediaUriProvider())
-        _indexingState.value = IndexingState.COMPLETE
-        lastScanAt = System.currentTimeMillis()
+        try {
+            _indexingState.value = IndexingState.SWEEPING
+            val tree = phase1Sweep.sweep()
+            _folderTree.value = tree
+            _indexingState.value = IndexingState.EXTRACTING
+            phase2Extractor.extract(mediaUriProvider())
+            _indexingState.value = IndexingState.COMPLETE
+            lastScanAt = System.currentTimeMillis()
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            _indexingState.value = IndexingState.IDLE
+            throw cancelled
+        } catch (error: Throwable) {
+            com.watermelon.common.util.FileLogger.e(
+                "Indexer",
+                "refresh failed: ${error.message ?: error::class.java.simpleName}"
+            )
+            _indexingState.value = IndexingState.FAILED
+            throw error
+        }
     }
 
     companion object {

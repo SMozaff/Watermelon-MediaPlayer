@@ -25,6 +25,9 @@ class MediaRepositoryImpl(
 
     override fun observeAllMedia(): Flow<List<MediaItem>> = mediaFlow.asStateFlow()
 
+    override fun observeIndexingState(): Flow<com.watermelon.common.model.IndexingState> =
+        indexer.indexingState
+
     override suspend fun getByUri(uri: String): MediaItem? = withContext(Dispatchers.IO) {
         database.readableDatabase.query(
             "MediaItems", null, "mediaId = ?", arrayOf(uri), null, null, null

@@ -324,17 +324,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingsGroup(title = "Advanced", summary = "Storage access and performance safeguards") {
-                    ToggleRow(
-                        label = "Memory-safety (force Tier B)",
-                        checked = state.memorySafety
-                    ) { onStateChange(state.copy(memorySafety = it)) }
-
-                    ToggleRow(
-                        label = "Full folder access (power-user)",
-                        checked = state.fullFolderAccess
-                    ) { onStateChange(state.copy(fullFolderAccess = it)) }
-
+                SettingsGroup(title = "Library access", summary = "Choose which indexed folders appear in Watermelon") {
                     NavRow(
                         label = "Folder visibility",
                         value = "Manage",
