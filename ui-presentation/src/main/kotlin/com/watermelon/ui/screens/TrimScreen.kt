@@ -220,6 +220,10 @@ fun TrimScreen(
                 MediaJobProgressSheet(
                     job = job,
                     onCancel = { mediaJobsViewModel.cancel(job.id) },
+                    onContinueInBackground = {
+                        activeJobId = null
+                        onBack()
+                    },
                     onDismiss = {
                         if (state is MediaJobState.Queued || state is MediaJobState.Running) {
                             showBackgroundExitDialog = true

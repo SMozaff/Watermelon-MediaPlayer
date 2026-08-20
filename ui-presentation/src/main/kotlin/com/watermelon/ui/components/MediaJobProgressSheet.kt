@@ -46,6 +46,7 @@ fun MediaJobProgressSheet(
     job: MediaJob,
     onCancel: () -> Unit,
     onDismiss: () -> Unit,
+    onContinueInBackground: (() -> Unit)? = null,
     outputLocation: String? = null,
     onOpenSettings: (() -> Unit)? = null,
 ) {
@@ -94,6 +95,11 @@ fun MediaJobProgressSheet(
                         ) {
                             Text("Cancel")
                         }
+                        onContinueInBackground?.let { continueInBackground ->
+                            TextButton(onClick = continueInBackground) {
+                                Text("Continue in background")
+                            }
+                        }
                     }
 
                     is MediaJobState.Completed -> {
@@ -126,7 +132,7 @@ fun MediaJobProgressSheet(
                             shape = WatermelonShapes.control,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = PlayerColors.current.textPrimary
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {

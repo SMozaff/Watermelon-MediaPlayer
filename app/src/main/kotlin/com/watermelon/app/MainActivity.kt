@@ -78,6 +78,7 @@ import com.watermelon.storage.repository.PlaylistRepositoryImpl
 import com.watermelon.subtitle.repository.SubtitleRepositoryImpl
 import com.watermelon.ui.components.WatermelonBottomNavigation
 import com.watermelon.ui.components.BottomNavItem
+import com.watermelon.ui.components.activeMediaJobs
 import com.watermelon.ui.screens.DesignSystemScreen
 import com.watermelon.ui.screens.FolderBrowserScreen
 import com.watermelon.ui.screens.FolderVisibilityScreen
@@ -297,6 +298,13 @@ class MainActivity : ComponentActivity() {
                 // (Media3 only keeps the most-recently-attached view live).
                 val onPlayerRoute = currentDestination?.route == "player/{uri}"
                 val showMiniPlayer = miniPlayerUri != null && !onPlayerRoute && !isPiPActive
+                val mediaJobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
+                val activeMediaJobs = remember(mediaJobs) {
+                    mediaJobs.activeMediaJobs()
+                }
+                var showJobsSheet by remember { mutableStateOf(false) }
+                var reviewOriginalJobId by remember { mutableStateOf<String?>(null) }
+                var globalOriginalDeletePending by remember { mutableStateOf(false) }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -399,6 +407,12 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                        if (activeMediaJobs.isNotEmpty()) {
+                            com.watermelon.ui.components.MediaJobsBar(
+                                activeJobs = activeMediaJobs,
+                                onOpenJobs = { showJobsSheet = true },
+                            )
+                        }
                         if (permissionsGranted) {
                             WatermelonNavHost(
                                 navController = navController,
@@ -415,6 +429,86 @@ class MainActivity : ComponentActivity() {
                             PermissionPrompt(onRequest = { permissionLauncher.launch(requiredPermissions) })
                         }
                     }
+                }
+                if (showJobsSheet) {
+                    com.watermelon.ui.components.MediaJobsSheet(
+                        jobs = mediaJobs,
+                        onCancel = { job -> mediaJobsViewModel.cancel(job.id) },
+                        onDismissJob = { job -> mediaJobsViewModel.dismiss(job.id) },
+                        onOpenResult = { job ->
+                            val completed = job.state as? com.watermelon.mediatools.job.MediaJobState.Completed
+                            val outputUri = completed?.outputUri
+                            if (outputUri == null) return@MediaJobsSheet
+                            runCatching {
+                                val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(Uri.parse(outputUri), contentResolver.getType(Uri.parse(outputUri)))
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                startActivity(viewIntent)
+                            }.onFailure {
+                                android.widget.Toast.makeText(
+                                    this@MainActivity,
+                                    "Could not open this output on the device",
+                                    android.widget.Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        },
+                        onOpenSettings = {
+                            showJobsSheet = false
+                            navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
+                        },
+                        onReviewOriginal = { job ->
+                            showJobsSheet = false
+                            reviewOriginalJobId = job.id
+                        },
+                        onDismiss = { showJobsSheet = false },
+                    )
+                }
+
+                val reviewOriginalJob = mediaJobs.find { it.id == reviewOriginalJobId }
+                val reviewCompleted = reviewOriginalJob?.state as? com.watermelon.mediatools.job.MediaJobState.Completed
+                LaunchedEffect(reviewOriginalJobId, reviewCompleted?.awaitingOriginalFileDecision) {
+                    if (reviewOriginalJobId != null &&
+                        (reviewCompleted == null || !reviewCompleted.awaitingOriginalFileDecision)
+                    ) {
+                        reviewOriginalJobId = null
+                        globalOriginalDeletePending = false
+                    }
+                }
+                if (reviewOriginalJob != null && reviewCompleted?.awaitingOriginalFileDecision == true) {
+                    com.watermelon.ui.components.KeepOrDeleteOriginalDialog(
+                        originalFileName = com.watermelon.ui.components.jobSourceLabel(reviewOriginalJob),
+                        outputFileName = Uri.decode(reviewCompleted.outputUri).substringAfterLast('/'),
+                        isTrim = reviewOriginalJob.type == com.watermelon.mediatools.job.MediaJobType.TRIM,
+                        isPendingSystemConsent = globalOriginalDeletePending,
+                        actualTrimRangeMs = reviewCompleted.actualTrimRangeMs,
+                        compressionSizeBytes = reviewOriginalJob.sourceSizeBytes?.let { originalSize ->
+                            reviewCompleted.outputSizeBytes?.let { outputSize -> originalSize to outputSize }
+                        },
+                        onKeepOriginal = {
+                            mediaJobsViewModel.resolveOriginalFileDecision(
+                                reviewOriginalJob.id,
+                                deleteOriginal = false,
+                                contentResolver = contentResolver,
+                            )
+                        },
+                        onDeleteOriginal = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                globalOriginalDeletePending = true
+                                originalFileDeleter.requestDelete(
+                                    reviewOriginalJob.id,
+                                    Uri.parse(reviewOriginalJob.inputUri),
+                                    contentResolver,
+                                )
+                            } else {
+                                mediaJobsViewModel.resolveOriginalFileDecision(
+                                    reviewOriginalJob.id,
+                                    deleteOriginal = true,
+                                    contentResolver = contentResolver,
+                                )
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -1302,29 +1396,10 @@ class MainActivity : ComponentActivity() {
         pendingExtractAudio?.let { (uri, displayName) ->
             com.watermelon.ui.components.Mp3BitrateDialog(
                 onSelect = { preset ->
-                    activeMp3JobId = mediaJobManager.extractAudio(
-                        audioExtractor, uri, displayName, preset.kbps
-                    )
+                    mediaJobManager.extractAudio(audioExtractor, uri, displayName, preset.kbps)
                     pendingExtractAudio = null
                 },
                 onDismiss = { pendingExtractAudio = null }
-            )
-        }
-
-        activeMp3Job?.let { job ->
-            com.watermelon.ui.components.MediaJobProgressSheet(
-                job = job,
-                outputLocation = if (job.type == com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO) {
-                    settingsState.mp3OutputPath
-                } else {
-                    null
-                },
-                onCancel = { mediaJobsViewModel.cancel(job.id) },
-                onDismiss = { activeMp3JobId = null },
-                onOpenSettings = {
-                    activeMp3JobId = null
-                    navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
-                }
             )
         }
 

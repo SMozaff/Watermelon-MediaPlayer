@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -78,6 +79,13 @@ fun CompressScreen(
                     (state is MediaJobState.Completed && state.awaitingOriginalFileDecision))
         }
     val parsedTargetMb = customTargetMb.toIntOrNull()
+    val context = LocalContext.current
+    val sourceDurationMs = remember(inputUri) { readDurationForEstimate(context, inputUri) }
+    val customTargetError = when {
+        customTargetMb.isNotBlank() && parsedTargetMb == null -> "Enter a whole number of MB."
+        parsedTargetMb != null && parsedTargetMb < 2 -> "Choose at least 2 MB so video and audio can be encoded reliably."
+        else -> null
+    }
     val hasUnsavedConfiguration = selectedPreset != null || customTargetMb.isNotBlank()
     val hasRunningJob = activeJob?.state is MediaJobState.Queued || activeJob?.state is MediaJobState.Running
     val requestExit = {
@@ -122,6 +130,7 @@ fun CompressScreen(
             PresetCard(
                 preset = preset,
                 isSelected = selectedPreset == preset,
+                estimate = estimatedPresetOutput(sourceDurationMs, preset),
                 onClick = { selectedPreset = preset }
             )
         }
@@ -147,7 +156,12 @@ fun CompressScreen(
             value = customTargetMb,
             onValueChange = { value -> customTargetMb = value.filter { it.isDigit() }.take(4) },
             label = { Text("Custom target size (MB)") },
-            supportingText = { Text("Watermelon calculates bitrate from duration, then validates the final size.") },
+            supportingText = {
+                Text(
+                    customTargetError
+                        ?: "Watermelon calculates bitrate from duration, then validates the final size."
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
@@ -158,7 +172,7 @@ fun CompressScreen(
                 val targetMb = parsedTargetMb ?: return@Button
                 activeJobId = compressViewModel.startTargetSizeCompress(inputUri, originalDisplayName, targetMb)
             },
-            enabled = parsedTargetMb != null && parsedTargetMb > 0,
+            enabled = parsedTargetMb != null && parsedTargetMb > 0 && customTargetError == null,
             shape = WatermelonShapes.control,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary,
@@ -206,6 +220,10 @@ fun CompressScreen(
                 MediaJobProgressSheet(
                     job = job,
                     onCancel = { mediaJobsViewModel.cancel(job.id) },
+                    onContinueInBackground = {
+                        activeJobId = null
+                        onBack()
+                    },
                     onDismiss = {
                         if (state is MediaJobState.Queued || state is MediaJobState.Running) {
                             showBackgroundExitDialog = true
@@ -275,7 +293,12 @@ fun CompressScreen(
 // instead of proactive audit.
 @UnstableApi
 @Composable
-private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onClick: () -> Unit) {
+private fun PresetCard(
+    preset: VideoCompressor.Preset,
+    isSelected: Boolean,
+    estimate: String?,
+    onClick: () -> Unit,
+) {
     androidx.compose.foundation.layout.Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,5 +318,39 @@ private fun PresetCard(preset: VideoCompressor.Preset, isSelected: Boolean, onCl
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = WatermelonSpacing.xs)
         )
+        Text(
+            estimate ?: "Estimated output is unavailable for this video.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(top = WatermelonSpacing.xs)
+        )
     }
+}
+
+private fun readDurationForEstimate(
+    context: android.content.Context,
+    uri: Uri,
+): Long? {
+    val retriever = android.media.MediaMetadataRetriever()
+    return try {
+        retriever.setDataSource(context, uri)
+        retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)
+            ?.toLongOrNull()
+    } catch (_: Exception) {
+        null
+    } finally {
+        retriever.release()
+    }
+}
+
+@UnstableApi
+private fun estimatedPresetOutput(
+    durationMs: Long?,
+    preset: VideoCompressor.Preset,
+): String? {
+    val durationSeconds = durationMs?.toDouble()?.div(1_000.0) ?: return null
+    val bytes = durationSeconds * (preset.videoBitrateBps + preset.audioBitrateBps) / 8.0
+    val mb = bytes / (1024.0 * 1024.0)
+    val resolution = "up to ${preset.targetShortSidePx}p"
+    return "Estimate: about ${"%.1f".format(mb)} MB · $resolution"
 }

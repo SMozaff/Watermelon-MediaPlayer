@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -22,11 +23,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -110,11 +114,26 @@ fun PlaylistsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "No playlists yet",
-                    style = WatermelonTypography.typography.bodyLarge,
-                    color = WatermelonColors.DarkOnSurfaceVariant
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(WatermelonSpacing.lg),
+                ) {
+                    Text(
+                        "Create playlists for the videos you want to watch again.",
+                        style = WatermelonTypography.typography.bodyLarge,
+                        color = WatermelonColors.DarkOnSurface,
+                    )
+                    Text(
+                        "Keep favourites, trips, shows, or any group together without moving the original files.",
+                        style = WatermelonTypography.typography.bodyMedium,
+                        color = WatermelonColors.DarkOnSurfaceVariant,
+                        modifier = Modifier.padding(top = WatermelonSpacing.sm),
+                    )
+                    Button(
+                        onClick = { showCreateDialog = true },
+                        modifier = Modifier.padding(top = WatermelonSpacing.lg),
+                    ) { Text("Create playlist") }
+                }
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -187,6 +206,8 @@ fun PlaylistsScreen(
 
     if (showCreateDialog) {
         var name by remember { mutableStateOf("") }
+        val nameFocusRequester = remember { FocusRequester() }
+        LaunchedEffect(Unit) { nameFocusRequester.requestFocus() }
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             title = { Text("New playlist", color = WatermelonColors.DarkOnSurface) },
@@ -196,7 +217,9 @@ fun PlaylistsScreen(
                     onValueChange = { name = it },
                     placeholder = { Text("Playlist name") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(nameFocusRequester)
                 )
             },
             confirmButton = {

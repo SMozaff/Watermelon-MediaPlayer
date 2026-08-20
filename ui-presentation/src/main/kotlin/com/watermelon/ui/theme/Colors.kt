@@ -48,6 +48,7 @@ object WatermelonColors {
     val Accent        = Palette.WatermelonRed   // primary
     val AccentVariant = Palette.SoftTeal         // secondary
     val Warning       = Palette.WarningYellow    // warnings, buffering, "new" badges
-    val OnAccent      = Palette.PaperWhite
+    // Dark ink on Watermelon Red provides a stronger normal-text contrast pair than Paper White.
+    val OnAccent      = Palette.DeepCarbon
     val Error         = Palette.WatermelonRed
 }

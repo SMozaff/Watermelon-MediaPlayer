@@ -124,26 +124,50 @@ class MediaJobService : Service() {
             stopSelf()
             return
         }
-        // Single notification summarizing the first active job; a multi-job notification
-        // layout (one line per job) is a reasonable v2 improvement, not built here.
-        startForeground(NOTIFICATION_ID, buildNotification(active.first()))
+        startForeground(NOTIFICATION_ID, buildNotification(active))
     }
 
-    private fun buildNotification(job: MediaJob): Notification {
-        val title = when (job.type) {
-            com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO -> "Extracting audio..."
-            com.watermelon.mediatools.job.MediaJobType.TRIM -> "Trimming video..."
-            com.watermelon.mediatools.job.MediaJobType.COMPRESS -> "Compressing video..."
+    private fun buildNotification(activeJobs: List<MediaJob>): Notification {
+        val primary = activeJobs.first()
+        val title = if (activeJobs.size == 1) {
+            jobTitle(primary)
+        } else {
+            "${activeJobs.size} media jobs running"
         }
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val averageProgress = activeJobs.map { it.progressPercent }.average().toInt()
+        val content = if (activeJobs.size == 1) {
+            "${jobSource(primary)} · ${primary.progressPercent}%"
+        } else {
+            "${activeJobs.count { it.state is MediaJobState.Running }} running · " +
+                "${activeJobs.count { it.state is MediaJobState.Queued }} queued"
+        }
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
-            .setContentText("${job.progressPercent}%")
-            .setProgress(100, job.progressPercent, false)
+            .setContentText(content)
+            .setProgress(100, averageProgress, false)
             .setSmallIcon(android.R.drawable.stat_sys_download) // placeholder -- app should supply a real icon
             .setOngoing(true)
-            .addAction(0, "Cancel", cancelIntent(this, job.id))
-            .build()
+
+        if (activeJobs.size == 1) {
+            builder.addAction(0, "Cancel", cancelIntent(this, primary.id))
+        } else {
+            val inbox = NotificationCompat.InboxStyle()
+            activeJobs.take(5).forEach { job ->
+                inbox.addLine("${jobTitle(job)} · ${jobSource(job)} · ${job.progressPercent}%")
+            }
+            builder.setStyle(inbox)
+        }
+        return builder.build()
     }
+
+    private fun jobTitle(job: MediaJob): String = when (job.type) {
+        com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO -> "Extracting audio"
+        com.watermelon.mediatools.job.MediaJobType.TRIM -> "Trimming video"
+        com.watermelon.mediatools.job.MediaJobType.COMPRESS -> "Compressing video"
+    }
+
+    private fun jobSource(job: MediaJob): String =
+        android.net.Uri.decode(job.inputUri).substringAfterLast('/').ifBlank { "Media file" }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

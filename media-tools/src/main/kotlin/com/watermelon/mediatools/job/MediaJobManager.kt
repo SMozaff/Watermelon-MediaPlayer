@@ -352,6 +352,17 @@ class MediaJobManager(
         FileLogger.w(TAG, "job id=$id fell back: $originalRequest -> $fallbackRequest")
     }
 
+    /** Removes a terminal job after its outcome has been reviewed or dismissed. */
+    fun dismiss(id: String) {
+        val job = _jobs.value.find { it.id == id } ?: return
+        if (job.state is MediaJobState.Queued || job.state is MediaJobState.Running) {
+            FileLogger.w(TAG, "refused to dismiss active job id=$id")
+            return
+        }
+        _jobs.update { list -> list.filterNot { it.id == id } }
+        FileLogger.i(TAG, "terminal job dismissed id=$id")
+    }
+
     fun cancel(id: String) {
         transformers[id]?.cancel()
         transformers.remove(id)

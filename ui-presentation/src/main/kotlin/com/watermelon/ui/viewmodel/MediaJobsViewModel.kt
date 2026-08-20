@@ -26,6 +26,10 @@ class MediaJobsViewModel(private val jobManager: MediaJobManager) : ViewModel() 
         jobManager.cancel(jobId)
     }
 
+    fun dismiss(jobId: String) {
+        jobManager.dismiss(jobId)
+    }
+
     fun resolveOriginalFileDecision(jobId: String, deleteOriginal: Boolean, contentResolver: ContentResolver) {
         jobManager.resolveOriginalFileDecision(jobId, deleteOriginal, contentResolver)
     }

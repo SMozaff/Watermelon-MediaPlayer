@@ -233,7 +233,7 @@ fun SleepTimerDialog(
                         shape = WatermelonShapes.control,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = PlayerColors.current.textPrimary
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
