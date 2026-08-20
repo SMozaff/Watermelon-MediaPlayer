@@ -130,6 +130,7 @@ fun VideoListScreen(
     }
     val isGrid = currentLayout == VideoLayout.GRID
     var sortMenuOpen by remember { mutableStateOf(false) }
+    var viewOptionsOpen by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPlaylistPicker by remember { mutableStateOf(false) }
@@ -142,6 +143,17 @@ fun VideoListScreen(
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
             viewModel.onDeleteConfirmed()
+            android.widget.Toast.makeText(
+                context,
+                "Deleted selected videos",
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+        } else {
+            android.widget.Toast.makeText(
+                context,
+                "Deletion cancelled",
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
         }
     }
     LaunchedEffect(isRefreshing) {
@@ -177,7 +189,7 @@ fun VideoListScreen(
         derivedStateOf { listState.isScrollInProgress || gridState.isScrollInProgress }
     }
 
-    LaunchedEffect(currentSort, ascending) {
+    LaunchedEffect(currentSort, ascending, currentLayout, currentItemSize) {
         runCatching { listState.scrollToItem(0) }
         runCatching { gridState.scrollToItem(0) }
     }
@@ -217,9 +229,9 @@ fun VideoListScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm),
             ) {
                 if (selection.isActive) {
                     TextButton(onClick = { viewModel.selectAll() }) {
@@ -230,47 +242,15 @@ fun VideoListScreen(
                     }
                 } else {
                     LabeledIconButton(
-                        icon = if (isGrid) WatermelonIcons.ViewList else WatermelonIcons.ViewGrid,
-                        label = if (isGrid) "List" else "Grid",
-                        onClick = { currentLayout = if (isGrid) VideoLayout.LIST else VideoLayout.GRID }
+                        icon = WatermelonIcons.Sort,
+                        label = "Sort: ${currentSort.label}",
+                        onClick = { sortMenuOpen = true },
                     )
-                    Box {
-                        LabeledIconButton(
-                            icon = WatermelonIcons.Sort,
-                            label = "Sort: ${currentSort.label}",
-                            onClick = { sortMenuOpen = true }
-                        )
-                        DropdownMenu(expanded = sortMenuOpen, onDismissRequest = { sortMenuOpen = false }) {
-                            VideoSort.values().forEach { opt ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            opt.label,
-                                            style = WatermelonTypography.typography.bodyMedium,
-                                            color = WatermelonColors.DarkOnSurface
-                                        )
-                                    },
-                                    onClick = { currentSort = opt; sortMenuOpen = false }
-                                )
-                            }
-                        }
-                    }
                     LabeledIconButton(
-                        icon = if (ascending) R.drawable.ic_sort_ascending else R.drawable.ic_sort_descending,
-                        label = if (ascending) "Ascending" else "Descending",
-                        onClick = { ascending = !ascending }
+                        icon = if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList,
+                        label = "View: ${if (isGrid) "Grid" else "List"}",
+                        onClick = { viewOptionsOpen = true },
                     )
-                    VideoItemSize.values().forEach { size ->
-                        LabeledIconButton(
-                            icon = when (size) {
-                                VideoItemSize.SMALL -> R.drawable.ic_size_small
-                                VideoItemSize.LARGE -> R.drawable.ic_size_large
-                            },
-                            label = size.label,
-                            active = size == currentItemSize,
-                            onClick = { currentItemSize = size }
-                        )
-                    }
                 }
             }
 
@@ -403,6 +383,85 @@ fun VideoListScreen(
                 }
             }
         }
+    }
+
+    if (sortMenuOpen) {
+        AlertDialog(
+            onDismissRequest = { sortMenuOpen = false },
+            title = { Text("Sort videos") },
+            text = {
+                Column {
+                    VideoSort.values().forEach { option ->
+                        TextButton(
+                            onClick = {
+                                currentSort = option
+                                sortMenuOpen = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (option == currentSort) "✓ ${option.label}" else option.label,
+                                color = WatermelonColors.DarkOnSurface,
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    TextButton(
+                        onClick = { ascending = !ascending },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = if (ascending) "✓ Ascending" else "Descending",
+                            color = WatermelonColors.DarkOnSurface,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { sortMenuOpen = false }) { Text("Done") }
+            },
+        )
+    }
+
+    if (viewOptionsOpen) {
+        AlertDialog(
+            onDismissRequest = { viewOptionsOpen = false },
+            title = { Text("View options") },
+            text = {
+                Column {
+                    VideoLayout.values().forEach { layout ->
+                        TextButton(
+                            onClick = { currentLayout = layout },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (layout == currentLayout) {
+                                    "✓ ${layout.name.lowercase().replaceFirstChar { it.uppercase() }}"
+                                } else {
+                                    layout.name.lowercase().replaceFirstChar { it.uppercase() }
+                                },
+                                color = WatermelonColors.DarkOnSurface,
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    VideoItemSize.values().forEach { size ->
+                        TextButton(
+                            onClick = { currentItemSize = size },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (size == currentItemSize) "✓ ${size.label}" else size.label,
+                                color = WatermelonColors.DarkOnSurface,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewOptionsOpen = false }) { Text("Done") }
+            },
+        )
     }
 
     if (showDeleteDialog) {

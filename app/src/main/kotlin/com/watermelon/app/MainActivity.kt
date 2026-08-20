@@ -943,8 +943,12 @@ class MainActivity : ComponentActivity() {
                     }
 
                     var isFavourite by remember(mediaUri) { mutableStateOf(false) }
+                    var playerMedia by remember(mediaUri) {
+                        mutableStateOf<com.watermelon.common.model.MediaItem?>(null)
+                    }
                     LaunchedEffect(mediaUri) {
                         isFavourite = runCatching { playlistRepository.isFavourite(mediaUri) }.getOrDefault(false)
+                        playerMedia = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
                     }
 
                     val vhsController = com.watermelon.ui.player.rememberVhsEffectController(
@@ -1063,19 +1067,29 @@ class MainActivity : ComponentActivity() {
                         vhsIntensity = mappedIntensity,
                         tunerSeekBarEnabled = settingsState.tunerSeekBarEnabled,
                         tunerSeekStepSeconds = settingsState.tunerSeekStepSeconds,
+                        onTunerSeekBarEnabledChange = { enabled ->
+                            settingsState = settingsState.copy(tunerSeekBarEnabled = enabled)
+                            saveSettingsState(prefs, settingsState)
+                        },
                         isInPipMode = isPiPActive,
                         onBack = { navController.popBackStack() },
                         durationMs = durationMs,
                         subtitleTrack = subtitleTrackState,
                         uri = mediaUri,
+                        mediaTitle = playerMedia?.displayName ?: mediaUri.substringAfterLast('/'),
+                        mediaContext = playerMedia?.parentFolder
+                            ?.substringAfterLast('/')
+                            .orEmpty(),
                         screenshotMode = settingsState.screenshotMode,
                         initialBrightness = savedBrightness,
-                        onPipClick = {
-                            com.watermelon.common.util.FileLogger.i("PiP", "onPipClick tapped")
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        onPipClick = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            {
+                                com.watermelon.common.util.FileLogger.i("PiP", "onPipClick tapped")
                                 playbackMode = PlaybackMode.PIP
                                 enterPiPMode()
                             }
+                        } else {
+                            null
                         },
                         onBackgroundClick = { enabled ->
                             playbackMode = if (enabled) PlaybackMode.BACKGROUND else PlaybackMode.NORMAL

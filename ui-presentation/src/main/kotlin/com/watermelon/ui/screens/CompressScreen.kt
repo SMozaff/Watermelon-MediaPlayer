@@ -3,18 +3,23 @@ package com.watermelon.ui.screens
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,10 +64,30 @@ fun CompressScreen(
     var customTargetMb by remember { mutableStateOf("") }
     var activeJobId by remember { mutableStateOf<String?>(null) }
     var pendingDeleteConsent by remember { mutableStateOf(false) }
+    var showDiscardChangesDialog by remember { mutableStateOf(false) }
+    var showBackgroundExitDialog by remember { mutableStateOf(false) }
 
     val jobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
     val activeJob: MediaJob? = jobs.find { it.id == activeJobId }
+        ?: jobs.lastOrNull { job ->
+            val state = job.state
+            job.type == com.watermelon.mediatools.job.MediaJobType.COMPRESS &&
+                job.inputUri == inputUri.toString() &&
+                (state is MediaJobState.Queued ||
+                    state is MediaJobState.Running ||
+                    (state is MediaJobState.Completed && state.awaitingOriginalFileDecision))
+        }
     val parsedTargetMb = customTargetMb.toIntOrNull()
+    val hasUnsavedConfiguration = selectedPreset != null || customTargetMb.isNotBlank()
+    val hasRunningJob = activeJob?.state is MediaJobState.Queued || activeJob?.state is MediaJobState.Running
+    val requestExit = {
+        when {
+            hasRunningJob -> showBackgroundExitDialog = true
+            hasUnsavedConfiguration -> showDiscardChangesDialog = true
+            else -> onBack()
+        }
+    }
+    BackHandler(onBack = requestExit)
 
     Column(
         modifier = modifier
@@ -70,6 +95,17 @@ fun CompressScreen(
             .padding(WatermelonSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
     ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = requestExit) { Text("Back") }
+            Spacer(Modifier.weight(1f))
+            Text(
+                "Compress",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = WatermelonSpacing.sm),
+            )
+            Spacer(Modifier.weight(1f))
+        }
+
         Text(
             "Compress video",
             style = MaterialTheme.typography.headlineSmall,
@@ -170,10 +206,56 @@ fun CompressScreen(
                 MediaJobProgressSheet(
                     job = job,
                     onCancel = { mediaJobsViewModel.cancel(job.id) },
-                    onDismiss = { activeJobId = null; if (state is MediaJobState.Completed) onBack() },
+                    onDismiss = {
+                        if (state is MediaJobState.Queued || state is MediaJobState.Running) {
+                            showBackgroundExitDialog = true
+                        } else {
+                            activeJobId = null
+                            if (state is MediaJobState.Completed) onBack()
+                        }
+                    },
                 )
             }
         }
+    }
+
+    if (showDiscardChangesDialog) {
+        AlertDialog(
+            onDismissRequest = { showDiscardChangesDialog = false },
+            title = { Text("Discard compression changes?") },
+            text = { Text("Your selected preset or target size has not been used yet. You can continue editing or discard it and return.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDiscardChangesDialog = false
+                    onBack()
+                }) { Text("Discard changes") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardChangesDialog = false }) { Text("Continue editing") }
+            },
+        )
+    }
+
+    if (showBackgroundExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundExitDialog = false },
+            title = { Text("Compression will continue") },
+            text = {
+                Text(
+                    "This compression is still running in the background. You can reopen Compress from File actions to inspect its progress."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackgroundExitDialog = false
+                    activeJobId = null
+                    onBack()
+                }) { Text("Keep running") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackgroundExitDialog = false }) { Text("Stay") }
+            },
+        )
     }
 
     androidx.compose.runtime.LaunchedEffect(activeJob) {

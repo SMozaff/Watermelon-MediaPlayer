@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,10 +103,13 @@ fun PhonePlayerScreen(
     vhsIntensity: Float,
     tunerSeekBarEnabled: Boolean = true,
     tunerSeekStepSeconds: Int = 5,
+    onTunerSeekBarEnabledChange: ((Boolean) -> Unit)? = null,
     durationMs: Long,
     surface: @Composable (Modifier) -> Unit,
     onBack: () -> Unit,
     uri: String = "",
+    mediaTitle: String = "",
+    mediaContext: String = "",
     subtitleTrack: com.watermelon.common.model.ParsedSubtitle? = null,
     subtitleStyle: com.watermelon.common.model.SubtitleStyle = com.watermelon.common.model.SubtitleStyle(),
     screenshotMode: ScreenshotMode = ScreenshotMode.SINGLE,
@@ -167,6 +172,11 @@ fun PhonePlayerScreen(
     var panOffset by remember { mutableStateOf(Offset.Zero) }
     var currentOrientation by rememberSaveable { mutableStateOf(ScreenOrientation.AUTO) }
     var showControlPanel by remember { mutableStateOf(false) }
+    var showQuickTools by remember { mutableStateOf(false) }
+    var showFileActions by remember { mutableStateOf(false) }
+    var showMediaInfo by remember { mutableStateOf(false) }
+    var showTunerSeekTip by rememberSaveable { mutableStateOf(false) }
+    val isPlayerSheetOpen = showControlPanel || showQuickTools || showFileActions
     var showSleepTimerDialog by remember { mutableStateOf(false) }
     var screenshotMessage by remember { mutableStateOf<String?>(null) }
     var isPiPEnabled by remember { mutableStateOf(false) }
@@ -240,11 +250,11 @@ fun PhonePlayerScreen(
     //    the instant either becomes true, and again once it goes back to false. ──────
     var lastInteraction by remember { mutableLongStateOf(0L) }
     LaunchedEffect(
-        lastInteraction, ui.controlsVisible, isPlaying, showControlPanel, ui.isLocked,
+        lastInteraction, ui.controlsVisible, isPlaying, isPlayerSheetOpen, ui.isLocked,
         isScrubbingSeekBar, isHolding
     ) {
         if (isScrubbingSeekBar || isHolding) return@LaunchedEffect
-        if (ui.controlsVisible && isPlaying && !showControlPanel && !ui.isLocked) {
+        if (ui.controlsVisible && isPlaying && !isPlayerSheetOpen && !ui.isLocked) {
             kotlinx.coroutines.delay(5_000)
             // Re-check we're still idle before hiding (belt-and-suspenders: the key
             // restart above should already cover this, but keep the guard).
@@ -254,6 +264,12 @@ fun PhonePlayerScreen(
     LaunchedEffect(showVolumeIndicator) { if (showVolumeIndicator) { kotlinx.coroutines.delay(1_500); showVolumeIndicator = false } }
     LaunchedEffect(showBrightnessIndicator) { if (showBrightnessIndicator) { kotlinx.coroutines.delay(1_500); showBrightnessIndicator = false } }
     LaunchedEffect(screenshotMessage) { if (screenshotMessage != null) { kotlinx.coroutines.delay(2_500); screenshotMessage = null } }
+    LaunchedEffect(tunerSeekBarEnabled) {
+        val playerPreferences = context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
+        if (tunerSeekBarEnabled && !playerPreferences.getBoolean("tuner_seek_tip_seen", false)) {
+            showTunerSeekTip = true
+        }
+    }
 
     // Restore brightness on launch (window-scoped, reverts on exit).
     LaunchedEffect(Unit) {
@@ -313,7 +329,12 @@ fun PhonePlayerScreen(
     BackHandler(enabled = true) {
         when {
             ui.isLocked -> { /* locked: Back does nothing — must use the slide-unlock */ }
-            ui.sheetOpen || showControlPanel -> { showControlPanel = false; ui.closeSheet() }
+            ui.sheetOpen || isPlayerSheetOpen -> {
+                showControlPanel = false
+                showQuickTools = false
+                showFileActions = false
+                ui.closeSheet()
+            }
             else -> onBack()
         }
     }
@@ -387,8 +408,8 @@ fun PhonePlayerScreen(
         // it can't steal taps/drags meant for buttons or the seek bar (see Layer 3 tap-catcher).
         Box(
             Modifier.fillMaxSize()
-                .pointerInput(durationMs, ui.gesturesEnabled, showControlPanel) {
-                    if (!ui.gesturesEnabled || showControlPanel) return@pointerInput
+                .pointerInput(durationMs, ui.gesturesEnabled, isPlayerSheetOpen) {
+                    if (!ui.gesturesEnabled || isPlayerSheetOpen) return@pointerInput
                     awaitEachGesture {
                         val firstDown = awaitFirstDown()  // requireUnconsumed=true: ignore touches consumed by controls
                         val holdOriginX = firstDown.position.x
@@ -482,11 +503,13 @@ fun PhonePlayerScreen(
             // win over this when tapped directly.
             Box(
                 Modifier.fillMaxSize()
-                    .pointerInput(showControlPanel) {
+                    .pointerInput(isPlayerSheetOpen) {
                         detectTapGestures(
                             onTap = {
-                                if (showControlPanel) {
+                                if (isPlayerSheetOpen) {
                                     showControlPanel = false
+                                    showQuickTools = false
+                                    showFileActions = false
                                 } else {
                                     lastInteraction = System.nanoTime(); ui.hideControls()
                                 }
@@ -510,18 +533,47 @@ fun PhonePlayerScreen(
                     .background(Brush.verticalGradient(listOf(Color.Transparent, PlayerColors.current.controlBarScrim.copy(alpha = 0.7f))))
             )
 
-            // Top bar: back · spacer · lock · more
+            // Top bar: back · media context (details on tap) · lock · actions.
             Row(
                 modifier = Modifier.fillMaxWidth().align(Alignment.TopStart).padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    if (showControlPanel) showControlPanel = false else onBack()
+                    if (isPlayerSheetOpen) {
+                        showControlPanel = false
+                        showQuickTools = false
+                        showFileActions = false
+                    } else {
+                        onBack()
+                    }
                 }) {
                     WatermelonGlyph(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
                 }
-                Spacer(Modifier.weight(1f))
+                TextButton(
+                    onClick = { showMediaInfo = true },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = mediaTitle.ifBlank { "Now playing" },
+                            color = PlayerColors.current.textPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (mediaContext.isNotBlank()) {
+                            Text(
+                                text = mediaContext,
+                                color = PlayerColors.current.textSecondary,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     ui.lock(); onLockChanged?.invoke(true)
@@ -531,8 +583,14 @@ fun PhonePlayerScreen(
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     showControlPanel = !showControlPanel
+                    showQuickTools = false
+                    showFileActions = false
                 }) {
-                    WatermelonGlyph(WatermelonIcons.Settings, "Menu", tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault)
+                    WatermelonGlyph(
+                        WatermelonIcons.MoreVert,
+                        "Player actions",
+                        tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault
+                    )
                 }
             }
 
@@ -614,28 +672,50 @@ fun PhonePlayerScreen(
 
             }
 
-            // Control panel
             if (showControlPanel) {
-                ControlPanel(
-                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 48.dp),
+                PlayerActionsSheet(
+                    onQuickTools = {
+                        showControlPanel = false
+                        showQuickTools = true
+                    },
+                    onFileActions = {
+                        showControlPanel = false
+                        showFileActions = true
+                    },
+                    onDismiss = { showControlPanel = false },
+                )
+            }
+            if (showQuickTools) {
+                QuickToolsSheet(
                     currentSpeed = playbackSpeed,
                     isMuted = currentVolume == 0,
                     currentRatio = currentRatio,
+                    currentOrientation = currentOrientation,
+                    tunerSeekBarEnabled = tunerSeekBarEnabled,
+                    tunerSeekStepSeconds = tunerSeekStepSeconds,
                     repeatMode = repeatMode,
                     isShuffled = isShuffled,
                     isPiP = isPiPEnabled,
+                    canUsePip = onPipClick != null,
                     isBackground = isBackgroundEnabled,
-                    isFavourite = isFavourite,
-                    onSpeedChange = { s -> playbackSpeed = s; viewModel.onIntent(UserIntent.SetSpeed(s)) },
+                    hasSubtitleTrack = subtitleTrack != null,
+                    onSpeedChange = { speed ->
+                        playbackSpeed = speed
+                        viewModel.onIntent(UserIntent.SetSpeed(speed))
+                    },
                     onMuteToggle = {
                         val muted = currentVolume == 0
-                        val vol = if (muted) (maxVolume / 2).coerceAtLeast(1) else 0
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol, 0)
-                        currentVolume = vol; volumeFraction = vol.toFloat() / maxVolume
+                        val volume = if (muted) (maxVolume / 2).coerceAtLeast(1) else 0
+                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+                        currentVolume = volume
+                        volumeFraction = volume.toFloat() / maxVolume
                     },
                     onRatioChange = { currentRatio = it },
-                    currentOrientation = currentOrientation,
                     onOrientationChange = { currentOrientation = it },
+                    onTunerSeekBarEnabledChange = { enabled ->
+                        onTunerSeekBarEnabledChange?.invoke(enabled)
+                        showQuickTools = false
+                    },
                     onRepeat = { viewModel.cycleRepeat() },
                     onShuffle = { viewModel.toggleShuffle() },
                     onScreenshot = {
@@ -651,21 +731,122 @@ fun PhonePlayerScreen(
                             }
                         }
                     },
-                    onSleepTimer = { showSleepTimerDialog = true },
-                    onPip = { isPiPEnabled = true; isBackgroundEnabled = false; ui.hideControls(); onPipClick?.invoke() },
-                    onBackground = {
-                        if (!isBackgroundEnabled) { isBackgroundEnabled = true; isPiPEnabled = false; onBackgroundClick?.invoke(true) }
-                        else { isBackgroundEnabled = false; onBackgroundClick?.invoke(false) }
+                    onSleepTimer = {
+                        showQuickTools = false
+                        showSleepTimerDialog = true
                     },
-                    onShare = { onShare?.invoke() },
-                    onFavourite = { onFavourite?.invoke(!isFavourite) },
-                    onAddToPlaylist = { onAddToPlaylist?.invoke() },
-                    onDelete = { onDelete?.invoke() },
-                    onExtractAudio = onExtractAudio,
-                    onTrimVideo = onTrimVideo,
-                    onCompressVideo = onCompressVideo,
+                    onPip = {
+                        if (onPipClick != null) {
+                            showQuickTools = false
+                            isPiPEnabled = true
+                            isBackgroundEnabled = false
+                            ui.hideControls()
+                            onPipClick.invoke()
+                        }
+                    },
+                    onBackground = {
+                        if (!isBackgroundEnabled) {
+                            isBackgroundEnabled = true
+                            isPiPEnabled = false
+                            onBackgroundClick?.invoke(true)
+                        } else {
+                            isBackgroundEnabled = false
+                            onBackgroundClick?.invoke(false)
+                        }
+                    },
+                    onDismiss = { showQuickTools = false },
                 )
             }
+            if (showFileActions) {
+                FileActionsSheet(
+                    isFavourite = isFavourite,
+                    onShare = {
+                        showFileActions = false
+                        onShare?.invoke()
+                    },
+                    onFavourite = { onFavourite?.invoke(!isFavourite) },
+                    onAddToPlaylist = {
+                        showFileActions = false
+                        onAddToPlaylist?.invoke()
+                    },
+                    onExtractAudio = onExtractAudio?.let { action ->
+                        {
+                            showFileActions = false
+                            action()
+                        }
+                    },
+                    onTrimVideo = onTrimVideo?.let { action ->
+                        {
+                            showFileActions = false
+                            action()
+                        }
+                    },
+                    onCompressVideo = onCompressVideo?.let { action ->
+                        {
+                            showFileActions = false
+                            action()
+                        }
+                    },
+                    onDelete = {
+                        showFileActions = false
+                        onDelete?.invoke()
+                    },
+                    onDismiss = { showFileActions = false },
+                )
+            }
+        }
+
+        if (showTunerSeekTip) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = {
+                    context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("tuner_seek_tip_seen", true)
+                        .apply()
+                    showTunerSeekTip = false
+                },
+                title = { Text("Tuner seek") },
+                text = {
+                    Text(
+                        "Each tuner detent moves playback by $tunerSeekStepSeconds seconds. " +
+                            "Use Quick tools to choose a standard seek bar, or change the tuner setting later."
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
+                            .edit()
+                            .putBoolean("tuner_seek_tip_seen", true)
+                            .apply()
+                        showTunerSeekTip = false
+                    }) { Text("Got it") }
+                },
+            )
+        }
+
+        if (showMediaInfo) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showMediaInfo = false },
+                title = { Text("Now playing") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)) {
+                        Text(
+                            text = mediaTitle.ifBlank { "Unknown video" },
+                            color = PlayerColors.current.textPrimary,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        if (mediaContext.isNotBlank()) {
+                            Text(
+                                text = mediaContext,
+                                color = PlayerColors.current.textSecondary,
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showMediaInfo = false }) { Text("Close") }
+                },
+            )
         }
 
         // ── Persistent thin progress line ────────────────────────────────────

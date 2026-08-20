@@ -4,14 +4,19 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +77,8 @@ fun TrimScreen(
     var endMs by remember { mutableStateOf(durationMs) }
     var activeJobId by remember { mutableStateOf<String?>(null) }
     var pendingDeleteConsent by remember { mutableStateOf(false) }
+    var showDiscardChangesDialog by remember { mutableStateOf(false) }
+    var showBackgroundExitDialog by remember { mutableStateOf(false) }
 
     // Kicks off keyframe indexing + filmstrip extraction once per (inputUri, durationMs) --
     // see TrimViewModel.loadTrimAids's doc for why this is the intended call site.
@@ -85,7 +92,24 @@ fun TrimScreen(
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val jobs by mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
     val activeJob: MediaJob? = jobs.find { it.id == activeJobId }
+        ?: jobs.lastOrNull { job ->
+            val state = job.state
+            job.type == com.watermelon.mediatools.job.MediaJobType.TRIM &&
+                job.inputUri == inputUri.toString() &&
+                (state is MediaJobState.Queued ||
+                    state is MediaJobState.Running ||
+                    (state is MediaJobState.Completed && state.awaitingOriginalFileDecision))
+        }
     val hasSelectedCut = startMs > 0L || endMs < durationMs
+    val hasRunningJob = activeJob?.state is MediaJobState.Queued || activeJob?.state is MediaJobState.Running
+    val requestExit = {
+        when {
+            hasRunningJob -> showBackgroundExitDialog = true
+            hasSelectedCut -> showDiscardChangesDialog = true
+            else -> onBack()
+        }
+    }
+    BackHandler(onBack = requestExit)
 
     // Auto-pause at endMs while previewing the selected range -- same seek/play/pause
     // mechanism PhonePlayerScreen already uses, just driven from this screen's own state.
@@ -101,6 +125,16 @@ fun TrimScreen(
             .padding(WatermelonSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
     ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = requestExit) { Text("Back") }
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = "Trim",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = WatermelonSpacing.sm),
+            )
+            Spacer(Modifier.weight(1f))
+        }
         surface(Modifier.fillMaxWidth().padding(bottom = WatermelonSpacing.md))
 
         Text(
@@ -186,10 +220,56 @@ fun TrimScreen(
                 MediaJobProgressSheet(
                     job = job,
                     onCancel = { mediaJobsViewModel.cancel(job.id) },
-                    onDismiss = { activeJobId = null; if (state is MediaJobState.Completed) onBack() },
+                    onDismiss = {
+                        if (state is MediaJobState.Queued || state is MediaJobState.Running) {
+                            showBackgroundExitDialog = true
+                        } else {
+                            activeJobId = null
+                            if (state is MediaJobState.Completed) onBack()
+                        }
+                    },
                 )
             }
         }
+    }
+
+    if (showDiscardChangesDialog) {
+        AlertDialog(
+            onDismissRequest = { showDiscardChangesDialog = false },
+            title = { Text("Discard trim changes?") },
+            text = { Text("Your selected trim range has not been saved. You can continue editing or discard it and return.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDiscardChangesDialog = false
+                    onBack()
+                }) { Text("Discard changes") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardChangesDialog = false }) { Text("Continue editing") }
+            },
+        )
+    }
+
+    if (showBackgroundExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundExitDialog = false },
+            title = { Text("Trim will continue") },
+            text = {
+                Text(
+                    "This trim is still running in the background. You can reopen Trim from File actions to inspect its progress."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackgroundExitDialog = false
+                    activeJobId = null
+                    onBack()
+                }) { Text("Keep running") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackgroundExitDialog = false }) { Text("Stay") }
+            },
+        )
     }
 
     // Once OriginalFileDeleter's async result lands, MediaJobManager.resolveOriginalFileDecision

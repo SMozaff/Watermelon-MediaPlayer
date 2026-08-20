@@ -1,38 +1,27 @@
 package com.watermelon.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
@@ -40,8 +29,9 @@ import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
 /**
- * Multi-selection dock for batch operations on videos.
- * Implements the "Multi-selection dock" requirement from the UI Design System.
+ * Batch controls that state the action in words rather than relying on an icon-only dock. The
+ * vertical grouping deliberately prevents narrow phones or large text from hiding high-impact
+ * actions, and keeps playlist membership removal distinct from deleting media from the device.
  */
 @Composable
 fun MultiSelectionDock(
@@ -52,17 +42,13 @@ fun MultiSelectionDock(
     onShare: () -> Unit,
     modifier: Modifier = Modifier,
     visible: Boolean = false,
-    /** Only non-null when viewing a user playlist's own contents — shows a "remove from
-     *  this playlist" action distinct from [onDelete] (which deletes the file itself).
-     *  Null for folder browsing and system playlists (Favourites/Recently Added/Continue
-     *  Watching aren't user-editable membership lists in the same way). */
-    onRemoveFromPlaylist: (() -> Unit)? = null
+    onRemoveFromPlaylist: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
         exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column(
             modifier = Modifier
@@ -71,109 +57,65 @@ fun MultiSelectionDock(
                 .border(
                     width = 1.dp,
                     color = WatermelonColors.DarkOutline,
-                    shape = WatermelonShapes.sharp
+                    shape = WatermelonShapes.sharp,
                 )
                 .padding(WatermelonSpacing.md),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Selection count
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    WatermelonIcon(
-                        icon = WatermelonIcons.CheckCircle,
-                        contentDescription = "Selected",
-                        tint = WatermelonColors.Accent,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(WatermelonSpacing.sm))
-                    Text(
-                        text = "$selectedCount selected",
-                        style = WatermelonTypography.typography.labelLarge,
-                        color = WatermelonColors.DarkOnSurface,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                WatermelonIcon(
+                    icon = WatermelonIcons.CheckCircle,
+                    contentDescription = "Selection active",
+                    tint = WatermelonColors.Accent,
+                )
+                Text(
+                    text = "$selectedCount selected",
+                    style = WatermelonTypography.typography.labelLarge,
+                    color = WatermelonColors.DarkOnSurface,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(start = WatermelonSpacing.sm),
+                )
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onDeselectAll) {
+                    Text("Clear selection", color = WatermelonColors.DarkOnSurface)
                 }
+            }
 
-                // Action buttons
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs),
+            ) {
+                TextButton(
+                    onClick = onAddToPlaylist,
+                    modifier = Modifier.weight(1f),
                 ) {
-                    // Deselect all
-                    IconButton(
-                        onClick = onDeselectAll,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        WatermelonIcon(
-                            icon = WatermelonIcons.Close,
-                            contentDescription = "Deselect all",
-                            tint = WatermelonColors.DarkOnSurface
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(WatermelonSpacing.xs))
-
-                    // Add to playlist
-                    IconButton(
-                        onClick = onAddToPlaylist,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        WatermelonIcon(
-                            icon = WatermelonIcons.PlaylistAdd,
-                            contentDescription = "Add to playlist",
-                            tint = WatermelonColors.DarkOnSurface
-                        )
-                    }
-
-                    if (onRemoveFromPlaylist != null) {
-                        Spacer(modifier = Modifier.width(WatermelonSpacing.xs))
-                        IconButton(
-                            onClick = onRemoveFromPlaylist,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            WatermelonIcon(
-                                icon = WatermelonIcons.RemoveFromPlaylist,
-                                contentDescription = "Remove from this playlist",
-                                tint = WatermelonColors.DarkOnSurface
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(WatermelonSpacing.xs))
-
-                    // Share
-                    IconButton(
-                        onClick = onShare,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        WatermelonIcon(
-                            icon = WatermelonIcons.Share,
-                            contentDescription = "Share",
-                            tint = WatermelonColors.DarkOnSurface
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(WatermelonSpacing.xs))
-
-                    // Delete
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        WatermelonIcon(
-                            icon = WatermelonIcons.Delete,
-                            contentDescription = "Delete",
-                            tint = WatermelonColors.Error
-                        )
-                    }
+                    Text("Add to playlist", color = WatermelonColors.DarkOnSurface)
                 }
+                TextButton(
+                    onClick = onShare,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Share", color = WatermelonColors.DarkOnSurface)
+                }
+            }
+
+            onRemoveFromPlaylist?.let { remove ->
+                TextButton(
+                    onClick = remove,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Remove from this playlist", color = WatermelonColors.DarkOnSurface)
+                }
+            }
+
+            TextButton(
+                onClick = onDelete,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Delete from device", color = WatermelonColors.Error)
             }
         }
     }
@@ -188,6 +130,7 @@ private fun MultiSelectionDockPreview() {
         onDelete = {},
         onAddToPlaylist = {},
         onShare = {},
-        visible = true
+        visible = true,
+        onRemoveFromPlaylist = {},
     )
 }

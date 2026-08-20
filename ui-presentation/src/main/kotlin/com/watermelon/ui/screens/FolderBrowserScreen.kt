@@ -19,12 +19,14 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,6 +79,7 @@ fun FolderBrowserScreen(
     var currentItemSize by rememberSaveable { mutableStateOf(com.watermelon.ui.components.ItemSize.MEDIUM) }
     var ascending by rememberSaveable { mutableStateOf(true) }
     var sortMenuOpen by remember { mutableStateOf(false) }
+    var viewOptionsOpen by remember { mutableStateOf(false) }
     var currentSort by rememberSaveable { mutableStateOf(FolderSort.NAME) }
 
     val rows by remember(rowsRaw, currentSort, ascending) {
@@ -112,6 +115,10 @@ fun FolderBrowserScreen(
     val isScrolling by remember {
         derivedStateOf { listState.isScrollInProgress || gridState.isScrollInProgress }
     }
+    androidx.compose.runtime.LaunchedEffect(currentSort, ascending, currentLayout, currentItemSize) {
+        runCatching { listState.scrollToItem(0) }
+        runCatching { gridState.scrollToItem(0) }
+    }
 
     val isGrid = currentLayout == FolderLayout.GRID
     val gridColumns = when (currentItemSize) {
@@ -134,53 +141,20 @@ fun FolderBrowserScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm),
         ) {
             LabeledIconButton(
-                icon = if (isGrid) WatermelonIcons.ViewList else WatermelonIcons.ViewGrid,
-                label = if (isGrid) "List" else "Grid",
-                onClick = { currentLayout = if (isGrid) FolderLayout.LIST else FolderLayout.GRID }
+                icon = WatermelonIcons.Sort,
+                label = "Sort: ${currentSort.label()}",
+                onClick = { sortMenuOpen = true },
             )
-            Box {
-                LabeledIconButton(
-                    icon = WatermelonIcons.Sort,
-                    label = "Sort: ${currentSort.label()}",
-                    onClick = { sortMenuOpen = true }
-                )
-                DropdownMenu(expanded = sortMenuOpen, onDismissRequest = { sortMenuOpen = false }) {
-                    FolderSort.values().forEach { opt ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    opt.label(),
-                                    style = WatermelonTypography.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            onClick = { currentSort = opt; sortMenuOpen = false }
-                        )
-                    }
-                }
-            }
             LabeledIconButton(
-                icon = if (ascending) R.drawable.ic_sort_ascending else R.drawable.ic_sort_descending,
-                label = if (ascending) "Ascending" else "Descending",
-                onClick = { ascending = !ascending }
+                icon = if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList,
+                label = "View: ${if (isGrid) "Grid" else "List"}",
+                onClick = { viewOptionsOpen = true },
             )
-            com.watermelon.ui.components.ItemSize.values().forEach { size ->
-                LabeledIconButton(
-                    icon = when (size) {
-                        com.watermelon.ui.components.ItemSize.SMALL -> R.drawable.ic_size_small
-                        com.watermelon.ui.components.ItemSize.MEDIUM -> R.drawable.ic_size_medium
-                        com.watermelon.ui.components.ItemSize.LARGE -> R.drawable.ic_size_large
-                    },
-                    label = size.label,
-                    active = size == currentItemSize,
-                    onClick = { currentItemSize = size }
-                )
-            }
         }
 
         HorizontalDivider(
@@ -279,6 +253,82 @@ fun FolderBrowserScreen(
                 }
             }
         }
+    }
+
+    if (sortMenuOpen) {
+        AlertDialog(
+            onDismissRequest = { sortMenuOpen = false },
+            title = { Text("Sort folders") },
+            text = {
+                Column {
+                    FolderSort.values().forEach { option ->
+                        TextButton(
+                            onClick = {
+                                currentSort = option
+                                sortMenuOpen = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (option == currentSort) "✓ ${option.label()}" else option.label(),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    TextButton(
+                        onClick = { ascending = !ascending },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = if (ascending) "✓ Ascending" else "Descending",
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { sortMenuOpen = false }) { Text("Done") }
+            },
+        )
+    }
+
+    if (viewOptionsOpen) {
+        AlertDialog(
+            onDismissRequest = { viewOptionsOpen = false },
+            title = { Text("View options") },
+            text = {
+                Column {
+                    FolderLayout.values().forEach { option ->
+                        TextButton(
+                            onClick = { currentLayout = option },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            val label = option.name.lowercase().replaceFirstChar { it.uppercase() }
+                            Text(
+                                text = if (option == currentLayout) "✓ $label" else label,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    com.watermelon.ui.components.ItemSize.values().forEach { size ->
+                        TextButton(
+                            onClick = { currentItemSize = size },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (size == currentItemSize) "✓ ${size.label}" else size.label,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewOptionsOpen = false }) { Text("Done") }
+            },
+        )
     }
 }
 
