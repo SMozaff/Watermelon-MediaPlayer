@@ -1,4 +1,8 @@
 # Watermelon MediaPlayer
+https://watermelonmp-b828xakc.manus.space
+
+https://SMozaff.github.io/
+
 
 Offline-first, privacy-respecting local video player for Android (mobile + TV), engineered
 RTL-native for Persian/Arabic with a signature **VHS Visual Seeker**. Zero telemetry, minimum
