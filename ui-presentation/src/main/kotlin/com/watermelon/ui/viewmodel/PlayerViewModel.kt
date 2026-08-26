@@ -48,5 +48,6 @@ class PlayerViewModel(
 
     fun setSleepTimer(mode: SleepTimerMode) = controller.setSleepTimer(mode)
     fun cancelSleepTimer()                   = controller.cancelSleepTimer()
+    fun setQueueContext(isLastInQueue: Boolean) = controller.setQueueContext(isLastInQueue)
     fun takeScreenshot(): String?            = controller.takeScreenshot()
 }

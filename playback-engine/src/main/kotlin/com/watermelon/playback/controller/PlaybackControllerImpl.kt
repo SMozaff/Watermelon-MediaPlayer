@@ -64,6 +64,12 @@ class PlaybackControllerImpl(
     private var pendingSleepMode: SleepTimerMode? = null
     private var positionJob: Job? = null
 
+    // Pushed by the caller via setQueueContext() each time a new item starts playing (this
+    // module has no visibility into the UI layer's queue -- see that method's doc). Defaults
+    // to true so an EndOfFolder timer set before the caller ever reports queue context
+    // behaves like EndOfVideo (pause immediately) rather than silently never stopping.
+    private var isLastInQueue: Boolean = true
+
     // Identity of the currently-loaded item, for saving/clearing its resume position.
     private var currentUriForPosition: String? = null
     private var currentFileSizeForPosition: Long = 0L
@@ -93,14 +99,16 @@ class PlaybackControllerImpl(
                 pendingSleepMode = null
                 pause()
             }
-            // End-of-folder: still treated as end-of-video (pause rather than continue
-            // auto-advancing). PlaybackQueue now exists and auto-advance is wired
-            // (PhonePlayerScreen/TvPlayerScreen's LaunchedEffect on PlaybackState.ENDED),
-            // but detecting "this was the last item in the folder" specifically — as
-            // opposed to just pausing every time — hasn't been built; that's a distinct,
-            // separately-scoped follow-up rather than part of this fix.
+            // End-of-folder: only stop once the item that just ended was the LAST item in
+            // the folder/queue (per isLastInQueue, pushed by the caller via
+            // setQueueContext()). Otherwise leave pendingSleepMode set and do nothing here
+            // — PlaybackState.ENDED propagates to the UI layer as normal, and its existing
+            // LaunchedEffect on PlaybackState.ENDED (PhonePlayerScreen/TvPlayerScreen) auto-
+            // advances to the next item, exactly as it does with no sleep timer active. This
+            // check runs again when that next item ends.
             if (state == Player.STATE_ENDED &&
-                pendingSleepMode is SleepTimerMode.EndOfFolder) {
+                pendingSleepMode is SleepTimerMode.EndOfFolder &&
+                isLastInQueue) {
                 pendingSleepMode = null
                 pause()
             }
@@ -258,7 +266,7 @@ class PlaybackControllerImpl(
         pendingSleepMode = null
         when (mode) {
             is SleepTimerMode.EndOfVideo  -> pendingSleepMode = mode
-            is SleepTimerMode.EndOfFolder -> pendingSleepMode = mode  // stub
+            is SleepTimerMode.EndOfFolder -> pendingSleepMode = mode
             is SleepTimerMode.Custom      -> sleepTimer.start(mode.minutes)
         }
     }
@@ -266,6 +274,10 @@ class PlaybackControllerImpl(
     override fun cancelSleepTimer() {
         sleepTimer.cancel()
         pendingSleepMode = null
+    }
+
+    override fun setQueueContext(isLastInQueue: Boolean) {
+        this.isLastInQueue = isLastInQueue
     }
 
     override fun takeScreenshot(): String? {
