@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- TODO(i18n): machine-drafted translation, not yet reviewed by a native Farsi
-         speaker -- verify phrasing/tone before shipping. See values/strings.xml for the
+         speaker; verify phrasing/tone before shipping. See values/strings.xml for the
          English source and the reasoning behind this string. -->
     <string name="settings_privacy_internet_usage">دسترسی به اینترنت فقط برای جست‌وجوی زیرنویس‌هایی که درخواست می‌کنید استفاده می‌شود. چیز دیگری ارسال یا ردیابی نمی‌شود.</string>
 </resources>

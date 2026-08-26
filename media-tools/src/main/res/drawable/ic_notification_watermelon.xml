@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Notification-only icon: a flat white silhouette (status-bar icons must be a single
-  opaque shape on transparent background -- the system applies its own tint). This is a
+  opaque shape on transparent background; the system applies its own tint). This is a
   simplified watermelon-slice wedge (rind arc + straight base) with three small circular
   seed cutouts, distinct from the multi-color app icon (ic_watermelon_logo.xml), which is
   not notification-safe. Simplification of the seed placement is a conservative,

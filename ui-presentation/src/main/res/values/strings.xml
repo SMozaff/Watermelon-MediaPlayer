@@ -2,7 +2,7 @@
 <resources>
     <!-- Discloses the app's only network usage (subtitle-engine's OpenSubtitles lookups)
          to close the gap between the README's "zero telemetry" claim and the unexplained
-         INTERNET permission. Wording confirmed against SubtitleRepositoryImpl.kt -- this is
+         INTERNET permission. Wording confirmed against SubtitleRepositoryImpl.kt: this is
          the app's sole use of the network. -->
     <string name="settings_privacy_internet_usage">Internet access is used only to look up subtitles you request. Nothing else is sent or tracked.</string>
 </resources>

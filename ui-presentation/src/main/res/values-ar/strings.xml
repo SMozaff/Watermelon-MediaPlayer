@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- TODO(i18n): machine-drafted translation, not yet reviewed by a native Arabic
-         speaker -- verify phrasing/tone before shipping. See values/strings.xml for the
+         speaker; verify phrasing/tone before shipping. See values/strings.xml for the
          English source and the reasoning behind this string. -->
     <string name="settings_privacy_internet_usage">يُستخدم الوصول إلى الإنترنت فقط للبحث عن الترجمات التي تطلبها. لا يتم إرسال أو تتبع أي شيء آخر.</string>
 </resources>
