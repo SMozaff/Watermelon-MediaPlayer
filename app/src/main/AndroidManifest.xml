@@ -16,6 +16,10 @@
          other network traffic exists anywhere in this codebase (confirmed by reading
          SubtitleRepositoryImpl.kt and grepping for other HTTP client usage). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Normal (install-time, no runtime prompt) permission required for
+         ConnectivityManager.getNetworkCapabilities() -- SubtitleRepositoryImpl's
+         reachability check for remote subtitle lookups. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- media-tools' MediaJobService (trim/compress/extract jobs) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
