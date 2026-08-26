@@ -79,13 +79,20 @@ class SubtitleRepositoryImpl(
      * timeout + failover). Requires [NetworkCapabilities.NET_CAPABILITY_VALIDATED], not just
      * "connected to some network", so a Wi-Fi network stuck behind a captive portal (no real
      * internet) is correctly treated as unreachable rather than triggering three doomed HTTP
-     * attempts. This session's build environment couldn't compile this module (blocked
-     * dl.google.com/jitpack.io access -- see remediation plan), so this is unverified
-     * against a real compile; ConnectivityManager.getNetworkCapabilities(Network) and both
-     * NetworkCapabilities constants used below have been stable, documented public API since
-     * API 23 (this module's minSdk), matching training knowledge -- but flag this for a
-     * real-build sanity check per the same standard the VideoCompressor fix used.
+     * attempts.
+     *
+     * @Suppress("MissingPermission"): Android Lint flags this because it lints each module
+     * against its own manifest, and library modules in this project (subtitle-engine
+     * included) don't carry their own AndroidManifest.xml -- every permission is declared
+     * once, centrally, in app/src/main/AndroidManifest.xml (ACCESS_NETWORK_STATE is there),
+     * matching how every other cross-module permission need in this codebase is handled
+     * (e.g. media-tools' foreground-service permissions aren't declared in a media-tools
+     * manifest either). The API usage itself (getNetworkCapabilities/NetworkCapabilities
+     * constants) compiled cleanly in a real CI run -- lint only runs after a successful
+     * compile -- so this is no longer unverified against a real build, just against this
+     * one lint rule.
      */
+    @Suppress("MissingPermission")
     private fun isNetworkAvailable(): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
             ?: return false
