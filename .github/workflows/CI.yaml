@@ -84,24 +84,21 @@ jobs:
       # UNSIGNED-IN-CI artifact (or fails at the signing step) until a human provisions
       # real release-signing secrets. That provisioning is a separate, deliberate follow-up
       # -- not something to fake here with throwaway credentials.
-      # continue-on-error: with signingConfigs.release wired but no RELEASE_* properties
-      # supplied in this environment, Gradle is expected to fail here at the signing step
-      # (incomplete signing config) until a human provisions real secrets -- that failure
-      # proves the build type exists and is reached, so it shouldn't fail the whole
-      # workflow on every push. Once real secrets are added as repo/environment secrets,
-      # remove this continue-on-error so a genuine release-build regression fails CI.
+      # app/build.gradle.kts only attaches signingConfigs.release when all four RELEASE_*
+      # Gradle properties are present; none are defined in this repo, so this produces a
+      # normal *unsigned* release APK (app-release-unsigned.apk) rather than failing. Once a
+      # human provisions RELEASE_STORE_FILE/RELEASE_STORE_PASSWORD/RELEASE_KEY_ALIAS/
+      # RELEASE_KEY_PASSWORD as repo/environment secrets and passes them via -P flags here,
+      # this step will produce a real signed artifact instead.
       - name: Assemble release APK (unsigned in CI -- no signing secrets provisioned yet)
-        continue-on-error: true
         run: ./gradlew :app:assembleRelease --stacktrace
 
-      - name: Upload release APK (only present if the step above actually succeeded)
-        continue-on-error: true
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
           path: app/build/outputs/apk/release/*.apk
           retention-days: 14
-          if-no-files-found: ignore
 
       - name: Upload test reports
         if: always()

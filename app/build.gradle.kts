@@ -28,19 +28,28 @@ android {
     }
     // Reads from Gradle properties (gradle.properties, -P flags, or ~/.gradle/gradle.properties)
     // rather than hardcoding any credential in source control. None of these properties are
-    // defined in this repo -- a human must supply them locally or as CI secrets before
-    // assembleRelease can actually produce a signed APK; until then the property lookups
-    // below resolve to null and Gradle will fail signing at build time with a clear error,
-    // which is the correct behavior rather than silently falling back to debug signing.
-    signingConfigs {
-        create("release") {
-            val storeFilePath = project.findProperty("RELEASE_STORE_FILE") as String?
-            if (storeFilePath != null) {
-                storeFile = file(storeFilePath)
+    // defined in this repo -- a human must supply them locally or as CI secrets before a real
+    // signed release APK can be produced.
+    //
+    // The signingConfigs.release block itself is created only when all four properties are
+    // present (rather than always creating it with possibly-null fields): AGP treats a
+    // signingConfig with a missing storeFile as a hard error at package time, even for
+    // `./gradlew build`'s ordinary "assemble every variant" pass -- not just a deliberate
+    // `assembleRelease` invocation. Gating creation like this means CI (and any environment
+    // without the properties set) still produces a normal *unsigned* release APK -- the
+    // correct, standard AGP behavior when no signingConfig is attached -- rather than failing
+    // the whole build.
+    val hasReleaseSigningProps = listOf(
+        "RELEASE_STORE_FILE", "RELEASE_STORE_PASSWORD", "RELEASE_KEY_ALIAS", "RELEASE_KEY_PASSWORD"
+    ).all { project.hasProperty(it) }
+    if (hasReleaseSigningProps) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(project.property("RELEASE_STORE_FILE") as String)
+                storePassword = project.property("RELEASE_STORE_PASSWORD") as String
+                keyAlias = project.property("RELEASE_KEY_ALIAS") as String
+                keyPassword = project.property("RELEASE_KEY_PASSWORD") as String
             }
-            storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as String?
-            keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String?
-            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String?
         }
     }
     buildTypes {
@@ -51,7 +60,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigningProps) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
