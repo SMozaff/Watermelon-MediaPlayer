@@ -17,7 +17,7 @@
          SubtitleRepositoryImpl.kt and grepping for other HTTP client usage). -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Normal (install-time, no runtime prompt) permission required for
-         ConnectivityManager.getNetworkCapabilities() -- SubtitleRepositoryImpl's
+         ConnectivityManager.getNetworkCapabilities(): SubtitleRepositoryImpl's
          reachability check for remote subtitle lookups. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
