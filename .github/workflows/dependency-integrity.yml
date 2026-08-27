@@ -1,0 +1,45 @@
+name: Dependency Integrity
+
+on:
+  pull_request:
+    paths:
+      - "**/*.gradle"
+      - "**/*.gradle.kts"
+      - "gradle/**"
+      - "settings.gradle.kts"
+      - ".github/workflows/dependency-integrity.yml"
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+
+# The job resolves and compiles dependencies but never needs repository write access
+# or release-signing credentials.
+permissions:
+  contents: read
+
+jobs:
+  clean-resolution:
+    name: Clean Gradle resolution and MP3 compile gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+
+      # Do not restore a Gradle dependency cache in this job. Removing module caches
+      # forces fresh artifact resolution, including the JitPack java-lame dependency.
+      - name: Remove dependency caches
+        run: rm -rf "$HOME/.gradle/caches"
+
+      - name: Resolve dependencies and compile the media-tools module
+        run: ./gradlew --no-daemon --refresh-dependencies :media-tools:assembleDebug --stacktrace
