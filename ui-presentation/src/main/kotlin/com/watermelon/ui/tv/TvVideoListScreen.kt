@@ -1,9 +1,5 @@
 package com.watermelon.ui.tv
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,16 +13,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,16 +32,10 @@ import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
 /**
- * D-Pad-optimised video catalogue for Android TV. It serves both the All Videos destination and
- * folder/playlist contents, but is intentionally a separate composition from the phone
- * [com.watermelon.ui.screens.VideoListScreen]. The large 16:9 preview, high-contrast focus ring,
- * and explicit SELECT instruction make every row legible and actionable from a ten-foot viewing
- * distance without introducing touch-only controls or long-press behaviour.
- *
- * Batch operations remain intentionally out of scope for TV: a remote's SELECT action must open
- * the item immediately and consistently. Secondary actions can be added later as an explicit,
- * separately focusable overflow surface rather than borrowing the phone screen's long-press
- * model.
+ * D-pad-optimised Android TV catalogue for all videos, folders, and playlists. Each media item
+ * has a large preview, a single SELECT action to open it, and shared focus treatment. Phone-only
+ * long-press and batch operations remain intentionally excluded: adding them as hidden gestures
+ * would make the TV path less discoverable and less reliable.
  */
 @Composable
 fun TvVideoListScreen(
@@ -57,34 +43,16 @@ fun TvVideoListScreen(
     title: String,
     onVideoClick: (MediaItem) -> Unit,
     showThumbnails: Boolean = true,
+    showDurations: Boolean = true,
+    showFileSize: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = WatermelonSpacing.xl + WatermelonSpacing.md,
-                    top = WatermelonSpacing.md,
-                    bottom = WatermelonSpacing.xs
-                )
-        )
-        Text(
-            text = "Use the D-pad to browse. Press SELECT to play.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(
-                horizontal = WatermelonSpacing.xl + WatermelonSpacing.md,
-                bottom = WatermelonSpacing.sm
-            )
+        TvScreenHeader(
+            title = title,
+            supportingText = "Use the D-pad to browse. Press SELECT to play."
         )
 
         if (videos.isEmpty()) {
@@ -122,6 +90,8 @@ fun TvVideoListScreen(
                 TvVideoRow(
                     item = item,
                     showThumbnails = showThumbnails,
+                    showDurations = showDurations,
+                    showFileSize = showFileSize,
                     onClick = { onVideoClick(item) }
                 )
             }
@@ -133,30 +103,11 @@ fun TvVideoListScreen(
 private fun TvVideoRow(
     item: MediaItem,
     showThumbnails: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    showDurations: Boolean,
+    showFileSize: Boolean,
+    onClick: () -> Unit
 ) {
-    val interaction = remember { MutableInteractionSource() }
-    val focused by interaction.collectIsFocusedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (focused) 1.025f else 1f,
-        label = "tvVideoRowFocusScale"
-    )
-
-    Surface(
-        onClick = onClick,
-        interactionSource = interaction,
-        shape = WatermelonShapes.card,
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .border(
-                width = if (focused) 3.dp else 0.dp,
-                color = if (focused) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                shape = WatermelonShapes.card
-            )
-    ) {
+    TvFocusableSurface(onClick = onClick) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -203,11 +154,7 @@ private fun TvVideoRow(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = if (showThumbnails) {
-                        "${formatTvDuration(item.durationMs)} · SELECT to play"
-                    } else {
-                        "${formatTvDuration(item.durationMs)} · Preview disabled · SELECT to play"
-                    },
+                    text = buildTvVideoDetail(item, showThumbnails, showDurations, showFileSize),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = WatermelonSpacing.xs)
@@ -217,10 +164,33 @@ private fun TvVideoRow(
     }
 }
 
+private fun buildTvVideoDetail(
+    item: MediaItem,
+    showThumbnails: Boolean,
+    showDurations: Boolean,
+    showFileSize: Boolean
+): String {
+    val details = buildList {
+        if (showDurations) add(formatTvDuration(item.durationMs))
+        if (showFileSize && item.fileSize > 0L) add(formatTvFileSize(item.fileSize))
+        if (!showThumbnails) add("Preview disabled")
+        add("SELECT to play")
+    }
+    return details.joinToString(" · ")
+}
+
 private fun formatTvDuration(ms: Long): String {
-    val s = (ms / 1000).coerceAtLeast(0)
-    val h = s / 3600
-    val m = (s % 3600) / 60
-    val sec = s % 60
-    return if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
+    val seconds = (ms / 1000).coerceAtLeast(0)
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val remainder = seconds % 60
+    return if (hours > 0) "%d:%02d:%02d".format(hours, minutes, remainder)
+    else "%d:%02d".format(minutes, remainder)
+}
+
+private fun formatTvFileSize(bytes: Long): String = when {
+    bytes >= 1024L * 1024L * 1024L -> "%.1f GB".format(bytes / (1024.0 * 1024.0 * 1024.0))
+    bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+    bytes >= 1024L -> "%.1f KB".format(bytes / 1024.0)
+    else -> "$bytes B"
 }
