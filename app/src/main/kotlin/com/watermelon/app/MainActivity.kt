@@ -893,7 +893,8 @@ class MainActivity : ComponentActivity() {
                     com.watermelon.ui.tv.TvVideoListScreen(
                         viewModel = vm,
                         title = "All Videos",
-                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") }
+                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        showThumbnails = settingsState.showThumbnails
                     )
                 } else {
                     val playlists by playlistRepository.observeAll()
@@ -982,7 +983,8 @@ class MainActivity : ComponentActivity() {
                     com.watermelon.ui.tv.TvVideoListScreen(
                         viewModel = vm,
                         title = screenTitle,
-                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") }
+                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        showThumbnails = settingsState.showThumbnails
                     )
                 } else {
                     val playlists by playlistRepository.observeAll()

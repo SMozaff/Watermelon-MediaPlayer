@@ -1,12 +1,15 @@
 package com.watermelon.ui.tv
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,37 +24,39 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.MediaItem
+import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.components.VelocityGuardImage
+import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
 /**
- * D-Pad-optimised video list for Android TV. Serves both the All Videos destination and any
- * folder/playlist's contents — same role as the phone [com.watermelon.ui.screens.VideoListScreen]
- * for those two call sites, but per this module's convention (phone/TV as separate compositions
- * sharing a data layer, not one screen with conditionals) this is a new composition rather than
- * a retrofit of that screen.
+ * D-Pad-optimised video catalogue for Android TV. It serves both the All Videos destination and
+ * folder/playlist contents, but is intentionally a separate composition from the phone
+ * [com.watermelon.ui.screens.VideoListScreen]. The large 16:9 preview, high-contrast focus ring,
+ * and explicit SELECT instruction make every row legible and actionable from a ten-foot viewing
+ * distance without introducing touch-only controls or long-press behaviour.
  *
- * Deliberately excluded, matching TV scope: the phone screen's horizontalScroll sort/layout
- * toolbar (drag/scroll chrome with no D-pad affordance) and long-press multi-select (no
- * long-press concept on a D-pad — OK is a single discrete action). A TV viewer sorts by walking
- * a plain list; batch delete/share/playlist-add from a video list is out of scope for this pass
- * the same way multi-select already was for the other new TV screens.
- *
- * Row order matches [VideoListViewModel.videos] as emitted (no client-side re-sort), consistent
- * with the "no sort chrome" scope decision above.
+ * Batch operations remain intentionally out of scope for TV: a remote's SELECT action must open
+ * the item immediately and consistently. Secondary actions can be added later as an explicit,
+ * separately focusable overflow surface rather than borrowing the phone screen's long-press
+ * model.
  */
 @Composable
 fun TvVideoListScreen(
     viewModel: VideoListViewModel,
     title: String,
     onVideoClick: (MediaItem) -> Unit,
+    showThumbnails: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
@@ -68,8 +73,18 @@ fun TvVideoListScreen(
                 .fillMaxWidth()
                 .padding(
                     horizontal = WatermelonSpacing.xl + WatermelonSpacing.md,
-                    vertical = WatermelonSpacing.sm
+                    top = WatermelonSpacing.md,
+                    bottom = WatermelonSpacing.xs
                 )
+        )
+        Text(
+            text = "Use the D-pad to browse. Press SELECT to play.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(
+                horizontal = WatermelonSpacing.xl + WatermelonSpacing.md,
+                bottom = WatermelonSpacing.sm
+            )
         )
 
         if (videos.isEmpty()) {
@@ -83,6 +98,12 @@ fun TvVideoListScreen(
                     text = "No videos here yet",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Press BACK to return to the library.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = WatermelonSpacing.xs)
                 )
             }
             return@Column
@@ -98,45 +119,99 @@ fun TvVideoListScreen(
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
         ) {
             items(videos, key = { it.uri }) { item ->
-                val interaction = remember { MutableInteractionSource() }
-                val focused by interaction.collectIsFocusedAsState()
-                Surface(
-                    onClick = { onVideoClick(item) },
-                    interactionSource = interaction,
-                    shape = WatermelonShapes.card,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = if (focused) 3.dp else 0.dp,
-                            color = if (focused) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                            shape = WatermelonShapes.card
-                        )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(WatermelonSpacing.md),
-                        verticalAlignment = Alignment.CenterVertically
+                TvVideoRow(
+                    item = item,
+                    showThumbnails = showThumbnails,
+                    onClick = { onVideoClick(item) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TvVideoRow(
+    item: MediaItem,
+    showThumbnails: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (focused) 1.025f else 1f,
+        label = "tvVideoRowFocusScale"
+    )
+
+    Surface(
+        onClick = onClick,
+        interactionSource = interaction,
+        shape = WatermelonShapes.card,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .border(
+                width = if (focused) 3.dp else 0.dp,
+                color = if (focused) MaterialTheme.colorScheme.secondary else Color.Transparent,
+                shape = WatermelonShapes.card
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(WatermelonSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(224.dp)
+                    .aspectRatio(16f / 9f)
+                    .clip(WatermelonShapes.card)
+            ) {
+                if (showThumbnails) {
+                    VelocityGuardImage(
+                        uri = item.uri,
+                        durationMs = item.durationMs,
+                        isScrollingFast = false,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = item.displayName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        Spacer(Modifier.width(WatermelonSpacing.md))
-                        Text(
-                            text = formatTvDuration(item.durationMs),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        WatermelonGlyph(
+                            icon = WatermelonIcons.VideoUnavailable,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(52.dp)
                         )
                     }
                 }
+            }
+            Spacer(Modifier.width(WatermelonSpacing.lg))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = if (showThumbnails) {
+                        "${formatTvDuration(item.durationMs)} · SELECT to play"
+                    } else {
+                        "${formatTvDuration(item.durationMs)} · Preview disabled · SELECT to play"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = WatermelonSpacing.xs)
+                )
             }
         }
     }

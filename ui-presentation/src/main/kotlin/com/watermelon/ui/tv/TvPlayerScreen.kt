@@ -139,6 +139,13 @@ fun TvPlayerScreen(
                 color = PlayerColors.current.textPrimary,
                 modifier = Modifier
                     .align(Alignment.End)
+                    .padding(top = WatermelonSpacing.xs)
+            )
+            Text(
+                text = buildTvRemoteHint(subtitleTrack != null),
+                color = PlayerColors.current.textPrimary.copy(alpha = 0.78f),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
                     .padding(top = WatermelonSpacing.xs, bottom = WatermelonSpacing.sm)
             )
 
@@ -163,6 +170,13 @@ fun TvPlayerScreen(
 /** Per-repeat seek amount for D-pad hold-left/hold-right — matches the phone screen's base
  *  10s swipe-to-seek granularity so the two platforms feel consistent. */
 private const val SEEK_STEP_MS = 10_000L
+
+private fun buildTvRemoteHint(hasSubtitles: Boolean): String =
+    if (hasSubtitles) {
+        "LEFT / RIGHT seek 10 sec  ·  UP / DOWN adjust subtitles  ·  BACK library"
+    } else {
+        "LEFT / RIGHT seek 10 sec  ·  BACK library"
+    }
 
 private fun formatTvTime(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
