@@ -30,8 +30,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+      # GitHub-hosted runners already provide the Android command-line tools. Install only the
+      # compile SDK required by this project rather than invoking a broader setup action that
+      # attempted to resolve an unrelated emulator archive in a prior main-branch scan.
+      - name: Install required Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@5ba2889ada762081db2c4f32a729827dce632c7b # v3

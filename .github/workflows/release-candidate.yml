@@ -1,0 +1,130 @@
+name: Release Candidate
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      sign_release:
+        description: "Create a signed artifact from a protected release tag"
+        required: true
+        default: false
+        type: boolean
+
+# This workflow verifies artifacts only. It never creates a GitHub release or distributes an APK.
+# A human release owner must approve the release record and publishing step after all evidence is
+# complete. Pin every action to an immutable commit; update pins only in a reviewed pull request.
+permissions:
+  contents: read
+
+jobs:
+  unsigned-candidate:
+    name: Build unsigned release candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up JDK
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # Hosted runners provide sdkmanager; install only the API level required by this build.
+      - name: Install required Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
+      - name: Build optimized unsigned candidate
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleRelease
+      - name: Record candidate checksum
+        run: |
+          mkdir -p release-artifacts
+          sha256sum app/build/outputs/apk/release/*.apk | tee release-artifacts/SHA256SUMS.txt
+      - name: Upload unsigned candidate and checksum
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unsigned-release-candidate-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/release/*.apk
+            release-artifacts/SHA256SUMS.txt
+          retention-days: 14
+
+  signed-candidate:
+    name: Build protected signed release candidate
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.sign_release }}
+    needs: unsigned-candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    # The release owner must create this protected environment and grant approval before signing.
+    environment: release
+    steps:
+      - name: Require a version tag
+        run: |
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            echo "Signed releases must be dispatched from an immutable v* tag."
+            exit 1
+          fi
+          case "${GITHUB_REF_NAME}" in
+            v*) ;;
+            *) echo "Signed releases require a v* tag."; exit 1 ;;
+          esac
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up JDK
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # Hosted runners provide sdkmanager; install only the API level required by this build.
+      - name: Install required Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
+      - name: Materialize protected signing keystore
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$RELEASE_KEYSTORE_BASE64" || { echo "Missing protected keystore secret."; exit 1; }
+          KEYSTORE_PATH="$RUNNER_TEMP/watermelon-release.jks"
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          test -s "$KEYSTORE_PATH" || { echo "Decoded keystore is empty."; exit 1; }
+          echo "RELEASE_STORE_FILE=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+      - name: Build signed candidate
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          test -n "$RELEASE_STORE_PASSWORD" || { echo "Missing protected store password."; exit 1; }
+          test -n "$RELEASE_KEY_ALIAS" || { echo "Missing protected key alias."; exit 1; }
+          test -n "$RELEASE_KEY_PASSWORD" || { echo "Missing protected key password."; exit 1; }
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleRelease \
+            -PRELEASE_STORE_FILE="$RELEASE_STORE_FILE" \
+            -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD" \
+            -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS" \
+            -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD"
+      - name: Verify signature and record evidence
+        run: |
+          mkdir -p release-artifacts
+          APK="$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$APK" || { echo "No release APK was produced."; exit 1; }
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)/apksigner" \
+            verify --verbose --print-certs "$APK" | tee release-artifacts/certificate.txt
+          sha256sum "$APK" | tee release-artifacts/SHA256SUMS.txt
+      - name: Upload signed candidate and release evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: signed-release-candidate-${{ github.ref_name }}
+          path: |
+            app/build/outputs/apk/release/*.apk
+            release-artifacts/certificate.txt
+            release-artifacts/SHA256SUMS.txt
+          retention-days: 30
+      - name: Remove ephemeral signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/watermelon-release.jks"
