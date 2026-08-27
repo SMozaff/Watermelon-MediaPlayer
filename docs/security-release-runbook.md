@@ -21,7 +21,7 @@ Before the first distributable release, generate and commit Gradle verification 
 
 Review every added key, checksum, component, and repository origin before committing `gradle/verification-metadata.xml`. Do not accept a regenerated metadata file mechanically. Once the verified metadata is committed, all CI and release commands must use Gradle's strict dependency-verification mode; do not use `--dependency-verification=off` to make a build pass.
 
-The JitPack encoder dependency requires a release-specific provenance record containing its exact coordinate, licence, upstream repository/release reference, verification metadata, and a named maintainer. An approved fallback artifact, if one is retained, must have the same record and must be built and tested in CI. It must not be copied into the repository without review and checksum verification.
+The JitPack encoder dependency requires a release-specific provenance record containing its exact coordinate, licence, upstream repository/release reference, verification metadata, and a named maintainer. Use [`release/java-lame-provenance.md`](release/java-lame-provenance.md) as the evidence record. An approved fallback artifact, if one is retained, must have the same record and must be built and tested in CI. It must not be copied into the repository without review and checksum verification.
 
 ## 3. CI workflow integrity
 
@@ -46,13 +46,13 @@ Before publishing, verify the release artifact's application ID, version, signin
 
 ## 5. MP3 runtime and privacy gates
 
-Compilation is necessary but does not prove audio extraction is correct. Exercise extraction on physical devices with representative input containers, long files, corrupt files, storage exhaustion, cancellation, process restart, and background execution. Validate successful outputs independently for decodability, duration, and playback. Every advertised feature needs a result record and an owner for any defect.
+Compilation is necessary but does not prove audio extraction is correct. Exercise extraction on physical devices with representative input containers, long files, corrupt files, storage exhaustion, cancellation, process restart, and background execution. Validate successful outputs independently for decodability, duration, and playback. Use [`release/mp3-device-validation.md`](release/mp3-device-validation.md) as the required result record; every advertised feature needs an owner for any defect.
 
-Before asserting "nothing else is sent" in product copy, maintain a network-flow inventory for subtitle lookup. It must identify every outbound host, request field, why it is required, the provider policy, and offline/failure behaviour. Privacy text must describe observed behaviour, not an unverified intention.
+Before asserting "nothing else is sent" in product copy, maintain a network-flow inventory for subtitle lookup. It must identify every outbound host, request field, why it is required, the provider policy, and offline/failure behaviour. Privacy text must describe observed behaviour, not an unverified intention. Start from the code-inspection inventory in [`release/subtitle-network-inventory.md`](release/subtitle-network-inventory.md) and replace its pending items with redacted runtime evidence.
 
 ## 6. Release decision checklist
 
-A named release approver may issue a Go decision only when all of the following are linked in the release record:
+A named release approver may issue a Go decision only when all of the following are linked in the [`release/release-candidate-record.md`](release/release-candidate-record.md):
 
 1. Required build, unit/instrumented, CodeQL, and Dependency Integrity workflows are green.
 2. All Critical/High security findings are remediated or have an approved, time-bound exception.
