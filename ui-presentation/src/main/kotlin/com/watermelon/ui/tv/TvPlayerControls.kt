@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,10 +14,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -30,77 +34,105 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
- * D-Pad player controls (Manifest §8). Left/Right hold seeks (10s per repeat, matching the
- * phone screen's swipe-to-seek granularity); Up/Down nudges subtitle sync in +/-100ms steps.
- * Transport buttons (Previous / Play-Pause / Next) are focusable for remote navigation and are
- * the guaranteed single-button-reachable controls — OK on Play/Pause toggles playback, which
- * satisfies the "works with a partially-broken remote" requirement even if D-pad directions
- * are the only other working input.
- *
- * Previous/Next are omitted entirely (not just disabled) when there's no adjacent track, same
- * convention as [com.watermelon.ui.screens.PhonePlayerScreen], so the row never shows a dead
- * button a D-pad user could focus onto and press for no effect.
+ * Explicit D-pad controls for the TV player. Transport and subtitle actions are visible as
+ * individual focus stops, rather than hidden behind directional key handling. This keeps default
+ * Compose focus traversal intact while retaining support for hardware media keys from remotes.
  */
 @Composable
 fun TvPlayerControls(
     isPlaying: Boolean,
     hasPreviousTrack: Boolean,
     hasNextTrack: Boolean,
+    hasSubtitles: Boolean,
     onIntent: (UserIntent) -> Unit,
     onSkipPrevious: () -> Unit,
     onSkipNext: () -> Unit,
     onSubtitleNudge: (Long) -> Unit,
-    onSeekHold: (direction: Int) -> Unit,
-    onExit: () -> Unit,
+    onSeek: (direction: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    val playPauseFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { playPauseFocus.requestFocus() }
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(WatermelonSpacing.lg)
             .onKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (event.key) {
-                    Key.DirectionLeft -> { onSeekHold(-1); true }
-                    Key.DirectionRight -> { onSeekHold(+1); true }
-                    Key.DirectionUp -> { onSubtitleNudge(+100L); true }
-                    Key.DirectionDown -> { onSubtitleNudge(-100L); true }
-                    // Media keys — some remotes send these instead of / in addition to D-pad.
-                    // Rewind/FastForward reuse the same 10s step and hold-to-repeat behavior
-                    // as D-pad Left/Right for consistency.
                     Key.MediaPlayPause -> {
-                        onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume); true
+                        onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
+                        true
                     }
-                    Key.MediaPlay -> { onIntent(UserIntent.Resume); true }
-                    Key.MediaPause -> { onIntent(UserIntent.Pause); true }
-                    Key.MediaNext -> { if (hasNextTrack) onSkipNext(); true }
-                    Key.MediaPrevious -> { if (hasPreviousTrack) onSkipPrevious(); true }
-                    Key.MediaRewind -> { onSeekHold(-1); true }
-                    Key.MediaFastForward -> { onSeekHold(+1); true }
-                    // Back exits the player, matching the confirmed remote-control map.
-                    Key.Back -> { onExit(); true }
+                    Key.MediaPlay -> {
+                        onIntent(UserIntent.Resume)
+                        true
+                    }
+                    Key.MediaPause -> {
+                        onIntent(UserIntent.Pause)
+                        true
+                    }
+                    Key.MediaNext -> {
+                        if (hasNextTrack) onSkipNext()
+                        true
+                    }
+                    Key.MediaPrevious -> {
+                        if (hasPreviousTrack) onSkipPrevious()
+                        true
+                    }
+                    Key.MediaRewind -> {
+                        onSeek(-1)
+                        true
+                    }
+                    Key.MediaFastForward -> {
+                        onSeek(+1)
+                        true
+                    }
                     else -> false
                 }
             },
-        horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
     ) {
-        if (hasPreviousTrack) {
-            TvFocusableButton(label = "Previous", onClick = onSkipPrevious)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+        ) {
+            if (hasPreviousTrack) {
+                TvFocusableButton(label = "Previous", onClick = onSkipPrevious)
+            }
+            TvFocusableButton(label = "Rewind 10 sec", onClick = { onSeek(-1) })
+            TvFocusableButton(
+                label = if (isPlaying) "Pause" else "Play",
+                onClick = { onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume) },
+                modifier = Modifier.focusRequester(playPauseFocus)
+            )
+            TvFocusableButton(label = "Forward 10 sec", onClick = { onSeek(+1) })
+            if (hasNextTrack) {
+                TvFocusableButton(label = "Next", onClick = onSkipNext)
+            }
         }
-        TvFocusableButton(
-            label = if (isPlaying) "Pause" else "Play",
-            onClick = { onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume) }
-        )
-        if (hasNextTrack) {
-            TvFocusableButton(label = "Next", onClick = onSkipNext)
+        if (hasSubtitles) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+            ) {
+                TvFocusableButton(
+                    label = "Subtitles −100 ms",
+                    onClick = { onSubtitleNudge(-100L) }
+                )
+                TvFocusableButton(
+                    label = "Subtitles +100 ms",
+                    onClick = { onSubtitleNudge(+100L) }
+                )
+            }
         }
     }
 }
 
 /**
- * Shared focus treatment for D-pad transport buttons: a visible border that appears only
- * while focused, plus a small scale animation so the change reads clearly from a 10-foot
- * viewing distance without relying on color alone.
+ * Shared focus treatment for TV controls: a visible border plus a small scale transition. The
+ * effect does not rely on color alone and leaves button semantics intact for accessibility.
  */
 @Composable
 private fun TvFocusableButton(
