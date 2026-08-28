@@ -24,7 +24,7 @@ Before distribution, the assigned release owner must review the upstream licence
 |---|---|
 | Reviewed upstream tag/repository | URL and immutable commit: ____________________ |
 | Reviewed licence text and distribution obligations | Reviewer/date/outcome: ____________________ |
-| Generated Gradle `verification-metadata.xml` | `gradle/verification-metadata.xml` was generated with Gradle SHA-256 metadata. Review the 642 components/1,166 artifacts before approval: ____________________ |
+| Generated Gradle `verification-metadata.xml` | `gradle/verification-metadata.xml` contains Gradle SHA-256 metadata for 655 components/1,194 artifacts. The Java 17 classpath and release-lint paths were exercised; narrowly scoped hosted-runner additions were source-checked. Review the complete file before approval: ____________________ |
 | JitPack artifact SHA-256 matches verification metadata | `java-lame-v3.98.4.jar`: `20b28d982b57fcf44aed9c123c14de10df3860ba3dcb0fe3ada89a1b7cf438ef`; reviewer: ____________________ |
 | Clean-cache Dependency Integrity workflow passed on release candidate | Workflow URL, including MP3 test and SBOM artifact: ____________________ |
 | Approved fallback artifact, if retained | Coordinate/location/checksum: ____________________ |
