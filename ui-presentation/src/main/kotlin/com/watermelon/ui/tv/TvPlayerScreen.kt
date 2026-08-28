@@ -83,6 +83,13 @@ fun TvPlayerScreen(
         }
     }
 
+    // Pushes "is this the last item in the queue" to the controller on every item change, so
+    // an active EndOfFolder sleep timer can tell "auto-advance" from "stop here" -- see
+    // PlaybackController.setQueueContext's doc and PhonePlayerScreen's identical effect.
+    LaunchedEffect(hasNextTrack) {
+        viewModel.setQueueContext(!hasNextTrack)
+    }
+
     // Local, render-time-only subtitle offset nudge (Up/Down). Not persisted — matches the
     // scope of what TvPlayerControls exposes today; wiring this into the storage-backed
     // SubtitleOffsets table is a separate change shared with the phone screen, which doesn't

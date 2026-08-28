@@ -156,6 +156,14 @@ fun PhonePlayerScreen(
             PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
         }
     }
+
+    // Pushes "is this the last item in the queue" to the controller on every item change, so
+    // an active EndOfFolder sleep timer can tell "auto-advance" from "stop here" -- see
+    // PlaybackController.setQueueContext's doc for why this can't be computed inside
+    // playback-engine itself (it has no visibility into PlaybackQueue).
+    LaunchedEffect(uri) {
+        viewModel.setQueueContext(PlaybackQueue.nextOf(uri) == null)
+    }
     val repeatMode by viewModel.repeatMode.collectAsStateWithLifecycle()
     val isShuffled by viewModel.shuffleEnabled.collectAsStateWithLifecycle()
     val sleepTimerRunning by viewModel.sleepTimerRunning.collectAsStateWithLifecycle()

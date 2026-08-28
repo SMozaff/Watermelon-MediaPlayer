@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -329,6 +330,17 @@ fun SettingsScreen(
                         label = "Folder visibility",
                         value = "Manage",
                         onClick = onFolderVisibilityClick
+                    )
+                }
+            }
+
+            item {
+                SettingsGroup(title = "Privacy", summary = "What network access is used for") {
+                    Text(
+                        text = stringResource(R.string.settings_privacy_internet_usage),
+                        style = WatermelonTypography.typography.bodySmall,
+                        color = WatermelonColors.DarkOnSurfaceVariant,
+                        modifier = Modifier.padding(vertical = WatermelonSpacing.sm)
                     )
                 }
             }

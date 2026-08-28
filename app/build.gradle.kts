@@ -7,42 +7,42 @@ plugins {
 android {
     namespace = "com.watermelon.app"
     compileSdk = 35
-
     defaultConfig {
         applicationId = "com.watermelon.mediaplayer"
         minSdk = 23
         targetSdk = 35
-        // This is the first distributable release. Subsequent public releases must increase it.
-        versionCode = 1
+        // First version bump off the initial 1 / "1.0" placeholders (see remediation plan
+        // item 2) -- still a debug-signed build until real release signing is provisioned.
+        versionCode = 2
         versionName = "1.0.0"
     }
-
     buildFeatures { compose = true }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
         // MediaController / SessionToken in MainActivity are @UnstableApi.
         freeCompilerArgs += "-opt-in=androidx.media3.common.util.UnstableApi"
     }
-
-    // Signing inputs are deliberately read only from Gradle properties. No keystore path,
-    // password, or alias is stored in version control. When any input is absent, the release
-    // variant remains unsigned so ordinary CI can still exercise R8/resource shrinking without
-    // granting pull-request jobs access to release credentials.
-    val releaseSigningProperties = listOf(
-        "RELEASE_STORE_FILE",
-        "RELEASE_STORE_PASSWORD",
-        "RELEASE_KEY_ALIAS",
-        "RELEASE_KEY_PASSWORD"
-    )
-    val hasReleaseSigningProperties = releaseSigningProperties.all(project::hasProperty)
-
-    if (hasReleaseSigningProperties) {
+    // Reads from Gradle properties (gradle.properties, -P flags, or ~/.gradle/gradle.properties)
+    // rather than hardcoding any credential in source control. None of these properties are
+    // defined in this repo -- a human must supply them locally or as CI secrets before a real
+    // signed release APK can be produced.
+    //
+    // The signingConfigs.release block itself is created only when all four properties are
+    // present (rather than always creating it with possibly-null fields): AGP treats a
+    // signingConfig with a missing storeFile as a hard error at package time, even for
+    // `./gradlew build`'s ordinary "assemble every variant" pass -- not just a deliberate
+    // `assembleRelease` invocation. Gating creation like this means CI (and any environment
+    // without the properties set) still produces a normal *unsigned* release APK -- the
+    // correct, standard AGP behavior when no signingConfig is attached -- rather than failing
+    // the whole build.
+    val hasReleaseSigningProps = listOf(
+        "RELEASE_STORE_FILE", "RELEASE_STORE_PASSWORD", "RELEASE_KEY_ALIAS", "RELEASE_KEY_PASSWORD"
+    ).all { project.hasProperty(it) }
+    if (hasReleaseSigningProps) {
         signingConfigs {
             create("release") {
                 storeFile = file(project.property("RELEASE_STORE_FILE") as String)
@@ -52,7 +52,6 @@ android {
             }
         }
     }
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -61,7 +60,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasReleaseSigningProperties) {
+            if (hasReleaseSigningProps) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }

@@ -145,7 +145,7 @@ class MediaJobService : Service() {
             .setContentTitle(title)
             .setContentText(content)
             .setProgress(100, averageProgress, false)
-            .setSmallIcon(android.R.drawable.stat_sys_download) // placeholder -- app should supply a real icon
+            .setSmallIcon(com.watermelon.mediatools.R.drawable.ic_notification_watermelon)
             .setOngoing(true)
 
         if (activeJobs.size == 1) {

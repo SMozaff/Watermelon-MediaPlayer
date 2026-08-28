@@ -1,6 +1,8 @@
 package com.watermelon.subtitle.repository
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.model.SubtitleTrack
@@ -54,10 +56,49 @@ class SubtitleRepositoryImpl(
             FileLogger.i("Subtitle", "cache hit: ${cached.size} track(s) for ${mediaItem.displayName}")
             return@withContext cached
         }
-        // 2. Remote lookup (placeholder until S3 wires the reachability probe).
+        // 2. Remote lookup, gated by a real reachability check: a plain connectivity check
+        // (below) that fails fast on a fully offline device, plus the existing
+        // SubtitleApiClient/MirrorRotator's own per-mirror timeout (8s) + 5xx failover +
+        // fail-closed exhaustion, which already handles "device is online but this specific
+        // mirror is unreachable" correctly on its own -- no second, duplicate probe against
+        // the mirrors is needed on top of that. Without the connectivity check, a fully
+        // offline device would still attempt (and time out on) up to three real HTTP
+        // requests -- correct eventually, but not "fail fast".
+        if (!isNetworkAvailable()) {
+            FileLogger.i("Subtitle", "remote lookup skipped: no network connectivity")
+            return@withContext emptyList()
+        }
         val hash = runCatching { hashFor(mediaItem) }.getOrNull() ?: return@withContext emptyList()
         FileLogger.i("Subtitle", "remote lookup: hash=$hash")
         apiClient.query(hash, mediaItem.fileSize, preferredLanguages)
+    }
+
+    /**
+     * Plain connectivity check (not a probe of the OpenSubtitles mirrors themselves --
+     * SubtitleApiClient/MirrorRotator already handles per-mirror unreachability via its own
+     * timeout + failover). Requires [NetworkCapabilities.NET_CAPABILITY_VALIDATED], not just
+     * "connected to some network", so a Wi-Fi network stuck behind a captive portal (no real
+     * internet) is correctly treated as unreachable rather than triggering three doomed HTTP
+     * attempts.
+     *
+     * @Suppress("MissingPermission"): Android Lint flags this because it lints each module
+     * against its own manifest, and library modules in this project (subtitle-engine
+     * included) don't carry their own AndroidManifest.xml -- every permission is declared
+     * once, centrally, in app/src/main/AndroidManifest.xml (ACCESS_NETWORK_STATE is there),
+     * matching how every other cross-module permission need in this codebase is handled
+     * (e.g. media-tools' foreground-service permissions aren't declared in a media-tools
+     * manifest either). The API usage itself (getNetworkCapabilities/NetworkCapabilities
+     * constants) compiled cleanly in a real CI run -- lint only runs after a successful
+     * compile -- so this is no longer unverified against a real build, just against this
+     * one lint rule.
+     */
+    @Suppress("MissingPermission")
+    private fun isNetworkAvailable(): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return false
+        val capabilities = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     /**

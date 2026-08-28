@@ -11,7 +11,15 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <!-- Used only by subtitle-engine's OpenSubtitles lookups (search + download), triggered
+         only when the user requests subtitles for a video. No analytics, telemetry, or
+         other network traffic exists anywhere in this codebase (confirmed by reading
+         SubtitleRepositoryImpl.kt and grepping for other HTTP client usage). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Normal (install-time, no runtime prompt) permission required for
+         ConnectivityManager.getNetworkCapabilities(): SubtitleRepositoryImpl's
+         reachability check for remote subtitle lookups. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- media-tools' MediaJobService (trim/compress/extract jobs) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
