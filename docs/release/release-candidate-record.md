@@ -18,13 +18,13 @@
 
 | Gate | Required evidence | Status |
 |---|---|---|
-| Full Android build and unit tests | Green workflow URL for the tagged commit | Pending |
-| Migration/emulator gate | Green workflow URL for the tagged commit | Pending |
-| Dependency Integrity | Green clean-cache workflow URL for the tagged commit | Pending |
-| CodeQL | Green analysis URL and alert-triage record | Pending |
+| Full Android build and unit tests | [PR #14 build-judge](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/33134026879) passed for commit `525d39029e7893e6229dc8d86ef756867383d5d6`; re-run is required for the immutable candidate tag. | **Passing PR evidence; tagged rerun pending** |
+| Migration/emulator gate | [PR #14 migration-ladder job](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/33134026879) passed for commit `525d39029e7893e6229dc8d86ef756867383d5d6`; re-run is required for the immutable candidate tag. | **Passing PR evidence; tagged rerun pending** |
+| Dependency Integrity | [PR #14 clean-cache dependency gate](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/33134026843) passed: strict verification, synthetic MP3 test, and SBOM artifact generation. A tagged-candidate rerun is still required. | **Passing PR evidence; tagged rerun pending** |
+| CodeQL | [PR #14 CodeQL analysis](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/33134026868) passed for commit `525d39029e7893e6229dc8d86ef756867383d5d6`; alert triage and a tagged-candidate rerun remain required. | **Passing PR evidence; tagged rerun pending** |
 | Optimized unsigned candidate | Release Candidate workflow artifact and SHA-256 | Pending |
 | Signed candidate | Protected-environment workflow artifact, certificate output, and SHA-256 | Pending |
-| Strict Gradle verification | Reviewed `gradle/verification-metadata.xml` present and enforced | Pending |
+| Strict Gradle verification | `gradle/verification-metadata.xml` has SHA-256 records for 655 components/1,194 artifacts. Java 17 strict classpath and release-lint paths, plus the PR #14 clean-cache gate, passed. Release-owner review remains required. | **Passing PR evidence; owner review pending** |
 
 ## Manual product evidence
 
