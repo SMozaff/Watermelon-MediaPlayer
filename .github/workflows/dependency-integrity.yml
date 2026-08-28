@@ -41,5 +41,35 @@ jobs:
       - name: Remove dependency caches
         run: rm -rf "$HOME/.gradle/caches"
 
-      - name: Resolve dependencies and compile the media-tools module
-        run: ./gradlew --no-daemon --refresh-dependencies :media-tools:assembleDebug --stacktrace
+      # Build the app to resolve its shipped dependency graph, then exercise the resolved
+      # java-lame API with a deterministic synthetic PCM fixture that emits an MPEG audio frame.
+      - name: Resolve dependencies and run the MP3 compile-time gate
+        run: |
+          ./gradlew --no-daemon --refresh-dependencies \
+            --dependency-verification=strict \
+            :app:assembleDebug \
+            :media-tools:testDebugUnitTest \
+            --tests com.watermelon.mediatools.engine.Mp3EncoderTest \
+            --stacktrace
+      # Generate an SPDX JSON SBOM from the exact artifacts freshly resolved above. The
+      # download sub-action is immutable-pinned; it has no release-publishing permissions.
+      - name: Download Syft for SBOM generation
+        id: syft
+        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0
+      - name: Generate dependency SBOM
+        run: |
+          mkdir -p release-artifacts
+          "${{ steps.syft.outputs.cmd }}" \
+            scan dir:"$HOME/.gradle/caches/modules-2/files-2.1" \
+            --output spdx-json > release-artifacts/dependency-sbom.spdx.json
+          test -s release-artifacts/dependency-sbom.spdx.json
+      - name: Upload MP3 test report and SBOM
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dependency-integrity-evidence
+          path: |
+            media-tools/build/reports/tests/testDebugUnitTest/
+            release-artifacts/dependency-sbom.spdx.json
+          if-no-files-found: warn
+          retention-days: 14
