@@ -1,5 +1,6 @@
 package com.watermelon.ui.tv
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,12 +41,12 @@ import com.watermelon.ui.viewmodel.PlayerViewModel
  * shader in particular relies on touch-driven hold gestures that don't exist on a remote.
  *
  * Requirements satisfied:
- *  - D-pad-first: every action reachable by up/down/left/right + OK only (see
- *    [TvPlayerControls] for the key-event handling).
- *  - Works with a partially-broken remote: OK on the Play/Pause button is the single
- *    guaranteed control; nothing else is required to operate the player.
- *  - Minimal action set: transport (previous/play-pause/next) + seek-hold + subtitle nudge.
- *  - Large, focusable targets with a visible focus ring (no reliance on color alone).
+ *  - D-pad-first: every primary action is a visible focus stop operated by SELECT.
+ *  - Works with a partially-broken remote: the initial focus lands on Play/Pause, so SELECT is
+ *    the single guaranteed control needed to operate the player.
+ *  - Minimal action set: transport, fixed seek, and subtitle timing adjustment when subtitles
+ *    are available.
+ *  - Large, focusable targets with a visible focus ring and scale cue (no reliance on color alone).
  */
 @Composable
 fun TvPlayerScreen(
@@ -64,6 +65,11 @@ fun TvPlayerScreen(
     val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
     val positionMs by viewModel.currentPositionMs.collectAsStateWithLifecycle()
     val isPlaying = playbackState == PlaybackState.PLAYING
+
+    // Keep Android's Back behaviour explicit without consuming D-pad direction keys. Directional
+    // focus movement remains under Compose's default traversal and every player action has a
+    // visible control below.
+    BackHandler(onBack = onExit)
 
     // Auto-advance on natural end-of-video — same reasoning as PhonePlayerScreen's
     // identical effect: reuses the same onSkipNext the manual Next button calls, so it
@@ -123,9 +129,8 @@ fun TvPlayerScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // Read-only progress — seeking is via hold-left/hold-right in TvPlayerControls,
-            // not direct seekbar drag (a D-pad can't drag; a draggable-looking bar with no
-            // drag support would be a worse affordance than no bar at all).
+            // Progress is read-only; the visible Rewind and Forward controls below provide
+            // fixed 10-second D-pad actions without presenting a touch-style draggable seekbar.
             val progress = if (durationMs > 0) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
             LinearProgressIndicator(
                 progress = { progress },
@@ -139,6 +144,13 @@ fun TvPlayerScreen(
                 color = PlayerColors.current.textPrimary,
                 modifier = Modifier
                     .align(Alignment.End)
+                    .padding(top = WatermelonSpacing.xs)
+            )
+            Text(
+                text = buildTvRemoteHint(subtitleTrack != null),
+                color = PlayerColors.current.textPrimary.copy(alpha = 0.78f),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
                     .padding(top = WatermelonSpacing.xs, bottom = WatermelonSpacing.sm)
             )
 
@@ -146,12 +158,12 @@ fun TvPlayerScreen(
                 isPlaying = isPlaying,
                 hasPreviousTrack = hasPreviousTrack,
                 hasNextTrack = hasNextTrack,
+                hasSubtitles = subtitleTrack != null,
                 onIntent = viewModel::onIntent,
                 onSkipPrevious = onSkipPrevious,
                 onSkipNext = onSkipNext,
-                onExit = onExit,
                 onSubtitleNudge = { deltaMs -> liveOffsetMs += deltaMs },
-                onSeekHold = { direction ->
+                onSeek = { direction ->
                     val target = (positionMs + direction * SEEK_STEP_MS).coerceIn(0L, durationMs)
                     viewModel.onIntent(UserIntent.Seek(target))
                 }
@@ -160,9 +172,16 @@ fun TvPlayerScreen(
     }
 }
 
-/** Per-repeat seek amount for D-pad hold-left/hold-right — matches the phone screen's base
- *  10s swipe-to-seek granularity so the two platforms feel consistent. */
+/** Fixed seek amount for the visible TV controls, matching the phone player's base 10-second
+ * swipe-to-seek granularity so the two platforms feel consistent. */
 private const val SEEK_STEP_MS = 10_000L
+
+private fun buildTvRemoteHint(hasSubtitles: Boolean): String =
+    if (hasSubtitles) {
+        "SELECT a control  ·  Subtitle timing controls are below  ·  BACK library"
+    } else {
+        "SELECT a control  ·  BACK library"
+    }
 
 private fun formatTvTime(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)

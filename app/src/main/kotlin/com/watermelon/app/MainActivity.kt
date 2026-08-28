@@ -893,7 +893,10 @@ class MainActivity : ComponentActivity() {
                     com.watermelon.ui.tv.TvVideoListScreen(
                         viewModel = vm,
                         title = "All Videos",
-                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") }
+                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        showThumbnails = settingsState.showThumbnails,
+                        showDurations = settingsState.showDurations,
+                        showFileSize = settingsState.showFileSize
                     )
                 } else {
                     val playlists by playlistRepository.observeAll()
@@ -982,7 +985,10 @@ class MainActivity : ComponentActivity() {
                     com.watermelon.ui.tv.TvVideoListScreen(
                         viewModel = vm,
                         title = screenTitle,
-                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") }
+                        onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
+                        showThumbnails = settingsState.showThumbnails,
+                        showDurations = settingsState.showDurations,
+                        showFileSize = settingsState.showFileSize
                     )
                 } else {
                     val playlists by playlistRepository.observeAll()
@@ -1354,32 +1360,57 @@ class MainActivity : ComponentActivity() {
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(
-                    state = settingsState,
-                    onStateChange = { newState ->
-                        settingsState = newState
-                        saveSettingsState(prefs, newState)
-                        if (newState.pureDark != pureDarkTheme) {
-                            onPureDarkThemeChange(newState.pureDark)
-                        }
-                        onForcedRtlChange(newState.forcedRtl)
-                    },
-                    onFolderVisibilityClick = { navController.navigate(Routes.FOLDER_VISIBILITY) },
-                    onBack = { navController.popBackStack() }
-                )
+                val isTelevision = remember {
+                    com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(this@MainActivity)
+                }
+                val onSettingsStateChange: (com.watermelon.ui.screens.SettingsState) -> Unit = { newState ->
+                    settingsState = newState
+                    saveSettingsState(prefs, settingsState)
+                    if (newState.pureDark != pureDarkTheme) {
+                        onPureDarkThemeChange(newState.pureDark)
+                    }
+                    onForcedRtlChange(newState.forcedRtl)
+                }
+                if (isTelevision) {
+                    com.watermelon.ui.tv.TvSettingsScreen(
+                        state = settingsState,
+                        onStateChange = onSettingsStateChange,
+                        onFolderVisibilityClick = { navController.navigate(Routes.FOLDER_VISIBILITY) },
+                        onBack = { navController.popBackStack() }
+                    )
+                } else {
+                    SettingsScreen(
+                        state = settingsState,
+                        onStateChange = onSettingsStateChange,
+                        onFolderVisibilityClick = { navController.navigate(Routes.FOLDER_VISIBILITY) },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
             composable(Routes.FOLDER_VISIBILITY) {
                 val vm = remember {
                     FolderViewModel(folderRepository, mediaRepository, playlistRepository, settingsStore)
                 }
                 val folders by vm.allFoldersForSettings.collectAsStateWithLifecycle()
-                FolderVisibilityScreen(
-                    folders = folders
-                        .filter { !it.first.isPlaylist }
-                        .map { (node, visible) -> Triple(node.path, node.displayName, visible) },
-                    onToggle = { path, visible -> vm.setFolderHidden(path, !visible) },
-                    onBack = { navController.popBackStack() }
-                )
+                val folderRows = folders
+                    .filter { !it.first.isPlaylist }
+                    .map { (node, visible) -> Triple(node.path, node.displayName, visible) }
+                val isTelevision = remember {
+                    com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(this@MainActivity)
+                }
+                if (isTelevision) {
+                    com.watermelon.ui.tv.TvFolderVisibilityScreen(
+                        folders = folderRows,
+                        onToggle = { path, visible -> vm.setFolderHidden(path, !visible) },
+                        onBack = { navController.popBackStack() }
+                    )
+                } else {
+                    FolderVisibilityScreen(
+                        folders = folderRows,
+                        onToggle = { path, visible -> vm.setFolderHidden(path, !visible) },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
             // NEW: Design System route
             composable(Routes.DESIGN_SYSTEM) {
