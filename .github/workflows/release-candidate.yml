@@ -44,7 +44,7 @@ jobs:
       - name: Build optimized unsigned candidate
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace :app:assembleRelease
+          ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease
       - name: Record candidate checksum
         run: |
           mkdir -p release-artifacts
@@ -113,7 +113,7 @@ jobs:
           test -n "$RELEASE_KEY_ALIAS" || { echo "Missing protected key alias."; exit 1; }
           test -n "$RELEASE_KEY_PASSWORD" || { echo "Missing protected key password."; exit 1; }
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace :app:assembleRelease \
+          ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease \
             -PRELEASE_STORE_FILE="$RELEASE_STORE_FILE" \
             -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD" \
             -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS" \

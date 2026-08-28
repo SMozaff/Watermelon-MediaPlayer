@@ -50,7 +50,7 @@ jobs:
       # Build after CodeQL initialization so Kotlin/Java compilation is observed.
       # This workflow never receives release-signing credentials.
       - name: Build Android sources for analysis
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+        run: ./gradlew :app:assembleDebug --no-daemon --dependency-verification=strict --stacktrace
 
       - name: Analyze source
         uses: github/codeql-action/analyze@5ba2889ada762081db2c4f32a729827dce632c7b # v3

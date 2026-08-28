@@ -1,6 +1,6 @@
 # java-lame Provenance Record
 
-**Status:** Pending release-owner approval and checksum verification. This record is evidence for the release decision; it is not a legal opinion or a substitute for licence review.
+**Status:** SHA-256 metadata generated on the release-preparation branch; independent release-owner approval, SBOM review, and licence review remain pending. This record is evidence for the release decision; it is not a legal opinion or a substitute for licence review.
 
 | Field | Recorded value |
 |---|---|
@@ -24,9 +24,9 @@ Before distribution, the assigned release owner must review the upstream licence
 |---|---|
 | Reviewed upstream tag/repository | URL and immutable commit: ____________________ |
 | Reviewed licence text and distribution obligations | Reviewer/date/outcome: ____________________ |
-| Generated Gradle `verification-metadata.xml` from a clean trusted runner | Commit and reviewer: ____________________ |
-| JitPack artifact SHA-256 matches verification metadata | Checksum/reviewer: ____________________ |
-| Clean-cache Dependency Integrity workflow passed on release candidate | Workflow URL: ____________________ |
+| Generated Gradle `verification-metadata.xml` | `gradle/verification-metadata.xml` was generated with Gradle SHA-256 metadata. Review the 642 components/1,166 artifacts before approval: ____________________ |
+| JitPack artifact SHA-256 matches verification metadata | `java-lame-v3.98.4.jar`: `20b28d982b57fcf44aed9c123c14de10df3860ba3dcb0fe3ada89a1b7cf438ef`; reviewer: ____________________ |
+| Clean-cache Dependency Integrity workflow passed on release candidate | Workflow URL, including MP3 test and SBOM artifact: ____________________ |
 | Approved fallback artifact, if retained | Coordinate/location/checksum: ____________________ |
 | MP3 physical-device validation completed | Result record URL: ____________________ |
 
@@ -39,7 +39,7 @@ Generate verification metadata only from a clean, trusted build runner, inspect 
   --write-verification-metadata sha256,pgp :app:assembleRelease
 ```
 
-After review, release builds must use Gradle's strict dependency-verification mode. A clean-cache build that cannot resolve JitPack, or a checksum/key mismatch, is a **Hold** condition. Never suppress dependency verification to make a candidate build pass.
+After review, release builds must use Gradle's strict dependency-verification mode. The dependency, CodeQL, and release-candidate workflows invoke Gradle with `--dependency-verification=strict`. A clean-cache build that cannot resolve JitPack, or a checksum/key mismatch, is a **Hold** condition. Never suppress dependency verification to make a candidate build pass.
 
 ## References
 
