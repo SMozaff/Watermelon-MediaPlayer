@@ -69,6 +69,10 @@ fun QuickToolsSheet(
     canUsePip: Boolean,
     isBackground: Boolean,
     hasSubtitleTrack: Boolean,
+    subtitleOffsetMs: Long = 0L,
+    autoSyncEnabled: Boolean = false,
+    autoSyncStatus: com.watermelon.common.subtitle.sync.SyncStatus =
+        com.watermelon.common.subtitle.sync.SyncStatus.IDLE,
     onSpeedChange: (Float) -> Unit,
     onMuteToggle: () -> Unit,
     onRatioChange: (VideoRatio) -> Unit,
@@ -80,6 +84,8 @@ fun QuickToolsSheet(
     onSleepTimer: () -> Unit,
     onPip: () -> Unit,
     onBackground: () -> Unit,
+    onSubtitleNudge: (Long) -> Unit = {},
+    onAutoSync: () -> Unit = {},
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -176,16 +182,40 @@ fun QuickToolsSheet(
             detail = "Change queue order",
             onClick = onShuffle,
         )
-        SheetAction(
-            label = "Subtitle controls",
-            detail = if (hasSubtitleTrack) {
-                "Subtitle track is loaded; detailed controls are not available in this release."
-            } else {
-                "No subtitle track is available for this video."
-            },
-            enabled = false,
-            onClick = {},
-        )
+        if (hasSubtitleTrack) {
+            SheetDivider()
+            SheetSectionLabel("Subtitle timing")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = WatermelonSpacing.md),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                TextButton(onClick = { onSubtitleNudge(-100L) }) {
+                    Text("−100 ms", color = PlayerColors.current.textPrimary)
+                }
+                Text(
+                    text = "${subtitleOffsetMs} ms",
+                    color = PlayerColors.current.textPrimary,
+                    fontWeight = FontWeight.Bold,
+                )
+                TextButton(onClick = { onSubtitleNudge(+100L) }) {
+                    Text("+100 ms", color = PlayerColors.current.textPrimary)
+                }
+            }
+            if (autoSyncEnabled) {
+                SheetAction(
+                    label = "Auto Sync",
+                    detail = subtitleAutoSyncDetail(autoSyncStatus),
+                    onClick = onAutoSync,
+                )
+            }
+        } else {
+            SheetAction(
+                label = "Subtitle controls",
+                detail = "No subtitle track is available for this video.",
+                enabled = false,
+                onClick = {},
+            )
+        }
         SheetAction(
             label = "Sleep timer",
             detail = "Pause playback after a selected interval",
@@ -339,3 +369,18 @@ private fun SheetBottomSpace() {
 
 private fun formatSpeed(speed: Float): String =
     if (speed == speed.toLong().toFloat()) "${speed.toLong()}×" else "${speed}×"
+
+private fun subtitleAutoSyncDetail(status: com.watermelon.common.subtitle.sync.SyncStatus): String =
+    when (status) {
+        com.watermelon.common.subtitle.sync.SyncStatus.IDLE -> "Analyze the audio track to correct subtitle timing."
+        com.watermelon.common.subtitle.sync.SyncStatus.CHECKING_CACHE,
+        com.watermelon.common.subtitle.sync.SyncStatus.ANALYZING -> "Analyzing…"
+        com.watermelon.common.subtitle.sync.SyncStatus.SYNCHRONIZED -> "Synchronized."
+        com.watermelon.common.subtitle.sync.SyncStatus.LOW_CONFIDENCE ->
+            "Low confidence — no automatic change applied. Try the manual nudge instead."
+        com.watermelon.common.subtitle.sync.SyncStatus.COMPLEX_DRIFT ->
+            "Timing drifts over the video and can't be fixed with a single offset. Try the manual nudge instead."
+        com.watermelon.common.subtitle.sync.SyncStatus.UNSUPPORTED -> "Auto Sync is unsupported for this file."
+        com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED -> "Auto Sync is unavailable right now."
+        com.watermelon.common.subtitle.sync.SyncStatus.FAILED -> "Auto Sync failed. Try again."
+    }

@@ -92,6 +92,10 @@ data class SettingsState(
      *  actual behavior. Toggle still persists/works if you want to test the gated UI
      *  path later without re-wiring the checks. */
     val isPremiumUnlocked: Boolean = true,
+    /** When false, the explicit "Auto Sync" subtitle-timing action is hidden on both the
+     *  phone Quick Tools sheet and the TV player controls. Manual ±100 ms nudging and any
+     *  previously-saved automatic or manual offset still apply either way. */
+    val autoSyncEnabled: Boolean = true,
 )
 
 enum class VhsIntensity { OFF, LOW, MED, HIGH }
@@ -166,6 +170,18 @@ fun SettingsScreen(
                         label = "Continue Watching playlist",
                         checked = state.continueWatchingEnabled
                     ) { onStateChange(state.copy(continueWatchingEnabled = it)) }
+                }
+            }
+
+            item {
+                SettingsGroup(
+                    title = "Subtitle Auto Sync",
+                    summary = "Automatic subtitle timing correction"
+                ) {
+                    ToggleRow(
+                        label = "Auto Sync action",
+                        checked = state.autoSyncEnabled
+                    ) { onStateChange(state.copy(autoSyncEnabled = it)) }
                 }
             }
 

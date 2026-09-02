@@ -179,6 +179,108 @@ class MainActivity : ComponentActivity() {
     private val playbackPositionRepository by lazy {
         com.watermelon.storage.repository.PlaybackPositionRepositoryImpl(database)
     }
+    private val subtitleFingerprintProvider by lazy {
+        com.watermelon.subtitle.sync.SubtitleFingerprintProvider()
+    }
+    private val subtitleSyncRepository by lazy {
+        com.watermelon.storage.repository.SubtitleSyncRepositoryImpl(database)
+    }
+    private val subtitleSyncCoordinator by lazy {
+        com.watermelon.subtitle.sync.SubtitleSyncCoordinator(
+            repository = subtitleSyncRepository,
+            probeSelector = com.watermelon.subtitle.sync.SubtitleProbeSelectorImpl(),
+            subtitleActivityBuilder = com.watermelon.subtitle.sync.SubtitleActivityBuilderImpl(),
+            speechProbeSource = com.watermelon.mediatools.subtitle.sync.SparseSpeechProbeSource(applicationContext),
+            correlator = com.watermelon.subtitle.sync.ActivityCorrelatorImpl(),
+            consensus = com.watermelon.subtitle.sync.OffsetConsensus(),
+        )
+    }
+
+    // Auto Sync UI state, owned here (not inside the player composable) so a result computed
+    // for one video can never be mistaken for another: [subtitleSyncSession] is bumped every
+    // time the player's mediaUri changes, and triggerSubtitleAutoSync captures the session id
+    // at launch time and discards its result if the session has since moved on -- e.g. the
+    // user backed out to the library and opened a different video while the probe/correlation
+    // coroutine was still running.
+    private var subtitleSyncSession = 0L
+    private var subtitleOffsetMs by mutableStateOf(0L)
+    private var autoSyncStatus by mutableStateOf(com.watermelon.common.subtitle.sync.SyncStatus.IDLE)
+
+    /**
+     * Runs Auto Sync for the currently open [subtitle] against [mediaUri]/[mediaItem], applying
+     * the result only if playback hasn't moved on to a different video in the meantime.
+     */
+    private fun triggerSubtitleAutoSync(
+        mediaUri: String,
+        mediaItem: com.watermelon.common.model.MediaItem?,
+        subtitle: com.watermelon.common.model.ParsedSubtitle,
+        durationMs: Long,
+    ) {
+        val sessionAtStart = subtitleSyncSession
+        autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.ANALYZING
+        lifecycleScope.launch {
+            val fingerprint = subtitleFingerprintProvider.fingerprint(subtitle)
+            val result = runCatching {
+                subtitleSyncCoordinator.synchronize(
+                    com.watermelon.common.subtitle.sync.SubtitleSyncRequest(
+                        mediaId = mediaUri,
+                        mediaUri = mediaUri,
+                        mediaFileSize = mediaItem?.fileSize ?: 0L,
+                        mediaDurationMs = durationMs,
+                        subtitleFingerprint = fingerprint,
+                        subtitleLanguage = null,
+                        subtitle = subtitle,
+                        playbackSessionId = sessionAtStart,
+                    )
+                )
+            }.getOrElse { com.watermelon.common.subtitle.sync.SubtitleSyncResult.Failed(it.message ?: "error") }
+
+            // Stale: the user has since opened a different video. Discard silently.
+            if (subtitleSyncSession != sessionAtStart) return@launch
+
+            when (result) {
+                is com.watermelon.common.subtitle.sync.SubtitleSyncResult.Synchronized -> {
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.SYNCHRONIZED
+                    subtitleOffsetMs = when (val model = result.model) {
+                        is com.watermelon.common.subtitle.sync.SubtitleSyncModel.Offset -> model.offsetMs
+                        is com.watermelon.common.subtitle.sync.SubtitleSyncModel.Affine -> model.offsetMs
+                        else -> subtitleOffsetMs
+                    }
+                }
+                is com.watermelon.common.subtitle.sync.SubtitleSyncResult.ComplexDriftDetected ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.COMPLEX_DRIFT
+                is com.watermelon.common.subtitle.sync.SubtitleSyncResult.LowConfidence ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.LOW_CONFIDENCE
+                com.watermelon.common.subtitle.sync.SubtitleSyncResult.Unsupported ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.UNSUPPORTED
+                com.watermelon.common.subtitle.sync.SubtitleSyncResult.ResourceDenied ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED
+                com.watermelon.common.subtitle.sync.SubtitleSyncResult.Cancelled ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
+                is com.watermelon.common.subtitle.sync.SubtitleSyncResult.Failed ->
+                    autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.FAILED
+            }
+        }
+    }
+
+    /** Persists a manual subtitle offset nudge and reflects it immediately in the UI. */
+    private fun applySubtitleManualNudge(
+        mediaUri: String,
+        mediaItem: com.watermelon.common.model.MediaItem?,
+        subtitle: com.watermelon.common.model.ParsedSubtitle,
+        deltaMs: Long,
+    ) {
+        val newOffsetMs = subtitleOffsetMs + deltaMs
+        subtitleOffsetMs = newOffsetMs
+        autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
+        val fileSize = mediaItem?.fileSize ?: return
+        lifecycleScope.launch {
+            val fingerprint = subtitleFingerprintProvider.fingerprint(subtitle)
+            runCatching {
+                subtitleSyncRepository.setManualOffset(mediaUri, fileSize, fingerprint, newOffsetMs)
+            }
+        }
+    }
 
     private val playbackConnection by lazy { PlaybackConnection(applicationContext) }
     private var mediaController by mutableStateOf<MediaController?>(null)
@@ -1079,7 +1181,21 @@ class MainActivity : ComponentActivity() {
                             mutableStateOf<com.watermelon.common.model.ParsedSubtitle?>(null)
                         }
                         LaunchedEffect(mediaUri) {
-                            track = discoverSubtitle(mediaUri)
+                            subtitleSyncSession += 1
+                            subtitleOffsetMs = 0L
+                            autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
+                            val discovered = discoverSubtitle(mediaUri)
+                            track = discovered
+                            if (discovered != null) {
+                                val mediaItem = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
+                                if (mediaItem != null) {
+                                    val fingerprint = subtitleFingerprintProvider.fingerprint(discovered)
+                                    val profile = runCatching {
+                                        subtitleSyncRepository.get(mediaUri, mediaItem.fileSize, fingerprint)
+                                    }.getOrNull()
+                                    subtitleOffsetMs = profile?.effectiveOffsetMs() ?: 0L
+                                }
+                            }
                         }
                         track
                     }
@@ -1145,6 +1261,19 @@ class MainActivity : ComponentActivity() {
                             onExit = { navController.popBackStack() },
                             subtitleTrack = subtitleTrackState,
                             subtitleStyle = settingsState.subtitleStyle,
+                            subtitleOffsetMs = subtitleOffsetMs,
+                            autoSyncEnabled = settingsState.autoSyncEnabled,
+                            autoSyncStatus = autoSyncStatus,
+                            onSubtitleNudge = { deltaMs ->
+                                subtitleTrackState?.let { track ->
+                                    applySubtitleManualNudge(mediaUri, playerMedia, track, deltaMs)
+                                }
+                            },
+                            onAutoSync = {
+                                subtitleTrackState?.let { track ->
+                                    triggerSubtitleAutoSync(mediaUri, playerMedia, track, durationMs)
+                                }
+                            },
                             surface = { modifier ->
                                 AndroidView(
                                     modifier = modifier,
@@ -1175,6 +1304,19 @@ class MainActivity : ComponentActivity() {
                         onBack = { navController.popBackStack() },
                         durationMs = durationMs,
                         subtitleTrack = subtitleTrackState,
+                        subtitleOffsetMs = subtitleOffsetMs,
+                        autoSyncEnabled = settingsState.autoSyncEnabled,
+                        autoSyncStatus = autoSyncStatus,
+                        onSubtitleNudge = { deltaMs ->
+                            subtitleTrackState?.let { track ->
+                                applySubtitleManualNudge(mediaUri, playerMedia, track, deltaMs)
+                            }
+                        },
+                        onAutoSync = {
+                            subtitleTrackState?.let { track ->
+                                triggerSubtitleAutoSync(mediaUri, playerMedia, track, durationMs)
+                            }
+                        },
                         uri = mediaUri,
                         mediaTitle = playerMedia?.displayName ?: mediaUri.substringAfterLast('/'),
                         mediaContext = playerMedia?.parentFolder

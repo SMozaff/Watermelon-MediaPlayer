@@ -44,6 +44,7 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
     trimmedOutputPath = prefs.getString("mt_trimmed_output_path", null)
         ?: "Movies/Watermelon/trimmed",
     isPremiumUnlocked = prefs.getBoolean("mt_premium_unlocked", true),
+    autoSyncEnabled = prefs.getBoolean("subtitle_auto_sync_enabled", true),
     subtitleStyle = SubtitleStyle(
         enabled = prefs.getBoolean("subtitle_enabled", true),
         sizeSp = prefs.getInt("subtitle_size_sp", 18),
@@ -89,6 +90,7 @@ fun saveSettingsState(prefs: SharedPreferences, state: SettingsState) {
         .putString("mt_compressed_output_path", state.compressedOutputPath)
         .putString("mt_trimmed_output_path", state.trimmedOutputPath)
         .putBoolean("mt_premium_unlocked", state.isPremiumUnlocked)
+        .putBoolean("subtitle_auto_sync_enabled", state.autoSyncEnabled)
         .putBoolean("subtitle_enabled", state.subtitleStyle.enabled)
         .putInt("subtitle_size_sp", state.subtitleStyle.sizeSp)
         .putLong("subtitle_color_argb", state.subtitleStyle.textColorArgb)

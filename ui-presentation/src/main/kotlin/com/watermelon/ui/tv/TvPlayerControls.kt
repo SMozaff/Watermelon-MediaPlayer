@@ -49,6 +49,9 @@ fun TvPlayerControls(
     onSkipNext: () -> Unit,
     onSubtitleNudge: (Long) -> Unit,
     onSeek: (direction: Int) -> Unit,
+    showAutoSync: Boolean = false,
+    autoSyncStatusLabel: String? = null,
+    onAutoSync: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val playPauseFocus = remember { FocusRequester() }
@@ -124,6 +127,18 @@ fun TvPlayerControls(
                 TvFocusableButton(
                     label = "Subtitles +100 ms",
                     onClick = { onSubtitleNudge(+100L) }
+                )
+                if (showAutoSync) {
+                    TvFocusableButton(
+                        label = "Auto Sync",
+                        onClick = onAutoSync
+                    )
+                }
+            }
+            if (showAutoSync && autoSyncStatusLabel != null) {
+                Text(
+                    text = autoSyncStatusLabel,
+                    color = PlayerColors.current.textPrimary.copy(alpha = 0.78f)
                 )
             }
         }
