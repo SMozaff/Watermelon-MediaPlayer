@@ -169,6 +169,38 @@ class SubtitleRepositoryImpl(
             null
         }
 
+    /**
+     * S3: online lookup + download, gated on the caller passing user consent (this repository
+     * has no opinion on where that consent lives -- see SettingsState.onlineSubtitleAcquisitionEnabled).
+     *
+     * Downloads and parses exactly one candidate -- the best-ranked match for
+     * [preferredLanguages] -- through the existing [downloadSubtitle] (SSRF-guarded) and the
+     * same cache-file parse path [parsedFor] uses for a cache hit, rather than fetching every
+     * candidate [findSubtitles] returns. Candidates are ranked by preferred-language order
+     * first (unlisted languages sort last, preserving the provider's own order among
+     * themselves), then by the provider's own [SubtitleTrack.rating] as a tiebreaker.
+     *
+     * Returns null on any failure -- no network, no matches, download error, unparsable file --
+     * so a caller can treat this as a soft miss and fall back to no subtitle, never an error.
+     */
+    suspend fun acquireOnline(
+        mediaItem: MediaItem,
+        preferredLanguages: List<String>,
+    ): ParsedSubtitle? = runCatching {
+        val candidates = findSubtitles(mediaItem, preferredLanguages)
+        if (candidates.isEmpty()) return@runCatching null
+        val best = candidates
+            .sortedWith(
+                compareBy<SubtitleTrack> { track ->
+                    preferredLanguages.indexOf(track.language)
+                        .let { if (it < 0) preferredLanguages.size else it }
+                }.thenByDescending { it.rating }
+            )
+            .first()
+        val path = downloadSubtitle(best)
+        parseCachedFile(File(path))
+    }.getOrNull()
+
     // ── Private helpers ─────────────────────────────────────────────────────────
 
     private fun cachedTracks(mediaItem: MediaItem, langs: List<String>): List<SubtitleTrack> {

@@ -96,6 +96,11 @@ data class SettingsState(
      *  phone Quick Tools sheet and the TV player controls. Manual ±100 ms nudging and any
      *  previously-saved automatic or manual offset still apply either way. */
     val autoSyncEnabled: Boolean = true,
+    /** User consent gate for the S3 remote subtitle lookup (SubtitleRepository.findSubtitles/
+     *  downloadSubtitle against OpenSubtitles). Defaults to off: it sends a file hash to a
+     *  third-party service, so it only runs after the user explicitly opts in here. When off,
+     *  subtitle discovery stays entirely local (sidecar file + previously-downloaded cache). */
+    val onlineSubtitleAcquisitionEnabled: Boolean = false,
 )
 
 enum class VhsIntensity { OFF, LOW, MED, HIGH }
@@ -182,6 +187,18 @@ fun SettingsScreen(
                         label = "Auto Sync action",
                         checked = state.autoSyncEnabled
                     ) { onStateChange(state.copy(autoSyncEnabled = it)) }
+                }
+            }
+
+            item {
+                SettingsGroup(
+                    title = "Online subtitles",
+                    summary = "Look up and download subtitles when none are found locally"
+                ) {
+                    ToggleRow(
+                        label = "Find subtitles online",
+                        checked = state.onlineSubtitleAcquisitionEnabled
+                    ) { onStateChange(state.copy(onlineSubtitleAcquisitionEnabled = it)) }
                 }
             }
 

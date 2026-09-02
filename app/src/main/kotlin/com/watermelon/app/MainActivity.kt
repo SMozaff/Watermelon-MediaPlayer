@@ -1184,16 +1184,50 @@ class MainActivity : ComponentActivity() {
                             subtitleSyncSession += 1
                             subtitleOffsetMs = 0L
                             autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
-                            val discovered = discoverSubtitle(mediaUri)
-                            track = discovered
-                            if (discovered != null) {
-                                val mediaItem = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
+
+                            var subtitle = discoverSubtitle(mediaUri)
+                            var isFreshOnlineAcquisition = false
+                            val mediaItem = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
+
+                            // Online lookup only runs after the local (sidecar + cache) path
+                            // above comes back empty, and only with explicit user consent
+                            // (settingsState.onlineSubtitleAcquisitionEnabled, off by default).
+                            // A stale result can't attach to a different video: this whole
+                            // block runs inside LaunchedEffect(mediaUri), which Compose cancels
+                            // outright the moment mediaUri changes, so a slow lookup for a video
+                            // the user has since navigated away from is simply never resumed.
+                            if (subtitle == null && settingsState.onlineSubtitleAcquisitionEnabled && mediaItem != null) {
+                                subtitle = runCatching {
+                                    subtitleRepository.acquireOnline(
+                                        mediaItem = mediaItem,
+                                        preferredLanguages = listOf("fa", "ar", "ur", "ku", "en"),
+                                    )
+                                }.getOrNull()
+                                isFreshOnlineAcquisition = subtitle != null
+                            }
+
+                            track = subtitle
+                            if (subtitle != null) {
                                 if (mediaItem != null) {
-                                    val fingerprint = subtitleFingerprintProvider.fingerprint(discovered)
+                                    val fingerprint = subtitleFingerprintProvider.fingerprint(subtitle)
                                     val profile = runCatching {
                                         subtitleSyncRepository.get(mediaUri, mediaItem.fileSize, fingerprint)
                                     }.getOrNull()
                                     subtitleOffsetMs = profile?.effectiveOffsetMs() ?: 0L
+
+                                    // A freshly-acquired online subtitle has no manual override
+                                    // and no cached auto result yet -- feed it straight into the
+                                    // Auto Sync pipeline (still gated by the existing Auto Sync
+                                    // setting) rather than leaving it unsynchronized until the
+                                    // user finds and taps the button themselves.
+                                    if (isFreshOnlineAcquisition && settingsState.autoSyncEnabled) {
+                                        triggerSubtitleAutoSync(
+                                            mediaUri = mediaUri,
+                                            mediaItem = mediaItem,
+                                            subtitle = subtitle,
+                                            durationMs = controller.duration.coerceAtLeast(0L),
+                                        )
+                                    }
                                 }
                             }
                         }
