@@ -40,10 +40,11 @@ class SubtitleSyncCoordinator(
             )
         }
 
-        if (stored?.autoEngineVersion == SUBTITLE_SYNC_ENGINE_VERSION && stored.autoModel != null) {
+        val cachedAutoModel = stored?.autoModel
+        if (stored?.autoEngineVersion == SUBTITLE_SYNC_ENGINE_VERSION && cachedAutoModel != null) {
             FileLogger.i(TAG, "auto cache hit media=${safeId(request.mediaId)}")
             return SubtitleSyncResult.Synchronized(
-                stored.autoModel,
+                cachedAutoModel,
                 stored.autoConfidence ?: 1f,
                 emptyList(),
             )

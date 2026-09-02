@@ -112,6 +112,12 @@ fun PhonePlayerScreen(
     mediaContext: String = "",
     subtitleTrack: com.watermelon.common.model.ParsedSubtitle? = null,
     subtitleStyle: com.watermelon.common.model.SubtitleStyle = com.watermelon.common.model.SubtitleStyle(),
+    subtitleOffsetMs: Long = 0L,
+    autoSyncEnabled: Boolean = false,
+    autoSyncStatus: com.watermelon.common.subtitle.sync.SyncStatus =
+        com.watermelon.common.subtitle.sync.SyncStatus.IDLE,
+    onSubtitleNudge: (Long) -> Unit = {},
+    onAutoSync: () -> Unit = {},
     screenshotMode: ScreenshotMode = ScreenshotMode.SINGLE,
     initialBrightness: Float = -1f,
     onPipClick: (() -> Unit)? = null,
@@ -396,7 +402,10 @@ fun PhonePlayerScreen(
         }
 
         // ── Subtitles ───────────────────────────────────────────────────────
-        val activeCue = remember(subtitleTrack, position) { subtitleTrack?.cueAt(position) }
+        val effectiveSubtitle = remember(subtitleTrack, subtitleOffsetMs) {
+            subtitleTrack?.copy(offsetMs = subtitleOffsetMs)
+        }
+        val activeCue = remember(effectiveSubtitle, position) { effectiveSubtitle?.cueAt(position) }
         val subAtTop = subtitleStyle.position == com.watermelon.common.model.SubtitlePosition.TOP
         SubtitleOverlay(
             text = activeCue?.displayText,
@@ -707,6 +716,11 @@ fun PhonePlayerScreen(
                     canUsePip = onPipClick != null,
                     isBackground = isBackgroundEnabled,
                     hasSubtitleTrack = subtitleTrack != null,
+                    subtitleOffsetMs = subtitleOffsetMs,
+                    autoSyncEnabled = autoSyncEnabled,
+                    autoSyncStatus = autoSyncStatus,
+                    onSubtitleNudge = onSubtitleNudge,
+                    onAutoSync = onAutoSync,
                     onSpeedChange = { speed ->
                         playbackSpeed = speed
                         viewModel.onIntent(UserIntent.SetSpeed(speed))

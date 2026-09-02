@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +59,12 @@ fun TvPlayerScreen(
     onExit: () -> Unit,
     subtitleTrack: ParsedSubtitle? = null,
     subtitleStyle: SubtitleStyle = SubtitleStyle(),
+    subtitleOffsetMs: Long = 0L,
+    autoSyncEnabled: Boolean = false,
+    autoSyncStatus: com.watermelon.common.subtitle.sync.SyncStatus =
+        com.watermelon.common.subtitle.sync.SyncStatus.IDLE,
+    onSubtitleNudge: (Long) -> Unit = {},
+    onAutoSync: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
@@ -90,13 +95,10 @@ fun TvPlayerScreen(
         viewModel.setQueueContext(!hasNextTrack)
     }
 
-    // Local, render-time-only subtitle offset nudge (Up/Down). Not persisted — matches the
-    // scope of what TvPlayerControls exposes today; wiring this into the storage-backed
-    // SubtitleOffsets table is a separate change shared with the phone screen, which doesn't
-    // yet expose a live re-nudge control either.
-    var liveOffsetMs by remember(subtitleTrack) { mutableLongStateOf(subtitleTrack?.offsetMs ?: 0L) }
-    val effectiveSubtitle = remember(subtitleTrack, liveOffsetMs) {
-        subtitleTrack?.copy(offsetMs = liveOffsetMs)
+    // Manual/automatic offset is owned by the caller (MainActivity) and persisted per
+    // media+subtitle via SubtitleSyncRepository — see onSubtitleNudge/onAutoSync below.
+    val effectiveSubtitle = remember(subtitleTrack, subtitleOffsetMs) {
+        subtitleTrack?.copy(offsetMs = subtitleOffsetMs)
     }
 
     Box(
@@ -169,11 +171,14 @@ fun TvPlayerScreen(
                 onIntent = viewModel::onIntent,
                 onSkipPrevious = onSkipPrevious,
                 onSkipNext = onSkipNext,
-                onSubtitleNudge = { deltaMs -> liveOffsetMs += deltaMs },
+                onSubtitleNudge = onSubtitleNudge,
                 onSeek = { direction ->
                     val target = (positionMs + direction * SEEK_STEP_MS).coerceIn(0L, durationMs)
                     viewModel.onIntent(UserIntent.Seek(target))
-                }
+                },
+                showAutoSync = autoSyncEnabled && subtitleTrack != null,
+                autoSyncStatusLabel = autoSyncStatusLabel(autoSyncStatus),
+                onAutoSync = onAutoSync
             )
         }
     }
@@ -194,3 +199,19 @@ private fun formatTvTime(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
     return "%d:%02d".format(s / 60, s % 60)
 }
+
+/** Human-readable label for the current Auto Sync attempt, or null when there's nothing to show. */
+private fun autoSyncStatusLabel(status: com.watermelon.common.subtitle.sync.SyncStatus): String? =
+    when (status) {
+        com.watermelon.common.subtitle.sync.SyncStatus.IDLE -> null
+        com.watermelon.common.subtitle.sync.SyncStatus.CHECKING_CACHE,
+        com.watermelon.common.subtitle.sync.SyncStatus.ANALYZING -> "Auto Sync: analyzing…"
+        com.watermelon.common.subtitle.sync.SyncStatus.SYNCHRONIZED -> "Auto Sync: synchronized"
+        com.watermelon.common.subtitle.sync.SyncStatus.LOW_CONFIDENCE ->
+            "Auto Sync: low confidence, no change applied"
+        com.watermelon.common.subtitle.sync.SyncStatus.COMPLEX_DRIFT ->
+            "Auto Sync: drift detected, use manual nudge"
+        com.watermelon.common.subtitle.sync.SyncStatus.UNSUPPORTED -> "Auto Sync: unsupported for this file"
+        com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED -> "Auto Sync: unavailable right now"
+        com.watermelon.common.subtitle.sync.SyncStatus.FAILED -> "Auto Sync: failed"
+    }
