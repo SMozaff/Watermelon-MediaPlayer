@@ -63,10 +63,10 @@ jobs:
       # AGP/AndroidX/Compose/Media3 — see README's note on restricted-network
       # environments where only :common-interfaces builds).
       - name: Build all modules
-        run: ./gradlew build --stacktrace
+        run: ./gradlew build --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
 
       - name: Run unit tests
-        run: ./gradlew test --stacktrace
+        run: ./gradlew test --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
 
       # Debug APK — auto-signed with AGP's default debug keystore, no
       # signingConfig needed. app/build.gradle.kts has no release signing
@@ -163,7 +163,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace
+          script: ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
 
       - name: Upload instrumented test reports
         if: always()
@@ -200,4 +200,4 @@ jobs:
       # build type (not "debug" — androidComponents.beforeVariants disables
       # every variant except "benchmark"), so assembleDebug does not exist.
       - name: Assemble benchmarks
-        run: ./gradlew :benchmarks:assembleBenchmark --stacktrace
+        run: ./gradlew :benchmarks:assembleBenchmark --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
