@@ -2,6 +2,8 @@ package com.watermelon.ui.screens
 
 import android.app.Activity
 import android.media.AudioManager
+import androidx.compose.foundation.Box
+import androidx.compose.foundation.fillMaxSize
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitPointerEvent

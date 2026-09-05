@@ -2,11 +2,14 @@ package com.watermelon.ui.screens
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import com.watermelon.common.model.SleepTimerMode
+import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
 

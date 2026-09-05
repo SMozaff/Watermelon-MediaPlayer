@@ -1,0 +1,45 @@
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:12:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:127:47 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:131:48 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:136:44 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:17:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:198:29 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:408:37 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:414:18 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:421:37 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:430:41 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:434:29 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:48:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:49:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:50:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:38:5 Unresolved reference 'Box'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:39:18 Unresolved reference 'fillMaxSize'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:5:36 Unresolved reference 'Box'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:6:36 Unresolved reference 'fillMaxSize'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:9:45 Unresolved reference 'awaitPointerEvent'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:11:33 Unresolved reference 'collectAsStateWithLifecycle'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:272:27 Argument type mismatch: actual type is 'kotlin.Function2<com.watermelon.common.model.SleepTimerMode, ERROR CLASS: Cannot infer type for parameter minutes, kotlin.Unit>', but 'kotlin.Function1<com.watermelon.common.model.SleepTimerMode, kotlin.Unit>' was expected.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:272:35 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:274:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:275:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:276:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ProgressBarLayer.kt:24:22 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ProgressBarLayer.kt:5:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:3:36 Unresolved reference 'Box'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:34:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:40:142 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:42:148 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:50:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:58:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:61:30 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:61:34 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:62:9 Unresolved reference 'Box'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:63:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:66:13 @Composable invocations can only happen from the context of a @Composable function
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:66:44 @Composable invocations can only happen from the context of a @Composable function
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:7:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:10:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:24:20 Unresolved reference 'roundToPx'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:46:77 Unresolved reference 'aspectRatio'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:7:43 Unresolved reference 'contentAlignment'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:95:14 Unresolved reference 'align'.

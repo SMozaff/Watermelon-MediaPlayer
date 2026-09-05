@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
-        // LOCAL-ONLY MIRROR (revert before commit): sandbox blocks dl.google.com,
-        // so Google Maven is unreachable here. Aliyun mirrors it 1:1.
+        // LOCAL-ONLY MIRROR: sandbox blocks dl.google.com, so Google Maven is unreachable here.
+        // Aliyun mirrors it 1:1.
         maven { url = uri("https://maven.aliyun.com/repository/google/") }
         maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin/") }
         google()
@@ -13,7 +13,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // LOCAL-ONLY MIRROR (revert before commit): see above.
+        // LOCAL-ONLY MIRROR: see above.
         maven { url = uri("https://maven.aliyun.com/repository/google/") }
         maven { url = uri("https://maven.aliyun.com/repository/central/") }
         google()
