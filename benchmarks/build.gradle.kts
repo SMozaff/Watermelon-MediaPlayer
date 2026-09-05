@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "com.watermelon.benchmarks"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24 // Macrobenchmark requires API 24+
-        targetSdk = 35
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

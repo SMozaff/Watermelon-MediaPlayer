@@ -1,0 +1,66 @@
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:12:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:126:33 Unresolved reference 'height'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:130:33 Unresolved reference 'height'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:135:44 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:16:43 Cannot access 'val RowColumnParentData?.weight: Float': it is internal in file.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:197:29 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:407:37 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:413:18 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:420:37 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:429:41 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:433:29 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:47:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:48:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ControlsLayer.kt:49:34 Unresolved reference 'PlayerControlPanel'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:36:5 Unresolved reference 'Box'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:37:18 Unresolved reference 'fillMaxSize'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/GestureLayer.kt:7:45 Unresolved reference 'awaitPointerEvent'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:108:21 Type 'androidx.compose.runtime.State<kotlin.Long>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:109:26 Type 'androidx.compose.runtime.State<com.watermelon.common.model.PlaybackState>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:110:23 Type 'androidx.compose.runtime.State<com.watermelon.common.model.RepeatMode>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:111:23 Type 'androidx.compose.runtime.State<kotlin.Boolean>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:112:30 Type 'androidx.compose.runtime.State<kotlin.Boolean>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:113:34 Type 'androidx.compose.runtime.State<kotlin.Long>' has no method 'getValue(Nothing?, KProperty0<*>)', so it cannot serve as a delegate.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:11:33 Unresolved reference 'collectAsStateWithLifecycle'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:168:32 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:168:32 Not enough information to infer type argument for 'T'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:168:41 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:168:43 Unresolved reference 'mutableStateOf'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:269:27 Argument type mismatch: actual type is 'kotlin.Function2<com.watermelon.common.model.SleepTimerMode, ERROR CLASS: Cannot infer type for parameter minutes, kotlin.Unit>', but 'kotlin.Function1<com.watermelon.common.model.SleepTimerMode, kotlin.Unit>' was expected.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:269:35 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:271:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:272:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:273:17 Incompatible types 'com.watermelon.common.model.SleepTimerMode' and 'kotlin.String'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PhonePlayerScreen.kt:363:17 Unresolved reference 'not' for operator '!'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PlayerDialogs.kt:82:9 Unresolved reference 'SleepTimerDialog'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PlayerDialogs.kt:87:28 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/PlayerDialogs.kt:87:34 Cannot infer type for this parameter. Please specify it explicitly.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ProgressBarLayer.kt:23:22 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ProgressBarLayer.kt:23:76 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/ProgressBarLayer.kt:5:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:32:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:38:142 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:39:13 Unresolved reference 'Text'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:40:148 Unresolved reference 'width'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:48:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:56:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:61:33 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:64:13 Unresolved reference 'Text'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:70:33 Unresolved reference 'fillMaxSize'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/TransientIndicatorsLayer.kt:7:43 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:20:20 Unresolved reference 'roundToPx'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:42:77 Unresolved reference 'aspectRatio'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:62:39 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:63:38 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:6:43 Unresolved reference 'contentAlignment'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:66:25 Overload resolution ambiguity between candidates:
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:67:26 'operator' modifier is required on 'FirNamedFunctionSymbol kotlin/compareTo' in 'compareTo'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:68:27 'operator' modifier is required on 'FirNamedFunctionSymbol kotlin/text/compareTo' in 'compareTo'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:68:30 Overload resolution ambiguity between candidates:
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:91:14 Unresolved reference 'align'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:93:65 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:93:76 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:93:87 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:94:69 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:94:80 Unresolved reference 'dp'.
+ui-presentation/src/main/kotlin/com/watermelon/ui/screens/VideoSurfaceLayer.kt:94:91 Unresolved reference 'dp'.

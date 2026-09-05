@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.watermelon.app"
-    compileSdk = 35
+    compileSdk = 34
     defaultConfig {
         applicationId = "com.watermelon.mediaplayer"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 34
         // First version bump off the initial 1 / "1.0" placeholders (see remediation plan
         // item 2) -- still a debug-signed build until real release signing is provisioned.
         versionCode = 2

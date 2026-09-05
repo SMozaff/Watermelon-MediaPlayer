@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.storage"
-    compileSdk = 35
+    compileSdk = 34
     defaultConfig {
         minSdk = 23
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
