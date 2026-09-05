@@ -72,7 +72,7 @@ jobs:
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
           done
-
+          [ $i -gt 2 ] && { echo "All 3 Build all modules attempts failed"; exit 1; } || true
       - name: Run unit tests
         run: |
           for i in 1 2 3; do
@@ -83,7 +83,7 @@ jobs:
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
           done
-
+          [ $i -gt 2 ] && { echo "All 3 Run unit tests attempts failed"; exit 1; } || true
       # Debug APK — auto-signed with AGP's default debug keystore, no
       # signingConfig needed. app/build.gradle.kts has no release signing
       # config yet, so only debug is built here.
@@ -97,7 +97,7 @@ jobs:
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
           done
-
+          [ $i -gt 2 ] && { echo "All 3 Assemble debug APK attempts failed"; exit 1; } || true
       - name: Upload debug APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -128,7 +128,7 @@ jobs:
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
           done
-
+          [ $i -gt 2 ] && { echo "All 3 Assemble release APK attempts failed"; exit 1; } || true
       - name: Upload release APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -222,8 +222,8 @@ jobs:
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
           done
-          
-          # Kill emulator
+          [ $i -gt 2 ] && { echo "All 3 Run MigrationTest on emulator attempts failed"; exit 1; } || true
+                    # Kill emulator
           kill $EMULATOR_PID 2>/dev/null || true
 
       - name: Upload instrumented test reports
@@ -269,4 +269,4 @@ jobs:
               -Dorg.gradle.internal.http.retry.max=3 && break
             echo "Retry $i/3 failed, waiting 30s..."
             sleep 30
-          done
+          done          [ $i -gt 2 ] && { echo "All 3 Assemble benchmarks attempts failed"; exit 1; } || true
