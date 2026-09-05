@@ -63,16 +63,40 @@ jobs:
       # AGP/AndroidX/Compose/Media3 — see README's note on restricted-network
       # environments where only :common-interfaces builds).
       - name: Build all modules
-        run: ./gradlew build --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
+        run: |
+          for i in 1 2 3; do
+            ./gradlew build --stacktrace --no-daemon \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
 
       - name: Run unit tests
-        run: ./gradlew test --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
+        run: |
+          for i in 1 2 3; do
+            ./gradlew test --stacktrace --no-daemon \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
 
       # Debug APK — auto-signed with AGP's default debug keystore, no
       # signingConfig needed. app/build.gradle.kts has no release signing
       # config yet, so only debug is built here.
       - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: |
+          for i in 1 2 3; do
+            ./gradlew :app:assembleDebug --stacktrace --no-daemon \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
 
       - name: Upload debug APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -95,7 +119,15 @@ jobs:
       # RELEASE_KEY_PASSWORD as repo/environment secrets and passes them via -P flags here,
       # this step will produce a real signed artifact instead.
       - name: Assemble release APK (unsigned in CI -- no signing secrets provisioned yet)
-        run: ./gradlew :app:assembleRelease --stacktrace
+        run: |
+          for i in 1 2 3; do
+            ./gradlew :app:assembleRelease --stacktrace --no-daemon \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
 
       - name: Upload release APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -163,7 +195,15 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
+          script: |
+            for i in 1 2 3; do
+              ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace --no-daemon \
+                -Dorg.gradle.internal.http.connectionTimeout=180000 \
+                -Dorg.gradle.internal.http.socketTimeout=180000 \
+                -Dorg.gradle.internal.http.retry.max=3 && break
+              echo "Retry $i/3 failed, waiting 30s..."
+              sleep 30
+            done
 
       - name: Upload instrumented test reports
         if: always()
@@ -200,4 +240,12 @@ jobs:
       # build type (not "debug" — androidComponents.beforeVariants disables
       # every variant except "benchmark"), so assembleDebug does not exist.
       - name: Assemble benchmarks
-        run: ./gradlew :benchmarks:assembleBenchmark --stacktrace --no-daemon -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000
+        run: |
+          for i in 1 2 3; do
+            ./gradlew :benchmarks:assembleBenchmark --stacktrace --no-daemon \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done

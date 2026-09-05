@@ -45,12 +45,19 @@ jobs:
       # java-lame API with a deterministic synthetic PCM fixture that emits an MPEG audio frame.
       - name: Resolve dependencies and run the MP3 compile-time gate
         run: |
-          ./gradlew --no-daemon --refresh-dependencies \
-            --dependency-verification=strict \
-            :app:assembleDebug \
-            :media-tools:testDebugUnitTest \
-            --tests com.watermelon.mediatools.engine.Mp3EncoderTest \
-            --stacktrace
+          for i in 1 2 3; do
+            ./gradlew --no-daemon --refresh-dependencies \
+              --dependency-verification=strict \
+              :app:assembleDebug \
+              :media-tools:testDebugUnitTest \
+              --tests com.watermelon.mediatools.engine.Mp3EncoderTest \
+              --stacktrace \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
       # Generate an SPDX JSON SBOM from the exact artifacts freshly resolved above. The
       # download sub-action is immutable-pinned; it has no release-publishing permissions.
       - name: Download Syft for SBOM generation
