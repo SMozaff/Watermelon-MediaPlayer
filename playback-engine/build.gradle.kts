@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.playback"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 23
         // targetSdk lives on the app module for libraries; kept for parity with the blueprint.

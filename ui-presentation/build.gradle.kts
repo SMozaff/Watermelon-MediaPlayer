@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.ui"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig { minSdk = 23 }
     buildFeatures { compose = true }
     compileOptions {
