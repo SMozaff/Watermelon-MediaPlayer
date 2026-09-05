@@ -5,56 +5,18 @@ import android.content.pm.ActivityInfo
 import android.media.AudioManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.collectAsStateWithLifecycle
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asComposeRenderEffect
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.SleepTimerMode
@@ -145,154 +107,222 @@ fun PhonePlayerScreen(
 
     val position by viewModel.currentPositionMs.collectAsStateWithLifecycle()
     val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
-
-    // Auto-advance on natural end-of-video. Reuses PlaybackQueue.nextOf(uri) — the exact
-    // same source the manual Next button uses — so it inherits the same scoping: since the
-    // queue is seeded correctly per-screen (VideoListScreen.resolvePlaybackQueueUris scopes
-    // it to the video's real folder when opened from Continue Watching, never Continue
-    // Watching's own cross-folder list), auto-advance never skips through Continue Watching.
-    //
-    // If a sleep timer's EndOfVideo/EndOfFolder mode is active, PlaybackControllerImpl
-    // already calls pause() synchronously inside the same onPlaybackStateChanged callback
-    // that emits ENDED — StateFlow conflates rapid same-tick updates, so this effect
-    // observes the settled PAUSED value directly and ENDED is never seen, meaning this
-    // never double-fires against an active sleep timer.
-    LaunchedEffect(playbackState) {
-        if (playbackState == PlaybackState.ENDED) {
-            PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
-        }
-    }
-
-    // Pushes "is this the last item in the queue" to the controller on every item change, so
-    // an active EndOfFolder sleep timer can tell "auto-advance" from "stop here" -- see
-    // PlaybackController.setQueueContext's doc for why this can't be computed inside
-    // playback-engine itself (it has no visibility into PlaybackQueue).
-    LaunchedEffect(uri) {
-        viewModel.setQueueContext(PlaybackQueue.nextOf(uri) == null)
-    }
     val repeatMode by viewModel.repeatMode.collectAsStateWithLifecycle()
     val isShuffled by viewModel.shuffleEnabled.collectAsStateWithLifecycle()
     val sleepTimerRunning by viewModel.sleepTimerRunning.collectAsStateWithLifecycle()
     val sleepTimerRemainingMs by viewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
-    val isPlaying = playbackState == PlaybackState.PLAYING
 
-    // ── Single UI state holder ──────────────────────────────────────────────
-    val ui = remember { PlayerUiState() }
+    val uiState = remember { PlayerScreenState() }
+    uiState.currentRatio = VideoRatio.FILL
+    uiState.scale = 1f
+    uiState.panOffset = Offset.Zero
+    uiState.currentOrientation = ScreenOrientation.AUTO
+    uiState.position = position
+    uiState.isPlaying = playbackState == PlaybackState.PLAYING
+    uiState.durationMs = durationMs
+    uiState.uri = uri
+    uiState.mediaTitle = mediaTitle
+    uiState.mediaContext = mediaContext
+    uiState.subtitleTrack = subtitleTrack
+    uiState.subtitleStyle = subtitleStyle
+    uiState.subtitleOffsetMs = subtitleOffsetMs
+    uiState.autoSyncEnabled = autoSyncEnabled
+    uiState.autoSyncStatus = autoSyncStatus
+    uiState.repeatMode = repeatMode
+    uiState.isShuffled = isShuffled
+    uiState.sleepTimerRunning = sleepTimerRunning
+    uiState.sleepTimerRemainingMs = sleepTimerRemainingMs
+    uiState.tunerSeekBarEnabled = tunerSeekBarEnabled
+    uiState.tunerSeekStepSeconds = tunerSeekStepSeconds
+    uiState.onTunerSeekBarEnabledChange = onTunerSeekBarEnabledChange
+    uiState.onBack = onBack
+    uiState.onPipClick = onPipClick
+    uiState.onBackgroundClick = onBackgroundClick
+    uiState.onBrightnessChange = onBrightnessChange
+    uiState.onSkipToTrack = onSkipToTrack
+    uiState.onShare = onShare
+    uiState.isFavourite = isFavourite
+    uiState.onFavourite = onFavourite
+    uiState.onAddToPlaylist = onAddToPlaylist
+    uiState.onDelete = onDelete
+    uiState.onExtractAudio = onExtractAudio
+    uiState.onTrimVideo = onTrimVideo
+    uiState.onCompressVideo = onCompressVideo
+    uiState.onLockChanged = onLockChanged
+    uiState.viewModel = viewModel
+    uiState.haptic = haptic
+    uiState.audioManager = audioManager
+    uiState.maxVolume = maxVolume
+    uiState.screenshotMode = screenshotMode
+    uiState.initialBrightness = initialBrightness
 
-    // Player feature state
-    var playbackSpeed by remember { mutableFloatStateOf(1f) }
-    var currentRatio by remember { mutableStateOf(VideoRatio.FILL) }
-    var scale by remember { mutableFloatStateOf(1f) }
-    var panOffset by remember { mutableStateOf(Offset.Zero) }
-    var currentOrientation by rememberSaveable { mutableStateOf(ScreenOrientation.AUTO) }
-    var showControlPanel by remember { mutableStateOf(false) }
-    var showQuickTools by remember { mutableStateOf(false) }
-    var showFileActions by remember { mutableStateOf(false) }
-    var showMediaInfo by remember { mutableStateOf(false) }
-    var showTunerSeekTip by rememberSaveable { mutableStateOf(false) }
-    val isPlayerSheetOpen = showControlPanel || showQuickTools || showFileActions
-    var showSleepTimerDialog by remember { mutableStateOf(false) }
-    var screenshotMessage by remember { mutableStateOf<String?>(null) }
-    var isPiPEnabled by remember { mutableStateOf(false) }
+    val ui = PlayerUiState()
 
-    // Keep local PiP flag in sync with the real system PiP state, and make sure
-    // controls come back once the user returns from PiP to full screen —
-    // otherwise the screen is stuck showing no controls (ui.hideControls() was
-    // called on entry but nothing ever undid it on exit).
+    // Keep local PiP flag in sync with the real system PiP state
     LaunchedEffect(isInPipMode) {
-        isPiPEnabled = isInPipMode
+        uiState.isPiPEnabled = isInPipMode
         if (!isInPipMode) {
             ui.showControls()
         }
     }
     var isBackgroundEnabled by remember { mutableStateOf(false) }
 
-    // Gesture transient state
-    var isHolding by remember { mutableStateOf(false) }
-    var isPointerDown by remember { mutableStateOf(false) }
-    var isGestureMoving by remember { mutableStateOf(false) }
-    var holdIsLeft by remember { mutableStateOf(false) }
-    var holdSpeed by remember { mutableFloatStateOf(2f) }
-    var seekFrac by remember { mutableFloatStateOf(0f) }
+    // Layer composables
+    VideoSurfaceLayer(
+        state = uiState,
+        vhs = vhs,
+        vhsEnabled = vhsEnabled,
+        vhsIntensity = vhsIntensity,
+        durationMs = durationMs,
+        surface = surface,
+        subtitleTrack = subtitleTrack,
+        subtitleStyle = subtitleStyle,
+        subtitleOffsetMs = subtitleOffsetMs,
+        position = position,
+        ui = ui,
+    )
 
-    // Real "user is actively dragging a seek bar" signal. NOT sourced from
-    // viewModel.isSeekingFast — that flow is written only by
-    // PlaybackControllerImpl.setVhsIntensity(level > 0f), which has nothing to do with
-    // scrubbing; it's driven by VHS effect intensity, and UserIntent.SetVhsIntensity is
-    // never even dispatched anywhere in the app, so that flag was permanently false in
-    // practice. Scrub state is inherently local UI-gesture state (the playback controller
-    // has no concept of "a finger is on the seek bar"), so it's tracked here directly from
-    // the seek bars' onScrubChange callbacks instead of round-tripping through the
-    // controller.
-    var isScrubbingSeekBar by remember { mutableStateOf(false) }
-    var tunerPreviewPosition by remember { mutableLongStateOf(position) }
-    var lastGestureTapNanos by remember { mutableLongStateOf(0L) }
+    GestureLayer(
+        state = uiState,
+        ui = ui,
+        viewModel = viewModel,
+        durationMs = durationMs,
+        position = position,
+        isPlaying = uiState.isPlaying,
+        audioManager = audioManager,
+        maxVolume = maxVolume,
+        haptic = haptic,
+        activity = activity,
+        vhs = vhs,
+        onBrightnessChange = onBrightnessChange,
+    )
 
-    LaunchedEffect(position, isScrubbingSeekBar) {
-        if (!isScrubbingSeekBar) tunerPreviewPosition = position
-    }
+    ControlsLayer(
+        state = uiState,
+        ui = ui,
+        viewModel = viewModel,
+        position = position,
+        durationMs = durationMs,
+        isPlaying = uiState.isPlaying,
+        playbackState = playbackState,
+        repeatMode = repeatMode,
+        isShuffled = isShuffled,
+        sleepTimerRunning = sleepTimerRunning,
+        sleepTimerRemainingMs = sleepTimerRemainingMs,
+        uri = uri,
+        mediaTitle = mediaTitle,
+        mediaContext = mediaContext,
+        subtitleTrack = subtitleTrack,
+        subtitleStyle = subtitleStyle,
+        subtitleOffsetMs = subtitleOffsetMs,
+        autoSyncEnabled = autoSyncEnabled,
+        autoSyncStatus = autoSyncStatus,
+        onSubtitleNudge = onSubtitleNudge,
+        onAutoSync = onAutoSync,
+        screenshotMode = screenshotMode,
+        onPipClick = onPipClick,
+        onBackgroundClick = onBackgroundClick,
+        onShare = onShare,
+        isFavourite = isFavourite,
+        onFavourite = onFavourite,
+        onAddToPlaylist = onAddToPlaylist,
+        onDelete = onDelete,
+        onExtractAudio = onExtractAudio,
+        onTrimVideo = onTrimVideo,
+        onCompressVideo = onCompressVideo,
+        onLockChanged = onLockChanged,
+        onTunerSeekBarEnabledChange = onTunerSeekBarEnabledChange,
+        tunerSeekBarEnabled = tunerSeekBarEnabled,
+        tunerSeekStepSeconds = tunerSeekStepSeconds,
+        haptic = haptic,
+        scope = scope,
+        context = context,
+        audioManager = audioManager,
+        maxVolume = maxVolume,
+        onBack = onBack,
+    )
 
-    var currentVolume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
-    var volumeFraction by remember {
-        mutableFloatStateOf(if (maxVolume > 0) currentVolume.toFloat() / maxVolume else 0f)
-    }
-    var showVolumeIndicator by remember { mutableStateOf(false) }
+    TransientIndicatorsLayer(
+        state = uiState,
+        ui = ui,
+        vhs = vhs,
+    )
 
-    // Capture the window's brightness BEFORE we touch it, so we can restore on exit.
-    val priorWindowBrightness = remember {
-        activity?.window?.attributes?.screenBrightness ?: -1f  // -1 = follow system
-    }
-    val startBrightness = remember {
-        initialBrightness.takeIf { it in 0f..1f }
-            ?: priorWindowBrightness.takeIf { it in 0f..1f }
-            ?: 0.5f
-    }
-    var currentBrightness by remember { mutableFloatStateOf(startBrightness) }
-    var showBrightnessIndicator by remember { mutableStateOf(false) }
+    ProgressBarLayer(
+        tunerSeekBarEnabled = tunerSeekBarEnabled,
+        durationMs = durationMs,
+        position = position,
+    )
 
-    // ── VHS: configure + animate (no-op when disabled) ─────────────────────
-    vhs.configure(vhsEnabled, vhsIntensity)
-    vhs.DriveAnimation()
+    PlayerDialogs(
+        state = uiState,
+        context = context,
+        tunerSeekBarEnabled = tunerSeekBarEnabled,
+        tunerSeekStepSeconds = tunerSeekStepSeconds,
+        mediaTitle = mediaTitle,
+        mediaContext = mediaContext,
+        showSleepTimerDialog = uiState.showSleepTimerDialog,
+        sleepTimerRunning = sleepTimerRunning,
+        sleepTimerRemainingMs = sleepTimerRemainingMs,
+        viewModel = viewModel,
+        onSleepTimerDismiss = { uiState.showSleepTimerDialog = false },
+        onSleepTimerSet = { mode, minutes ->
+            val sleepMode = when (mode) {
+                "current_video" -> SleepTimerMode.EndOfVideo
+                "folder" -> SleepTimerMode.EndOfFolder
+                "custom" -> SleepTimerMode.Custom(minutes ?: 15)
+                else -> SleepTimerMode.Custom(15)
+            }
+            viewModel.setSleepTimer(sleepMode)
+            uiState.showSleepTimerDialog = false
+        },
+    )
 
-    // ── Auto-hide: a single timer reset by any interaction. Stays 5s minimum, and never
-    //    hides while paused, scrubbing, holding, panel open, or locked.
-    //
-    //    isScrubbingSeekBar/isHolding must be keys here, not just checked after delay() —
-    //    otherwise a scrub or fast-forward hold that starts and finishes inside the 5s
-    //    window doesn't restart the timer, and controls can vanish mid-gesture right as
-    //    the user reaches for a button. Keying on them cancels + relaunches this effect
-    //    the instant either becomes true, and again once it goes back to false. ──────
-    var lastInteraction by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(
-        lastInteraction, ui.controlsVisible, isPlaying, isPlayerSheetOpen, ui.isLocked,
-        isScrubbingSeekBar, isHolding
-    ) {
-        if (isScrubbingSeekBar || isHolding) return@LaunchedEffect
-        if (ui.controlsVisible && isPlaying && !isPlayerSheetOpen && !ui.isLocked) {
-            kotlinx.coroutines.delay(5_000)
-            // Re-check we're still idle before hiding (belt-and-suspenders: the key
-            // restart above should already cover this, but keep the guard).
-            if (!isScrubbingSeekBar && !isHolding) ui.hideControls()
+    // Auto-advance on natural end-of-video
+    LaunchedEffect(playbackState) {
+        if (playbackState == PlaybackState.ENDED) {
+            PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
         }
     }
-    LaunchedEffect(showVolumeIndicator) { if (showVolumeIndicator) { kotlinx.coroutines.delay(1_500); showVolumeIndicator = false } }
-    LaunchedEffect(showBrightnessIndicator) { if (showBrightnessIndicator) { kotlinx.coroutines.delay(1_500); showBrightnessIndicator = false } }
-    LaunchedEffect(screenshotMessage) { if (screenshotMessage != null) { kotlinx.coroutines.delay(2_500); screenshotMessage = null } }
+
+    // Pushes "is this the last item in the queue" to the controller
+    LaunchedEffect(uri) {
+        viewModel.setQueueContext(PlaybackQueue.nextOf(uri) == null)
+    }
+
+    // Auto-hide timer
+    LaunchedEffect(
+        uiState.lastInteraction, ui.controlsVisible, uiState.isPlaying, uiState.isPlayerSheetOpen, ui.isLocked,
+        uiState.isScrubbingSeekBar, uiState.isHolding
+    ) {
+        if (uiState.isScrubbingSeekBar || uiState.isHolding) return@LaunchedEffect
+        if (ui.autoHideEligible(uiState.isPlaying)) {
+            kotlinx.coroutines.delay(5_000)
+            if (!uiState.isScrubbingSeekBar && !uiState.isHolding) ui.hideControls()
+        }
+    }
+    LaunchedEffect(uiState.showVolumeIndicator) { if (uiState.showVolumeIndicator) { kotlinx.coroutines.delay(1_500); uiState.showVolumeIndicator = false } }
+    LaunchedEffect(uiState.showBrightnessIndicator) { if (uiState.showBrightnessIndicator) { kotlinx.coroutines.delay(1_500); uiState.showBrightnessIndicator = false } }
+    LaunchedEffect(uiState.screenshotMessage) { if (uiState.screenshotMessage != null) { kotlinx.coroutines.delay(2_500); uiState.screenshotMessage = null } }
     LaunchedEffect(tunerSeekBarEnabled) {
         val playerPreferences = context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
         if (tunerSeekBarEnabled && !playerPreferences.getBoolean("tuner_seek_tip_seen", false)) {
-            showTunerSeekTip = true
+            uiState.showTunerSeekTip = true
         }
     }
 
     // Restore brightness on launch (window-scoped, reverts on exit).
     LaunchedEffect(Unit) {
+        val priorWindowBrightness = activity?.window?.attributes?.screenBrightness ?: -1f
+        val startBrightness = initialBrightness.takeIf { it in 0f..1f }
+            ?: priorWindowBrightness.takeIf { it in 0f..1f }
+            ?: 0.5f
         if (startBrightness in 0f..1f) activity?.window?.let { win ->
             val a = win.attributes; a.screenBrightness = startBrightness; win.attributes = a
         }
     }
-    LaunchedEffect(currentOrientation) {
-        activity?.requestedOrientation = when (currentOrientation) {
+    LaunchedEffect(uiState.currentOrientation) {
+        activity?.requestedOrientation = when (uiState.currentOrientation) {
             ScreenOrientation.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             ScreenOrientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             ScreenOrientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
@@ -300,28 +330,28 @@ fun PhonePlayerScreen(
     }
 
     // FF/FR hold gesture (CORE — independent of VHS). Notifies vhs.setRewind for the effect.
-    LaunchedEffect(isPointerDown, isGestureMoving) {
-        if (isPointerDown && !isGestureMoving) {
+    LaunchedEffect(uiState.isPointerDown, uiState.isGestureMoving) {
+        if (uiState.isPointerDown && !uiState.isGestureMoving) {
             kotlinx.coroutines.delay(500L)
-            if (isPointerDown && !isGestureMoving) {
-                isHolding = true
+            if (uiState.isPointerDown && !uiState.isGestureMoving) {
+                uiState.isHolding = true
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                while (isPointerDown) {
-                    if (holdIsLeft) {
-                        vhs.setRewind(active = true, forward = false, speed = holdSpeed)
-                        val stepMs = (holdSpeed * 1_000L).toLong()
+                while (uiState.isPointerDown) {
+                    if (uiState.holdIsLeft) {
+                        vhs.setRewind(active = true, forward = false, speed = uiState.holdSpeed)
+                        val stepMs = (uiState.holdSpeed * 1_000L).toLong()
                         viewModel.onIntent(UserIntent.Seek((position - stepMs).coerceAtLeast(0L)))
-                        kotlinx.coroutines.delay((220L / holdSpeed).toLong().coerceAtLeast(40L))
+                        kotlinx.coroutines.delay((220L / uiState.holdSpeed).toLong().coerceAtLeast(40L))
                     } else {
-                        vhs.setRewind(active = true, forward = true, speed = holdSpeed)
-                        viewModel.onIntent(UserIntent.SetSpeed(holdSpeed))
+                        vhs.setRewind(active = true, forward = true, speed = uiState.holdSpeed)
+                        viewModel.onIntent(UserIntent.SetSpeed(uiState.holdSpeed))
                         kotlinx.coroutines.delay(80L)
                     }
                 }
             }
-        } else if (isHolding) {
-            isHolding = false
-            holdSpeed = 2f
+        } else if (uiState.isHolding) {
+            uiState.isHolding = false
+            uiState.holdSpeed = 2f
             vhs.setRewind(active = false, forward = false, speed = 0f)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
         }
@@ -330,12 +360,13 @@ fun PhonePlayerScreen(
     DisposableEffect(Unit) {
         onDispose {
             // Don't pause if the user chose background play or PiP — that's the whole point.
-            if (!isBackgroundEnabled && !isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
+            if (!isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
             // Revert the window brightness to whatever it was before the player opened.
+            val priorWindowBrightness = activity?.window?.attributes?.screenBrightness ?: -1f
             activity?.window?.let { win ->
                 val a = win.attributes
-                a.screenBrightness = priorWindowBrightness  // -1 = follow system, or the prior value
+                a.screenBrightness = priorWindowBrightness
                 win.attributes = a
             }
         }
@@ -343,673 +374,13 @@ fun PhonePlayerScreen(
     BackHandler(enabled = true) {
         when {
             ui.isLocked -> { /* locked: Back does nothing — must use the slide-unlock */ }
-            ui.sheetOpen || isPlayerSheetOpen -> {
-                showControlPanel = false
-                showQuickTools = false
-                showFileActions = false
+            ui.sheetOpen || uiState.isPlayerSheetOpen -> {
+                uiState.showControlPanel = false
+                uiState.showQuickTools = false
+                uiState.showFileActions = false
                 ui.closeSheet()
             }
             else -> onBack()
         }
     }
-
-    Box(modifier = modifier.fillMaxSize().background(PlayerColors.current.background)) {
-
-        // ── Layer 1: Video surface (+ VHS render effect, no pause dim) ──────
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            val surfaceMod = when (currentRatio) {
-                VideoRatio.FILL, VideoRatio.ORIGINAL -> Modifier.fillMaxSize()
-                else -> currentRatio.ratio?.let { Modifier.fillMaxWidth().aspectRatio(it) } ?: Modifier.fillMaxSize()
-            }
-            surface(
-                surfaceMod
-                    .onSizeChanged { vhs.onSurfaceSize(it.width.toFloat(), it.height.toFloat()) }
-                    .graphicsLayer {
-                        scaleX = scale; scaleY = scale
-                        translationX = panOffset.x; translationY = panOffset.y
-                        renderEffect = vhs.effectOrNull()?.asComposeRenderEffect()
-                    }
-            )
-
-            // VHS fallback for API 23–32 (no AGSL/RuntimeShader support): a Compose-drawn
-            // scanline overlay driven by the same controller, so pre-33 devices still get a
-            // VHS visual during FF/FR instead of the effect silently doing nothing.
-            if (vhs.usesLegacyOverlay) {
-                androidx.compose.foundation.Canvas(
-                    surfaceMod
-                        .graphicsLayer {
-                            scaleX = scale; scaleY = scale
-                            translationX = panOffset.x; translationY = panOffset.y
-                        }
-                ) {
-                    val lineSpacingPx = 6.dp.toPx()
-                    val lineHeightPx = 2.dp.toPx()
-                    val offsetPx = vhs.scanlinePhase * lineSpacingPx
-                    val alpha = vhs.overlayAlpha
-                    var y = -lineSpacingPx + offsetPx
-                    while (y < size.height) {
-                        if (y >= -lineHeightPx) {
-                            drawRect(
-                                color = Color.White.copy(alpha = alpha),
-                                topLeft = Offset(0f, y),
-                                size = androidx.compose.ui.geometry.Size(size.width, lineHeightPx)
-                            )
-                        }
-                        y += lineSpacingPx
-                    }
-                }
-            }
-        }
-
-        // ── Subtitles ───────────────────────────────────────────────────────
-        val effectiveSubtitle = remember(subtitleTrack, subtitleOffsetMs) {
-            subtitleTrack?.copy(offsetMs = subtitleOffsetMs)
-        }
-        val activeCue = remember(effectiveSubtitle, position) { effectiveSubtitle?.cueAt(position) }
-        val subAtTop = subtitleStyle.position == com.watermelon.common.model.SubtitlePosition.TOP
-        SubtitleOverlay(
-            text = activeCue?.displayText,
-            isRtl = activeCue?.baseRtl ?: false,
-            style = subtitleStyle,
-            modifier = Modifier
-                .align(if (subAtTop) Alignment.TopCenter else Alignment.BottomCenter)
-                .padding(
-                    top = if (subAtTop) (if (ui.controlsVisible) 96.dp else 32.dp) else 0.dp,
-                    bottom = if (!subAtTop) (if (ui.controlsVisible) 80.dp else 24.dp) else 0.dp
-                )
-        )
-
-        // ── Layer 2: Gesture surface (gated by ui.gesturesEnabled) ──────────
-        // Live only while controls are hidden — swipe-to-seek/volume/brightness and the
-        // FF/FR hold gesture. Once controls are visible this layer steps aside entirely so
-        // it can't steal taps/drags meant for buttons or the seek bar (see Layer 3 tap-catcher).
-        Box(
-            Modifier.fillMaxSize()
-                .pointerInput(durationMs, ui.gesturesEnabled, isPlayerSheetOpen) {
-                    if (!ui.gesturesEnabled || isPlayerSheetOpen) return@pointerInput
-                    awaitEachGesture {
-                        val firstDown = awaitFirstDown()  // requireUnconsumed=true: ignore touches consumed by controls
-                        val holdOriginX = firstDown.position.x
-                        holdIsLeft = firstDown.position.x < size.width / 2f
-                        isPointerDown = true
-                        isGestureMoving = false
-                        var isHorizontal: Boolean? = null
-                        var isMultiTouch = false
-                        seekFrac = if (durationMs > 0) position.toFloat() / durationMs else 0f
-
-                        do {
-                            val event = awaitPointerEvent()
-                            val pressed = event.changes.filter { it.pressed }
-                            val pointerCount = pressed.size
-
-                            if (isHolding && pointerCount == 1) {
-                                val dx = abs(pressed.first().position.x - holdOriginX)
-                                val frac = (dx / size.width).coerceIn(0f, 1f)
-                                holdSpeed = when {
-                                    frac < 0.12f -> 2f
-                                    frac < 0.28f -> 3f
-                                    frac < 0.5f -> 4f
-                                    else -> 8f
-                                }
-                            }
-
-                            if (pointerCount >= 2) {
-                                isMultiTouch = true
-                                isGestureMoving = true
-                                val zoom = event.calculateZoom()
-                                val pan = event.calculatePan()
-                                if (zoom != 1f) scale = (scale * zoom).coerceIn(1f, 4f)
-                                panOffset = if (scale > 1f) Offset(panOffset.x + pan.x, panOffset.y + pan.y) else Offset.Zero
-                                event.changes.forEach { it.consume() }
-                            } else if (pointerCount == 1 && !isMultiTouch) {
-                                val change = pressed.first()
-                                val drag = change.positionChange()
-                                if (isHorizontal == null && (abs(drag.x) > 10f || abs(drag.y) > 10f)) {
-                                    isHorizontal = abs(drag.x) > abs(drag.y)
-                                    isGestureMoving = true
-                                }
-                                when (isHorizontal) {
-                                    true -> {
-                                        seekFrac = (seekFrac + drag.x / size.width.toFloat() * 0.3f).coerceIn(0f, 1f)
-                                        viewModel.onIntent(UserIntent.Seek((seekFrac * durationMs).toLong()))
-                                        change.consume()
-                                    }
-                                    false -> {
-                                        if (change.position.x > size.width / 2f) {
-                                            volumeFraction = (volumeFraction - drag.y / size.height * 1.5f).coerceIn(0f, 1f)
-                                            val newVol = (volumeFraction * maxVolume).toInt().coerceIn(0, maxVolume)
-                                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
-                                            currentVolume = newVol; showVolumeIndicator = true
-                                        } else {
-                                            val newBright = (currentBrightness - drag.y / size.height).coerceIn(0.01f, 1f)
-                                            currentBrightness = newBright
-                                            activity?.window?.let { win ->
-                                                val a = win.attributes; a.screenBrightness = newBright; win.attributes = a
-                                            }
-                                            onBrightnessChange?.invoke(newBright)
-                                            showBrightnessIndicator = true
-                                        }
-                                        change.consume()
-                                    }
-                                    null -> {}
-                                }
-                            }
-                        } while (event.changes.any { it.pressed })
-
-                        isPointerDown = false
-                        val isTap = !isGestureMoving && !isMultiTouch && !isHolding
-                        val now = System.nanoTime()
-                        if (isTap && now - lastGestureTapNanos < 300_000_000L) {
-                            viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            lastGestureTapNanos = 0L
-                        } else if (isTap) {
-                            lastGestureTapNanos = now
-                            ui.showControls()
-                        }
-                        lastInteraction = now
-                    }
-                }
-        )
-
-        // ── Layer 3: Controls (top/bottom scrim only; NO full-screen pause dim) ──
-        if (ui.controlsVisible) {
-            // Tap-catcher: fills the screen so tapping anywhere NOT on a real control hides
-            // the controls again. Drawn first so it sits behind every button/bar in this
-            // layer — Compose hit-tests later (higher z) siblings first, so buttons still
-            // win over this when tapped directly.
-            Box(
-                Modifier.fillMaxSize()
-                    .pointerInput(isPlayerSheetOpen) {
-                        detectTapGestures(
-                            onTap = {
-                                if (isPlayerSheetOpen) {
-                                    showControlPanel = false
-                                    showQuickTools = false
-                                    showFileActions = false
-                                } else {
-                                    lastInteraction = System.nanoTime(); ui.hideControls()
-                                }
-                            },
-                            onDoubleTap = {
-                                viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                                lastInteraction = System.nanoTime()
-                            }
-                        )
-                    }
-            )
-
-            // Top scrim gradient behind the top bar
-            Box(
-                Modifier.fillMaxWidth().height(96.dp).align(Alignment.TopCenter)
-                    .background(Brush.verticalGradient(listOf(PlayerColors.current.controlBarScrim.copy(alpha = 0.6f), Color.Transparent)))
-            )
-            // Bottom scrim gradient behind the bottom bar
-            Box(
-                Modifier.fillMaxWidth().height(140.dp).align(Alignment.BottomCenter)
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, PlayerColors.current.controlBarScrim.copy(alpha = 0.7f))))
-            )
-
-            // Top bar: back · media context (details on tap) · lock · actions.
-            Row(
-                modifier = Modifier.fillMaxWidth().align(Alignment.TopStart).padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    if (isPlayerSheetOpen) {
-                        showControlPanel = false
-                        showQuickTools = false
-                        showFileActions = false
-                    } else {
-                        onBack()
-                    }
-                }) {
-                    WatermelonGlyph(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
-                }
-                TextButton(
-                    onClick = { showMediaInfo = true },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = mediaTitle.ifBlank { "Now playing" },
-                            color = PlayerColors.current.textPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        if (mediaContext.isNotBlank()) {
-                            Text(
-                                text = mediaContext,
-                                color = PlayerColors.current.textSecondary,
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-                IconButton(onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    ui.lock(); onLockChanged?.invoke(true)
-                }) {
-                    WatermelonGlyph(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
-                }
-                IconButton(onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    showControlPanel = !showControlPanel
-                    showQuickTools = false
-                    showFileActions = false
-                }) {
-                    WatermelonGlyph(
-                        WatermelonIcons.MoreVert,
-                        "Player actions",
-                        tint = if (showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault
-                    )
-                }
-            }
-
-            // (Playback cluster — prev / play·pause / next — now lives just above the
-            // seek bar in the bottom section below, not dead-center over the video.)
-            val hasNextTrack = remember(uri) { PlaybackQueue.nextOf(uri) != null }
-
-            // Bottom bar: playback cluster (prev · play/pause · next) sits just above the
-            // seek control — NOT dead-center over the video — followed by the seek bar
-            // (radio-tuner style, or normal — per settings) and its time labels.
-            Column(
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Transport is above the dial; the tuner and its timecode remain nearest the
-                // bottom edge, giving the thumb a predictable "control, then seek" order.
-                PlayerTransportControls(
-                    isPlaying = isPlaying,
-                    hasNextTrack = hasNextTrack,
-                    onPrevious = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (position > 3_000L) viewModel.onIntent(UserIntent.Seek(0L))
-                        else PlaybackQueue.previousOf(uri)?.let { onSkipToTrack?.invoke(it) }
-                            ?: viewModel.onIntent(UserIntent.Seek(0L))
-                        lastInteraction = System.nanoTime(); ui.showControls()
-                    },
-                    onPlayPause = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                        lastInteraction = System.nanoTime(); ui.showControls()
-                    },
-                    onNext = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        PlaybackQueue.nextOf(uri)?.let { onSkipToTrack?.invoke(it) }
-                        lastInteraction = System.nanoTime(); ui.showControls()
-                    },
-                    modifier = Modifier.padding(bottom = WatermelonSpacing.md)
-                )
-                if (tunerSeekBarEnabled) {
-                    WatermelonTunerSeekBar(
-                        positionMs = position,
-                        durationMs = durationMs,
-                        onSeek = { viewModel.onIntent(UserIntent.Seek(it)) },
-                        secondsPerTick = tunerSeekStepSeconds,
-                        onScrubChange = { scrubbing ->
-                            lastInteraction = System.nanoTime()
-                            isScrubbingSeekBar = scrubbing
-                            ui.showControls()
-                        },
-                        onPreviewPositionChanged = { tunerPreviewPosition = it },
-                        onDetent = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        },
-                        modifier = Modifier
-                    )
-                    Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp)) {
-                        Text(formatTime(tunerPreviewPosition), color = PlayerColors.current.textPrimary)
-                        Spacer(Modifier.weight(1f))
-                        Text("-${formatTime((durationMs - tunerPreviewPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
-                    }
-                } else {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(formatTime(position), color = PlayerColors.current.textPrimary)
-                        Spacer(Modifier.weight(1f))
-                        Text(formatTime(durationMs), color = PlayerColors.current.textPrimary)
-                    }
-                    WatermelonSeekBar(
-                        positionMs = position,
-                        durationMs = durationMs,
-                        onSeek = { viewModel.onIntent(UserIntent.Seek(it)) },
-                        onScrubChange = { scrubbing ->
-                            lastInteraction = System.nanoTime()
-                            isScrubbingSeekBar = scrubbing
-                            ui.showControls()
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
-                    )
-                }
-
-            }
-
-            if (showControlPanel) {
-                PlayerActionsSheet(
-                    onQuickTools = {
-                        showControlPanel = false
-                        showQuickTools = true
-                    },
-                    onFileActions = {
-                        showControlPanel = false
-                        showFileActions = true
-                    },
-                    onDismiss = { showControlPanel = false },
-                )
-            }
-            if (showQuickTools) {
-                QuickToolsSheet(
-                    currentSpeed = playbackSpeed,
-                    isMuted = currentVolume == 0,
-                    currentRatio = currentRatio,
-                    currentOrientation = currentOrientation,
-                    tunerSeekBarEnabled = tunerSeekBarEnabled,
-                    tunerSeekStepSeconds = tunerSeekStepSeconds,
-                    repeatMode = repeatMode,
-                    isShuffled = isShuffled,
-                    isPiP = isPiPEnabled,
-                    canUsePip = onPipClick != null,
-                    isBackground = isBackgroundEnabled,
-                    hasSubtitleTrack = subtitleTrack != null,
-                    subtitleOffsetMs = subtitleOffsetMs,
-                    autoSyncEnabled = autoSyncEnabled,
-                    autoSyncStatus = autoSyncStatus,
-                    onSubtitleNudge = onSubtitleNudge,
-                    onAutoSync = onAutoSync,
-                    onSpeedChange = { speed ->
-                        playbackSpeed = speed
-                        viewModel.onIntent(UserIntent.SetSpeed(speed))
-                    },
-                    onMuteToggle = {
-                        val muted = currentVolume == 0
-                        val volume = if (muted) (maxVolume / 2).coerceAtLeast(1) else 0
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
-                        currentVolume = volume
-                        volumeFraction = volume.toFloat() / maxVolume
-                    },
-                    onRatioChange = { currentRatio = it },
-                    onOrientationChange = { currentOrientation = it },
-                    onTunerSeekBarEnabledChange = { enabled ->
-                        onTunerSeekBarEnabledChange?.invoke(enabled)
-                        showQuickTools = false
-                    },
-                    onRepeat = { viewModel.cycleRepeat() },
-                    onShuffle = { viewModel.toggleShuffle() },
-                    onScreenshot = {
-                        scope.launch {
-                            val mode = when (screenshotMode) {
-                                ScreenshotMode.BURST -> ScreenshotManager.Mode.BURST
-                                ScreenshotMode.SINGLE -> ScreenshotManager.Mode.SINGLE
-                            }
-                            val result = ScreenshotManager.takeScreenshot(context, uri, position, durationMs, mode)
-                            screenshotMessage = when (result) {
-                                is ScreenshotResult.Success -> "Saved ${result.uris.size} screenshot(s)"
-                                is ScreenshotResult.Error -> "Screenshot failed"
-                            }
-                        }
-                    },
-                    onSleepTimer = {
-                        showQuickTools = false
-                        showSleepTimerDialog = true
-                    },
-                    onPip = {
-                        if (onPipClick != null) {
-                            showQuickTools = false
-                            isPiPEnabled = true
-                            isBackgroundEnabled = false
-                            ui.hideControls()
-                            onPipClick.invoke()
-                        }
-                    },
-                    onBackground = {
-                        if (!isBackgroundEnabled) {
-                            isBackgroundEnabled = true
-                            isPiPEnabled = false
-                            onBackgroundClick?.invoke(true)
-                        } else {
-                            isBackgroundEnabled = false
-                            onBackgroundClick?.invoke(false)
-                        }
-                    },
-                    onDismiss = { showQuickTools = false },
-                )
-            }
-            if (showFileActions) {
-                FileActionsSheet(
-                    isFavourite = isFavourite,
-                    onShare = {
-                        showFileActions = false
-                        onShare?.invoke()
-                    },
-                    onFavourite = { onFavourite?.invoke(!isFavourite) },
-                    onAddToPlaylist = {
-                        showFileActions = false
-                        onAddToPlaylist?.invoke()
-                    },
-                    onExtractAudio = onExtractAudio?.let { action ->
-                        {
-                            showFileActions = false
-                            action()
-                        }
-                    },
-                    onTrimVideo = onTrimVideo?.let { action ->
-                        {
-                            showFileActions = false
-                            action()
-                        }
-                    },
-                    onCompressVideo = onCompressVideo?.let { action ->
-                        {
-                            showFileActions = false
-                            action()
-                        }
-                    },
-                    onDelete = {
-                        showFileActions = false
-                        onDelete?.invoke()
-                    },
-                    onDismiss = { showFileActions = false },
-                )
-            }
-        }
-
-        if (showTunerSeekTip) {
-            androidx.compose.material3.AlertDialog(
-                onDismissRequest = {
-                    context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
-                        .edit()
-                        .putBoolean("tuner_seek_tip_seen", true)
-                        .apply()
-                    showTunerSeekTip = false
-                },
-                title = { Text("Tuner seek") },
-                text = {
-                    Text(
-                        "Each tuner detent moves playback by $tunerSeekStepSeconds seconds. " +
-                            "Use Quick tools to choose a standard seek bar, or change the tuner setting later."
-                    )
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        context.getSharedPreferences("player_ui", android.content.Context.MODE_PRIVATE)
-                            .edit()
-                            .putBoolean("tuner_seek_tip_seen", true)
-                            .apply()
-                        showTunerSeekTip = false
-                    }) { Text("Got it") }
-                },
-            )
-        }
-
-        if (showMediaInfo) {
-            androidx.compose.material3.AlertDialog(
-                onDismissRequest = { showMediaInfo = false },
-                title = { Text("Now playing") },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs)) {
-                        Text(
-                            text = mediaTitle.ifBlank { "Unknown video" },
-                            color = PlayerColors.current.textPrimary,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        if (mediaContext.isNotBlank()) {
-                            Text(
-                                text = mediaContext,
-                                color = PlayerColors.current.textSecondary,
-                            )
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showMediaInfo = false }) { Text("Close") }
-                },
-            )
-        }
-
-        // ── Persistent thin progress line ────────────────────────────────────
-        // Sits at the very bottom edge of the video and is ALWAYS visible — independent of
-        // ui.controlsVisible — but ONLY in tuner/VHS mode. The tuner dial communicates
-        // position purely relatively (ticks sliding under a fixed needle, no filled
-        // track), so this gives an absolute, at-a-glance read of exactly where we are:
-        // white = watched, red = remaining. The classic WatermelonSeekBar already has its
-        // own filled track showing absolute position directly, so this would be a
-        // redundant second indicator there — shown for tuner mode only.
-        if (tunerSeekBarEnabled && durationMs > 0) {
-            val watchedFraction = (position.toFloat() / durationMs).coerceIn(0f, 1f)
-            androidx.compose.foundation.Canvas(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(3.dp)
-            ) {
-                drawRect(color = Color.Red, size = size)
-                drawRect(
-                    color = Color.White,
-                    size = androidx.compose.ui.geometry.Size(size.width * watchedFraction, size.height)
-                )
-            }
-        }
-
-        // ── Layer 4: Transient indicators ───────────────────────────────────
-        if (isHolding) {
-            Row(
-                modifier = Modifier.align(Alignment.Center)
-                    .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 20.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (holdIsLeft) WatermelonGlyph(WatermelonIcons.Rewind, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
-                Text("${holdSpeed.toInt()}×", color = PlayerColors.current.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                if (!holdIsLeft) WatermelonGlyph(WatermelonIcons.FastForward, null, tint = PlayerColors.current.iconDefault, modifier = Modifier.width(24.dp).height(24.dp))
-            }
-        }
-        if (showVolumeIndicator) {
-            LevelIndicator(
-                fraction = volumeFraction,
-                icon = if (currentVolume == 0) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
-                contentDescription = "Volume",
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp)
-            )
-        }
-        if (showBrightnessIndicator) {
-            LevelIndicator(
-                fraction = currentBrightness,
-                icon = WatermelonIcons.BrightnessHigh,
-                contentDescription = "Brightness",
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp)
-            )
-        }
-        screenshotMessage?.let { msg ->
-            Box(
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 60.dp)
-                    .background(Color.Black.copy(alpha = 0.78f), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) { Text(msg, color = PlayerColors.current.textPrimary) }
-        }
-
-        // ── TOPMOST: lock overlay above everything, blocks all touch ────────
-        if (ui.isLocked) {
-            com.watermelon.ui.components.LockOverlay(
-                onUnlock = { ui.unlock(); onLockChanged?.invoke(false) },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-
-    // ── Layer 5: Sleep timer dialog ─────────────────────────────────────────
-    if (showSleepTimerDialog) {
-        SleepTimerDialog(
-            onDismiss = { showSleepTimerDialog = false },
-            isRunning = sleepTimerRunning,
-            remainingMs = sleepTimerRemainingMs,
-            onCancelTimer = { viewModel.cancelSleepTimer() },
-            onSetTimer = { mode, minutes ->
-                val sleepMode = when (mode) {
-                    "current_video" -> SleepTimerMode.EndOfVideo
-                    "folder" -> SleepTimerMode.EndOfFolder
-                    "custom" -> SleepTimerMode.Custom(minutes ?: 15)
-                    else -> SleepTimerMode.Custom(15)
-                }
-                viewModel.setSleepTimer(sleepMode)
-                showSleepTimerDialog = false
-            }
-        )
-    }
-}
-
-@Composable
-private fun PlayerTransportControls(
-    isPlaying: Boolean,
-    hasNextTrack: Boolean,
-    onPrevious: () -> Unit,
-    onPlayPause: () -> Unit,
-    onNext: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(28.dp)
-    ) {
-        IconButton(onClick = onPrevious) {
-            WatermelonGlyph(
-                WatermelonIcons.SkipPrevious,
-                "Previous track",
-                tint = PlayerColors.current.iconDefault,
-                modifier = Modifier.width(30.dp).height(30.dp)
-            )
-        }
-        IconButton(
-            onClick = onPlayPause,
-            modifier = Modifier
-                .width(64.dp).height(64.dp)
-                .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
-        ) {
-            WatermelonGlyph(
-                if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
-                if (isPlaying) "Pause" else "Play",
-                tint = Color.White,
-                modifier = Modifier.width(32.dp).height(32.dp)
-            )
-        }
-        if (hasNextTrack) {
-            IconButton(onClick = onNext) {
-                WatermelonGlyph(
-                    WatermelonIcons.SkipNext,
-                    "Next track",
-                    tint = PlayerColors.current.iconDefault,
-                    modifier = Modifier.width(30.dp).height(30.dp)
-                )
-            }
-        } else {
-            Spacer(Modifier.width(48.dp))
-        }
-    }
-}
-
-private fun formatTime(ms: Long): String {
-    val s = (ms / 1000).coerceAtLeast(0); return "%d:%02d".format(s / 60, s % 60)
 }
