@@ -29,6 +29,10 @@ import com.watermelon.ui.theme.WatermelonSpacing
 
 private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
+object PlayerControlPanel {
+
+private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
+
 /** The first stage of the player menu: choose an intent before seeing detailed controls. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -384,3 +388,6 @@ private fun subtitleAutoSyncDetail(status: com.watermelon.common.subtitle.sync.S
         com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED -> "Auto Sync is unavailable right now."
         com.watermelon.common.subtitle.sync.SyncStatus.FAILED -> "Auto Sync failed. Try again."
     }
+
+
+}
