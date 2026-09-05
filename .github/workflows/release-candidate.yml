@@ -39,12 +39,20 @@ jobs:
           test -n "$SDKMANAGER" || { echo "Android sdkmanager was not found."; exit 1; }
           yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null
           "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-35" "build-tools;35.0.0"
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
+      # DISABLED: GitHub Actions cache service is down ("Our services aren't available right now")
+      # - name: Cache Gradle
+      #   uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
       - name: Build optimized unsigned candidate
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease
+          for i in 1 2 3; do
+            ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
       - name: Record candidate checksum
         run: |
           mkdir -p release-artifacts
@@ -92,8 +100,9 @@ jobs:
           test -n "$SDKMANAGER" || { echo "Android sdkmanager was not found."; exit 1; }
           yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null
           "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-35" "build-tools;35.0.0"
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
+      # DISABLED: GitHub Actions cache service is down ("Our services aren't available right now")
+      # - name: Cache Gradle
+      #   uses: gradle/actions/setup-gradle@6cfc8b8e8bb586cc164bef1c478c1eea3a4d6a19 # v3
       - name: Materialize protected signing keystore
         env:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
@@ -113,11 +122,18 @@ jobs:
           test -n "$RELEASE_KEY_ALIAS" || { echo "Missing protected key alias."; exit 1; }
           test -n "$RELEASE_KEY_PASSWORD" || { echo "Missing protected key password."; exit 1; }
           chmod +x gradlew
-          ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease \
-            -PRELEASE_STORE_FILE="$RELEASE_STORE_FILE" \
-            -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD" \
-            -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS" \
-            -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD"
+          for i in 1 2 3; do
+            ./gradlew --no-daemon --dependency-verification=strict --stacktrace :app:assembleRelease \
+              -PRELEASE_STORE_FILE="$RELEASE_STORE_FILE" \
+              -PRELEASE_STORE_PASSWORD="$RELEASE_STORE_PASSWORD" \
+              -PRELEASE_KEY_ALIAS="$RELEASE_KEY_ALIAS" \
+              -PRELEASE_KEY_PASSWORD="$RELEASE_KEY_PASSWORD" \
+              -Dorg.gradle.internal.http.connectionTimeout=180000 \
+              -Dorg.gradle.internal.http.socketTimeout=180000 \
+              -Dorg.gradle.internal.http.retry.max=3 && break
+            echo "Retry $i/3 failed, waiting 30s..."
+            sleep 30
+          done
       - name: Verify signature and record evidence
         run: |
           mkdir -p release-artifacts
