@@ -195,9 +195,8 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          boot-timeout: 300
+          emulator-boot-timeout: 300
           disable-animations: true
-          logcat-output: true
           script: |
             for i in 1 2 3; do
               ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace --no-daemon \
