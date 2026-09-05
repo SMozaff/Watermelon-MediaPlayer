@@ -52,8 +52,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
 
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # DISABLED: GitHub Actions cache service is down ("Our services aren't available right now")
+      # - name: Cache Gradle
+      #   uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -140,8 +141,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
 
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # DISABLED: GitHub Actions cache service is down ("Our services aren't available right now")
+      # - name: Cache Gradle
+      #   uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -187,8 +189,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
 
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # DISABLED: GitHub Actions cache service is down ("Our services aren't available right now")
+      # - name: Cache Gradle
+      #   uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
