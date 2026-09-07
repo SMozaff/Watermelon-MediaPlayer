@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -114,10 +113,6 @@ fun PhonePlayerScreen(
     val sleepTimerRemainingMs by viewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
 
     val uiState = remember { PlayerScreenState() }
-    uiState.currentRatio = VideoRatio.FILL
-    uiState.scale = 1f
-    uiState.panOffset = Offset.Zero
-    uiState.currentOrientation = ScreenOrientation.AUTO
     uiState.position = position
     uiState.isPlaying = playbackState == PlaybackState.PLAYING
     uiState.durationMs = durationMs
@@ -310,11 +305,16 @@ fun PhonePlayerScreen(
         }
     }
 
+    // Capture the pre-player window brightness exactly once, before this screen ever
+    // touches it — `remember` (no key) ensures this runs only on first composition, not on
+    // every recomposition, so a later re-read here can never pick up a brightness value
+    // the player itself already changed (A3).
+    val originalWindowBrightness = remember { activity?.window?.attributes?.screenBrightness ?: -1f }
+
     // Restore brightness on launch (window-scoped, reverts on exit).
     LaunchedEffect(Unit) {
-        val priorWindowBrightness = activity?.window?.attributes?.screenBrightness ?: -1f
         val startBrightness = initialBrightness.takeIf { it in 0f..1f }
-            ?: priorWindowBrightness.takeIf { it in 0f..1f }
+            ?: originalWindowBrightness.takeIf { it in 0f..1f }
             ?: 0.5f
         if (startBrightness in 0f..1f) activity?.window?.let { win ->
             val a = win.attributes; a.screenBrightness = startBrightness; win.attributes = a
@@ -335,11 +335,23 @@ fun PhonePlayerScreen(
             if (uiState.isPointerDown && !uiState.isGestureMoving) {
                 uiState.isHolding = true
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                // Track the target position locally rather than re-reading `position` each
+                // iteration. `position` is driven by a 250ms background ticker
+                // (PlaybackControllerImpl.startPositionTicker) that overwrites the
+                // controller's position StateFlow from the real player independently of our
+                // own seeks — at fast rewind speeds this loop issues a new seek faster than
+                // that ticker's 250ms cadence, so reading `position` back can observe a
+                // not-yet-caught-up value and repeat/undo the previous step instead of
+                // continuing to count down (A4). Seed from the live position once, then walk
+                // it ourselves so every step is relative to where we last commanded, not to
+                // a racing external tick.
+                var seekTarget = position
                 while (uiState.isPointerDown) {
                     if (uiState.holdIsLeft) {
                         vhs.setRewind(active = true, forward = false, speed = uiState.holdSpeed)
                         val stepMs = (uiState.holdSpeed * 1_000L).toLong()
-                        viewModel.onIntent(UserIntent.Seek((position - stepMs).coerceAtLeast(0L)))
+                        seekTarget = (seekTarget - stepMs).coerceAtLeast(0L)
+                        viewModel.onIntent(UserIntent.Seek(seekTarget))
                         kotlinx.coroutines.delay((220L / uiState.holdSpeed).toLong().coerceAtLeast(40L))
                     } else {
                         vhs.setRewind(active = true, forward = true, speed = uiState.holdSpeed)
@@ -361,11 +373,12 @@ fun PhonePlayerScreen(
             // Don't pause if the user chose background play or PiP — that's the whole point.
             if (!isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
-            // Revert the window brightness to whatever it was before the player opened.
-            val priorWindowBrightness = activity?.window?.attributes?.screenBrightness ?: -1f
+            // Revert the window brightness to whatever it was before the player opened —
+            // uses the value captured once above, not a fresh re-read (A3: re-reading here
+            // would just pick up the player's own brightness change, not the original).
             activity?.window?.let { win ->
                 val a = win.attributes
-                a.screenBrightness = priorWindowBrightness
+                a.screenBrightness = originalWindowBrightness
                 win.attributes = a
             }
         }
