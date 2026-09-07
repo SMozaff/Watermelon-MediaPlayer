@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -15,11 +14,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        // Media3 session APIs (e.g. MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS)
-        // are annotated @UnstableApi. Opt in module-wide rather than at each call site.
-        freeCompilerArgs += "-opt-in=androidx.media3.common.util.UnstableApi"
+}
+
+// Built-in Kotlin inherits JVM 17 from android.compileOptions. Keep the Media3
+// unstable-API opt-in at the compiler level rather than as a raw freeCompilerArg.
+kotlin {
+    compilerOptions {
+        optIn.add("androidx.media3.common.util.UnstableApi")
     }
 }
 

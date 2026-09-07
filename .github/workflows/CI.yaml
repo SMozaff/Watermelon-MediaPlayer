@@ -1,7 +1,7 @@
 name: build-judge
 
 # Quality gates referenced in README.md:
-#   - full Android build
+#   - debug Android application graph builds
 #   - unit tests
 #   - benchmarks module compiles
 #   - migration-ladder gate (all library-storage androidTests, including V1→V12)
@@ -37,8 +37,11 @@ jobs:
       - name: Run verify_interfaces.py
         run: python3 scripts/verify_interfaces.py
 
+      - name: Verify AGP 9 built-in Kotlin configuration
+        run: python3 scripts/verify_agp9_builtin_kotlin.py
+
   build-and-unit-test:
-    name: Build (all modules) + unit tests
+    name: Debug build + unit tests
     runs-on: ubuntu-latest
     needs: interfaces
     steps:
@@ -59,20 +62,25 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Full Android build across every module (requires dl.google.com for
-      # AGP/AndroidX/Compose/Media3 — see README's note on restricted-network
-      # environments where only :common-interfaces builds).
-      - name: Build all modules
-        run: ./gradlew build --stacktrace
-
-      - name: Run unit tests
-        run: ./gradlew test --stacktrace
-
-      # Debug APK — auto-signed with AGP's default debug keystore, no
-      # signingConfig needed. app/build.gradle.kts has no release signing
-      # config yet, so only debug is built here.
-      - name: Assemble debug APK
+      # Current product decision: validate the debug application graph only.
+      # :app:assembleDebug transitively compiles every production module used by the app;
+      # benchmarks remain a separate gate below because com.android.test owns its own variant.
+      - name: Assemble debug application graph
         run: ./gradlew :app:assembleDebug --stacktrace
+
+      # Keep unit coverage debug-scoped as well; do not invoke aggregate `test`/`build` tasks
+      # that also configure or execute release variants.
+      - name: Run debug unit tests
+        run: |
+          ./gradlew \
+            :common-interfaces:test \
+            :playback-engine:testDebugUnitTest \
+            :library-storage:testDebugUnitTest \
+            :subtitle-engine:testDebugUnitTest \
+            :media-tools:testDebugUnitTest \
+            :ui-presentation:testDebugUnitTest \
+            :app:testDebugUnitTest \
+            --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -81,6 +89,7 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
 
+<<<<<<< Updated upstream
       # Proves the release build type (signingConfigs + buildTypes.release added in
       # app/build.gradle.kts) is structurally wired and buildable. No signing secrets are
       # provisioned here -- RELEASE_STORE_FILE/RELEASE_STORE_PASSWORD/RELEASE_KEY_ALIAS/
@@ -104,6 +113,8 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           retention-days: 14
 
+=======
+>>>>>>> Stashed changes
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

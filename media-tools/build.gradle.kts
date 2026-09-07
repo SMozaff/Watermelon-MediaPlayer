@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -14,10 +13,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        // Transformer/Effect APIs are annotated @UnstableApi, same rationale as playback-engine.
-        freeCompilerArgs += "-opt-in=androidx.media3.common.util.UnstableApi"
+}
+
+// Built-in Kotlin inherits JVM 17 from android.compileOptions. Keep the Media3
+// unstable-API opt-in in compilerOptions so no legacy Android Kotlin compiler DSL remains.
+kotlin {
+    compilerOptions {
+        optIn.add("androidx.media3.common.util.UnstableApi")
     }
 }
 

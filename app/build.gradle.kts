@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -20,11 +19,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-        // MediaController / SessionToken in MainActivity are @UnstableApi.
-        freeCompilerArgs += "-opt-in=androidx.media3.common.util.UnstableApi"
     }
     // Reads from Gradle properties (gradle.properties, -P flags, or ~/.gradle/gradle.properties)
     // rather than hardcoding any credential in source control. None of these properties are
@@ -64,6 +58,14 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+}
+
+// AGP 9 supplies Kotlin for Android modules. JVM target inherits the Java 17
+// target above; only the Media3 opt-in remains explicit in the modern compiler DSL.
+kotlin {
+    compilerOptions {
+        optIn.add("androidx.media3.common.util.UnstableApi")
     }
 }
 
