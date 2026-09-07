@@ -23,16 +23,15 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * Extended migration-ladder coverage, V1 → V12 (Phase B1). [MigrationTest] (the original,
- * still-authoritative CI-gated class) only ever exercised V1 → V6; every step from V7
- * onward — including [MigrationV9ToV10]'s rename/migrate/drop fix for a real, previously
- * silent playlist-data-loss bug (see that migration's own doc comment) — had zero test
- * coverage despite DATABASE_VERSION already being 12.
+ * Extended migration-ladder coverage, V1 → V12 (Phase B1). [MigrationTest] preserves the
+ * original V1 → V6 contract, while this class verifies every later step through V12 —
+ * including [MigrationV9ToV10]'s rename/migrate/drop fix for a real, previously silent
+ * playlist-data-loss bug (see that migration's own doc comment).
  *
- * This class is deliberately separate from [MigrationTest] rather than an addition to it,
- * so the original CI-gated class (and whatever external tooling references its exact name
- * per its own "Handover §4" doc comment) is left untouched; this class should be added
- * alongside it as an equally-required instrumented test, not a replacement.
+ * The CI migration-ladder job runs the complete library-storage instrumentation suite, so
+ * both the legacy contract and these V1/V5/V6/V10/V11/V12 upgrade paths are required gates.
+ * Keeping the classes separate preserves compatibility with tooling that references
+ * [MigrationTest] by its exact name without sacrificing full-ladder coverage.
  */
 @RunWith(AndroidJUnit4::class)
 class ExtendedMigrationLadderTest {

@@ -4,7 +4,8 @@ name: build-judge
 #   - full Android build
 #   - unit tests
 #   - benchmarks module compiles
-#   - migration-ladder gate (library-storage's androidTest, MigrationTest.kt)
+#   - migration-ladder gate (all library-storage androidTests, including V1→V12)
+#   - player runtime regression gate (all ui-presentation androidTests, including A1–A4)
 #   - verify_interfaces.py — every interface in common-interfaces has an *Impl
 
 on:
@@ -125,7 +126,7 @@ jobs:
           retention-days: 14
 
   migration-ladder:
-    name: Migration-ladder gate (library-storage androidTest)
+    name: Migration ladder V1-V12 + idempotency gate
     runs-on: ubuntu-latest
     needs: interfaces
     steps:
@@ -152,16 +153,18 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Zero-data-loss SQLite migrations (PlaybackPositions / SubtitleOffsets
-      # never dropped) — see README, "Zero-data-loss SQLite migrations".
-      - name: Run MigrationTest on emulator
+      # Required Phase B gate. Run the whole module's instrumentation suite so the
+      # original MigrationTest and ExtendedMigrationLadderTest (V1/V5/V6/V10/V11/V12
+      # upgrade paths + step idempotency + data preservation) cannot silently fall out
+      # of CI when new migration regression tests are added.
+      - name: Run all library-storage migration tests on emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :library-storage:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.storage.db.MigrationTest --stacktrace
+          script: ./gradlew :library-storage:connectedAndroidTest --stacktrace
 
       - name: Upload instrumented test reports
         if: always()
@@ -172,7 +175,7 @@ jobs:
           retention-days: 14
 
   ui-instrumentation:
-    name: UI instrumentation scaffold (ui-presentation androidTest)
+    name: Player A1-A4 runtime regression gate
     runs-on: ubuntu-latest
     needs: interfaces
     steps:
@@ -199,16 +202,18 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Commit 00 scaffold: proves the ui-presentation instrumentation pipeline
-      # executes on CI. A1-A4 player regression tests build on this job.
-      - name: Run ui-presentation scaffold test on emulator
+      # Required Phase A gate. Run the complete ui-presentation instrumentation
+      # suite: scaffold + PlayerUiStatePreservationTest (A1) +
+      # PlayerScreenStatePreservationTest (A2/A3/A4). Running the module rather than an
+      # individual class makes future player-state regressions automatically part of CI.
+      - name: Run all player runtime regression tests on emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :ui-presentation:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.watermelon.ui.InstrumentationScaffoldTest --stacktrace
+          script: ./gradlew :ui-presentation:connectedAndroidTest --stacktrace
 
       - name: Upload ui instrumentation reports
         if: always()
