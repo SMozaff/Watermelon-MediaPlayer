@@ -16,8 +16,9 @@ import android.database.sqlite.SQLiteDatabase
 object MigrationV10ToV11 {
     fun migrate(db: SQLiteDatabase) {
         // default 0 for existing rows; Phase2Extractor backfills real values on next index.
-        runCatching {
-            db.execSQL("ALTER TABLE MediaItems ADD COLUMN dateModified INTEGER NOT NULL DEFAULT 0")
-        }
+        // Guarded explicitly (not runCatching) so a genuine, unrelated SQL error here
+        // surfaces instead of being silently swallowed alongside the expected
+        // already-exists case.
+        addColumnIfMissing(db, "MediaItems", "dateModified", "dateModified INTEGER NOT NULL DEFAULT 0")
     }
 }

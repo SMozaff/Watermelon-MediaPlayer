@@ -10,12 +10,14 @@ import android.database.sqlite.SQLiteDatabase
  *                 overwritten). DEFAULT 0 so pre-migration rows are treated as "old".
  * [lastPlayedAt] — epoch-ms when playback last started. NULL means never played → ⭐ shown.
  *
- * Note: ALTER TABLE ADD COLUMN is not idempotent — the version system guarantees this
- * migration runs exactly once per database. MediaItems data is fully preserved.
+ * Idempotent: both columns are added via [addColumnIfMissing], so re-running this step
+ * against a database that already has them (e.g. a repeated-ladder test, or any future
+ * scenario where a migration step runs more than once) is a safe no-op rather than an
+ * `SQLiteException: duplicate column name` crash.
  */
 object MigrationV6ToV7 {
     fun migrate(db: SQLiteDatabase) {
-        db.execSQL("ALTER TABLE MediaItems ADD COLUMN firstSeenAt INTEGER DEFAULT 0")
-        db.execSQL("ALTER TABLE MediaItems ADD COLUMN lastPlayedAt INTEGER")
+        addColumnIfMissing(db, "MediaItems", "firstSeenAt", "firstSeenAt INTEGER DEFAULT 0")
+        addColumnIfMissing(db, "MediaItems", "lastPlayedAt", "lastPlayedAt INTEGER")
     }
 }

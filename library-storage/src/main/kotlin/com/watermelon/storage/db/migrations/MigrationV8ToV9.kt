@@ -14,10 +14,11 @@ import android.database.sqlite.SQLiteDatabase
  */
 object MigrationV8ToV9 {
     fun migrate(db: SQLiteDatabase) {
-        // dateAdded column — default 0 for existing rows; Phase2Extractor backfills on next index.
-        runCatching {
-            db.execSQL("ALTER TABLE MediaItems ADD COLUMN dateAdded INTEGER NOT NULL DEFAULT 0")
-        }
+        // dateAdded column — default 0 for existing rows; Phase2Extractor backfills on next
+        // index. Guarded explicitly (not runCatching) so a genuine, unrelated SQL error here
+        // surfaces instead of being silently swallowed alongside the expected
+        // already-exists case.
+        addColumnIfMissing(db, "MediaItems", "dateAdded", "dateAdded INTEGER NOT NULL DEFAULT 0")
 
         db.execSQL("""
             CREATE TABLE IF NOT EXISTS CustomOrder (
