@@ -43,10 +43,6 @@ class SubtitleRepositoryImpl(
     }
     private val cacheStore: SubtitleCacheStore = SubtitleCacheStore(cacheDir)
 
-    companion object {
-        private const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
-    }
-
     override suspend fun findSubtitles(
         mediaItem: MediaItem,
         preferredLanguages: List<String>
@@ -226,6 +222,4 @@ class SubtitleRepositoryImpl(
     }
 }
 
-object SubtitleRepositoryImpl {
-    const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
-}
+const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
