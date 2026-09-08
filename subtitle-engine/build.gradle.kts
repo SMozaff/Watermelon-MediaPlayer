@@ -5,7 +5,7 @@ plugins {
 android {
     namespace = "com.watermelon.subtitle"
     compileSdk = 37
-    defaultConfig { minSdk = 23 }
+    defaultConfig { minSdk = 24 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
