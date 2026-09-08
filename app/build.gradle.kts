@@ -3,11 +3,6 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-// Read OpenSubtitles API key from gradle properties or environment
-val openSubtitlesApiKey = providers.gradleProperty("OPEN_SUBTITLES_API_KEY")
-    .orElse(providers.environmentVariable("OPEN_SUBTITLES_API_KEY"))
-    .orElse("")
-
 android {
     namespace = "com.watermelon.app"
     compileSdk = 37
@@ -21,6 +16,9 @@ android {
         versionName = "1.0.0"
         
         // BuildConfig field for OpenSubtitles API key
+        val openSubtitlesApiKey = project.providers.gradleProperty("OPEN_SUBTITLES_API_KEY")
+            .orElse(project.providers.environmentVariable("OPEN_SUBTITLES_API_KEY"))
+            .orElse("")
         buildConfigField("String", "OPEN_SUBTITLES_API_KEY", "\"\${openSubtitlesApiKey.get().replace("\"", "\\\"")}\"")
     }
     buildFeatures {
