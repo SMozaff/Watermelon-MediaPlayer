@@ -14,10 +14,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.testTag
 import com.watermelon.common.model.UserIntent
 import com.watermelon.ui.player.VhsEffectController
 import kotlinx.coroutines.delay
 import kotlin.math.abs
+
+/**
+ * Stable test tag for the full-screen gesture surface. Used by instrumentation
+ * tests to target the actual player touch surface instead of selecting ambiguous
+ * Compose roots.
+ */
+const val PLAYER_GESTURE_SURFACE_TAG = "playerGestureSurface"
 
 @Composable
 fun GestureLayer(
@@ -35,7 +43,9 @@ fun GestureLayer(
     onBrightnessChange: ((Float) -> Unit)?,
 ) {
     Box(
-        Modifier.fillMaxSize()
+        Modifier
+            .fillMaxSize()
+            .testTag(PLAYER_GESTURE_SURFACE_TAG)
             .pointerInput(durationMs, ui.gesturesEnabled, state.isPlayerSheetOpen) {
                 if (!ui.gesturesEnabled || state.isPlayerSheetOpen) return@pointerInput
                 awaitEachGesture {

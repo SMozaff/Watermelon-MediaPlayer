@@ -47,6 +47,8 @@ import com.watermelon.ui.components.WatermelonTunerSeekBar
 import com.watermelon.ui.screens.PlayerControlPanel.FileActionsSheet
 import com.watermelon.ui.screens.PlayerControlPanel.PlayerActionsSheet
 import com.watermelon.ui.screens.PlayerControlPanel.QuickToolsSheet
+import com.watermelon.ui.screens.OnlineSubtitlesSheet
+import com.watermelon.ui.screens.OnlineSubtitlesUiState
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.utils.ScreenshotManager
@@ -92,6 +94,8 @@ fun ControlsLayer(
     onTunerSeekBarEnabledChange: ((Boolean) -> Unit)?,
     tunerSeekBarEnabled: Boolean,
     tunerSeekStepSeconds: Int,
+    subtitleRepository: com.watermelon.common.repository.SubtitleRepository? = null,
+    onSubtitleLoaded: ((com.watermelon.common.model.ParsedSubtitle) -> Unit)? = null,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     scope: kotlinx.coroutines.CoroutineScope,
     context: android.content.Context,
@@ -294,6 +298,10 @@ fun ControlsLayer(
             subtitleOffsetMs = subtitleOffsetMs,
             autoSyncEnabled = autoSyncEnabled,
             autoSyncStatus = autoSyncStatus,
+            onFindOnlineSubtitles = {
+                state.showQuickTools = false
+                state.showOnlineSubtitlesSheet = true
+            },
             onSubtitleNudge = onSubtitleNudge,
             onAutoSync = onAutoSync,
             onSpeedChange = { speed ->
@@ -436,5 +444,74 @@ private fun PlayerTransportControls(
         } else {
             Spacer(Modifier.width(48.dp))
         }
+    }
+
+    // Online subtitles sheet
+    if (state.showOnlineSubtitlesSheet) {
+        OnlineSubtitlesSheet(
+            uiState = state.onlineSubtitlesUiState,
+            onSearch = {
+                scope.launch {
+                    state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Searching
+                    try {
+                        val result = subtitleRepository.searchOnlineSubtitles(
+                            mediaItem = com.watermelon.common.model.MediaItem(
+                                uri = uri,
+                                displayName = mediaTitle,
+                                fileSize = 0L,
+                                durationMs = durationMs,
+                            ),
+                            preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
+                        )
+                        state.onlineSubtitlesUiState = when (result) {
+                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Success ->
+                                OnlineSubtitlesUiState.Results(result.tracks)
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.NoResults ->
+                                OnlineSubtitlesUiState.Results(emptyList())
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.Offline ->
+                                OnlineSubtitlesUiState.Offline
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.ProviderNotConfigured ->
+                                OnlineSubtitlesUiState.ProviderNotConfigured
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.AuthenticationRequired ->
+                                OnlineSubtitlesUiState.AuthenticationRequired
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.PermissionDenied ->
+                                OnlineSubtitlesUiState.Error("Permission denied")
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.QuotaExceeded ->
+                                OnlineSubtitlesUiState.QuotaExceeded
+                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
+                                OnlineSubtitlesUiState.Error(result.message)
+                        }
+                    } catch (e: Exception) {
+                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
+                    }
+                }
+            },
+            onDownload = { track ->
+                scope.launch {
+                    state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
+                    try {
+                        val downloaded = subtitleRepository.downloadSubtitle(
+                            mediaItem = com.watermelon.common.model.MediaItem(
+                                uri = uri,
+                                displayName = mediaTitle,
+                                fileSize = 0L,
+                                durationMs = durationMs,
+                            ),
+                            track = track
+                        )
+                        // Activate the downloaded subtitle immediately
+                        onSubtitleLoaded?.invoke(downloaded.subtitle)
+                        state.showOnlineSubtitlesSheet = false
+                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+                    } catch (e: Exception) {
+                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
+                    }
+                }
+            },
+            onDismiss = {
+                state.showOnlineSubtitlesSheet = false
+                state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+            },
+        )
     }
 }

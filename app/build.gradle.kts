@@ -8,7 +8,7 @@ android {
     compileSdk = 37
     defaultConfig {
         applicationId = "com.watermelon.mediaplayer"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 35
         // First version bump off the initial 1 / "1.0" placeholders (see remediation plan
         // item 2) -- still a debug-signed build until real release signing is provisioned.

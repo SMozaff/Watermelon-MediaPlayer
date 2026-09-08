@@ -234,6 +234,14 @@ fun PhonePlayerScreen(
         onTunerSeekBarEnabledChange = onTunerSeekBarEnabledChange,
         tunerSeekBarEnabled = tunerSeekBarEnabled,
         tunerSeekStepSeconds = tunerSeekStepSeconds,
+        subtitleRepository = viewModel.subtitleRepository,
+        onSubtitleLoaded = { parsedSubtitle ->
+            // Activate the downloaded subtitle immediately
+            uiState.subtitleTrack = parsedSubtitle
+            // Reset sync state for the new subtitle
+            uiState.subtitleOffsetMs = 0L
+            uiState.autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
+        },
         haptic = haptic,
         scope = scope,
         context = context,
