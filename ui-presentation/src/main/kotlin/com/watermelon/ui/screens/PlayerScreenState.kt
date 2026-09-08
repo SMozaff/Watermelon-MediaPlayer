@@ -8,10 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 
-/**
- * Aggregates all mutable UI state for the phone player screen.
- * Hoisted to the main composable and passed down to layer composables.
- */
 class PlayerScreenState {
     // Player feature state
     var playbackSpeed by mutableStateOf(1f)
@@ -27,6 +23,7 @@ class PlayerScreenState {
     var showMediaInfo by mutableStateOf(false)
     var showTunerSeekTip by mutableStateOf(false)
     var showSleepTimerDialog by mutableStateOf(false)
+    var showOnlineSubtitlesSheet by mutableStateOf(false)
     var isPiPEnabled by mutableStateOf(false)
     var isBackgroundEnabled by mutableStateOf(false)
 
@@ -51,7 +48,7 @@ class PlayerScreenState {
     var lastInteraction by mutableLongStateOf(0L)
 
     val isPlayerSheetOpen: Boolean
-        get() = showControlPanel || showQuickTools || showFileActions
+        get() = showControlPanel || showQuickTools || showFileActions || showOnlineSubtitlesSheet
 
     // Dynamic values set each frame
     var position: Long = 0L
