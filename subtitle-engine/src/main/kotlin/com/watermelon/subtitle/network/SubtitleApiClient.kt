@@ -8,7 +8,6 @@ import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
@@ -22,55 +21,49 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 /**
- * Ktor client for the OpenSubtitles API with language filtering and mirror failover
- * (Manifest §6.2). Network is only ever touched after an explicit user action (Privacy §14).
+ * Ktor client for the OpenSubtitles.com REST API (api.opensubtitles.com).
+ * Network is only ever touched after an explicit user action (Privacy §14).
+ *
+ * This client targets ONLY the modern OpenSubtitles.com v1 API.
+ * Legacy opensubtitles.org mirrors are NOT supported.
  */
 class SubtitleApiClient(
-    private val mirrors: MirrorRotator = MirrorRotator.DEFAULT,
     private val httpClient: HttpClient = HttpClient(Android),
     private val responseParser: (String) -> List<SubtitleTrack> = ::parseTracks
 ) {
     /**
      * Query subtitles for a given OpenSubtitles file [hash], filtered to [preferredLanguages].
-     * Rotates to the next mirror on 5xx/timeout; fail-closed when mirrors are exhausted.
+     * Fails closed on timeout or server error.
      */
     suspend fun query(
         hash: String,
         fileSize: Long,
-        preferredLanguages: List<String>
+        preferredLanguages: List<String>,
+        apiKey: String,
+        userAgent: String
     ): List<SubtitleTrack> {
-        mirrors.reset()
-        while (true) {
-            val outcome = runCatching {
-                withTimeout(REQUEST_TIMEOUT_MS) {
-                    val response: HttpResponse = httpClient.get("${mirrors.current}/api/v1/subtitles") {
-                        header("User-Agent", USER_AGENT)
-                        parameter("moviehash", hash)
-                        parameter("moviebytesize", fileSize)
-                        if (preferredLanguages.isNotEmpty()) {
-                            parameter("languages", preferredLanguages.joinToString(","))
-                        }
+        return runCatching {
+            withTimeout(REQUEST_TIMEOUT_MS) {
+                val response: HttpResponse = httpClient.get("$BASE_URL/subtitles") {
+                    header("Api-Key", apiKey)
+                    header("User-Agent", userAgent)
+                    header("Accept", "application/json")
+                    parameter("moviehash", hash)
+                    if (fileSize > 0) {
+                        parameter("moviebytesize", fileSize.toString())
                     }
-                    response
+                    if (preferredLanguages.isNotEmpty()) {
+                        parameter("languages", preferredLanguages.joinToString(","))
+                    }
                 }
-            }
-
-            val response = outcome.getOrNull()
-            when {
-                response != null && response.status.isSuccess() ->
-                    return responseParser(response.bodyAsText())
+                if (response.status.isSuccess()) {
+                    responseParser(response.bodyAsText())
                         .filterByLanguages(preferredLanguages)
-
-                // Server error or timeout → fail over to next mirror.
-                response == null /* timeout/exception */ ||
-                    response.status.value in 500..599 -> {
-                    if (mirrors.advance() == null) return emptyList() // fail-closed
+                } else {
+                    emptyList()
                 }
-
-                // 4xx / other → no point retrying other mirrors.
-                else -> return emptyList()
             }
-        }
+        }.getOrElse { emptyList() }
     }
 
     private fun List<SubtitleTrack>.filterByLanguages(prefs: List<String>): List<SubtitleTrack> {
@@ -83,58 +76,68 @@ class SubtitleApiClient(
 
     companion object {
         private const val REQUEST_TIMEOUT_MS = 8_000L
-        private const val USER_AGENT = "Watermelon/1.0"
+        private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
 
         /**
-         * Parses a mirror's subtitle-search response into [SubtitleTrack]s.
+         * Parses OpenSubtitles.com v1 search response into [SubtitleTrack]s.
          *
-         * Two response shapes are supported, matching the two mirror families in
-         * [MirrorRotator.DEFAULT]:
-         *  - api.opensubtitles.com (v1): `{ "data": [ { "attributes": { ... } } ] }`
-         *  - rest.opensubtitles.org (legacy): a flat JSON array of subtitle objects.
+         * Response shape:
+         * { "data": [ { "attributes": { "language": "...", "files": [{ "file_id": ..., "file_name": ... }], ... } } ] }
          *
-         * Field names are matched defensively across both dialects (e.g. "language" or
-         * "ISO639", "url" or "SubDownloadLink") so a single parser can serve either mirror.
-         * Entries missing a language or a download URL are dropped rather than failing the
-         * whole batch. Malformed/non-JSON bodies yield an empty list rather than throwing,
-         * matching this client's fail-closed behaviour on the calling side.
-         *
-         * NOTE: field names are based on the mirrors' documented response shapes and have
-         * not been verified against a live response in this environment (no network access
-         * during development) — worth a quick sanity check against a real payload from
-         * whichever mirror ends up primary before shipping.
+         * Entries missing language or file_id are dropped.
          */
         fun parseTracks(body: String): List<SubtitleTrack> {
             val root = runCatching { Json.parseToJsonElement(body) }.getOrNull() ?: return emptyList()
             val entries: List<JsonObject> = when {
                 root is JsonObject && root["data"] is JsonArray ->
                     (root.jsonObject["data"] as? JsonArray)?.mapNotNull { it as? JsonObject }.orEmpty()
-                root is JsonArray -> root.mapNotNull { it as? JsonObject }
                 else -> emptyList()
             }
-            return entries.mapNotNull { it.toSubtitleTrackOrNull() }
+            return entries.flatMap { it.toSubtitleTracks() }
         }
 
-        private fun JsonObject.toSubtitleTrackOrNull(): SubtitleTrack? {
-            // v1 entries nest fields under "attributes"; legacy entries are flat.
-            val attrs = (this["attributes"] as? JsonObject) ?: this
-            val language = attrs.stringOrNull("language") ?: attrs.stringOrNull("ISO639") ?: return null
-            val downloadUrl = attrs.stringOrNull("url")
-                ?: attrs.stringOrNull("download_url")
-                ?: attrs.stringOrNull("SubDownloadLink")
-                ?: return null
-            val label = attrs.stringOrNull("release")
-                ?: attrs.stringOrNull("SubFileName")
-                ?: attrs.stringOrNull("file_name")
-                ?: "$language subtitle"
-            val rating = attrs.floatOrNull("ratings") ?: attrs.floatOrNull("SubRating") ?: 0f
-            return SubtitleTrack(language = language, label = label, downloadUrl = downloadUrl, rating = rating)
+        private fun JsonObject.toSubtitleTracks(): List<SubtitleTrack> {
+            val attrs = (this["attributes"] as? JsonObject) ?: return emptyList()
+            val language = attrs.stringOrNull("language") ?: return emptyList()
+            val release = attrs.stringOrNull("release")
+            val ratings = attrs.floatOrNull("ratings") ?: 0f
+            val downloadCount = attrs.intOrNull("downloadCount") ?: 0
+            val hashMatched = attrs.booleanOrNull("moviehashMatch") == true
+            
+            // Parse files array
+            val files = (attrs["files"] as? JsonArray)?.mapNotNull { it as? JsonObject }.orEmpty()
+            
+            return files.mapNotNull { file ->
+                val fileId = file.longOrNull("fileId") ?: return@mapNotNull null
+                val fileName = file.stringOrNull("fileName")
+                
+                SubtitleTrack(
+                    language = language,
+                    label = release ?: fileName ?: "$language subtitle",
+                    downloadUrl = "", // Empty until resolved via POST /download
+                    rating = ratings,
+                    providerId = "opensubtitles.com",
+                    remoteFileId = fileId,
+                    remoteFileName = fileName,
+                    downloadCount = downloadCount,
+                    hashMatched = hashMatched
+                )
+            }
         }
 
         private fun JsonObject.stringOrNull(key: String): String? =
             (this[key] as? JsonPrimitive)?.contentOrNull
-
+        
         private fun JsonObject.floatOrNull(key: String): Float? =
             (this[key] as? JsonPrimitive)?.floatOrNull
+        
+        private fun JsonObject.intOrNull(key: String): Int? =
+            (this[key] as? JsonPrimitive)?.content?.toIntOrNull()
+        
+        private fun JsonObject.longOrNull(key: String): Long? =
+            (this[key] as? JsonPrimitive)?.content?.toLongOrNull()
+        
+        private fun JsonObject.booleanOrNull(key: String): Boolean? =
+            (this[key] as? JsonPrimitive)?.content?.toBooleanStrictOrNull()
     }
 }
