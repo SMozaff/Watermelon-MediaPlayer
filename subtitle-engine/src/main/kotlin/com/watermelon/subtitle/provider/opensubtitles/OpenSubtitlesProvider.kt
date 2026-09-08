@@ -19,6 +19,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.request.contentType
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.SerialName
@@ -41,12 +42,10 @@ class OpenSubtitlesProvider(
     private val userAgent: String,
     private val httpClient: HttpClient = HttpClient(Android) {
         install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                }
-            )
+            json(Json {
+                ignoreUnknownKeys = true
+                explicitNulls = false
+            })
         }
         expectSuccess = false
     }

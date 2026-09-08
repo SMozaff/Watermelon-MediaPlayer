@@ -47,7 +47,7 @@ class SubtitleRepositoryImpl(
         mediaItem: MediaItem,
         preferredLanguages: List<String>
     ): List<SubtitleTrack> = withContext(Dispatchers.IO) {
-        cachedTracks(mediaItem, preferredLanguages)
+        return@withContext cachedTracks(mediaItem, preferredLanguages)
     }
 
     private suspend fun cachedTracks(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
@@ -101,11 +101,11 @@ class SubtitleRepositoryImpl(
         } catch (e: QuotaExceededException) {
             return@withContext OnlineSubtitleSearchResult.QuotaExceeded
         } catch (e: ProviderUnavailableException) {
-            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message ?: "Provider unavailable")
         } catch (e: ProviderResponseException) {
-            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message ?: "Provider response error")
         } catch (e: ProviderException) {
-            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message ?: "Provider error")
         } catch (e: Exception) {
             return@withContext OnlineSubtitleSearchResult.Failure(e.message ?: "Unknown error")
         }
