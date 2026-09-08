@@ -141,14 +141,18 @@ private data class SubtitleAttributes(
     val language: String,
     val release: String? = null,
     val ratings: Float? = null,
+    @SerialName("download_count")
     val downloadCount: Int? = null,
+    @SerialName("moviehash_match")
     val moviehashMatch: Boolean? = null,
     val files: List<SubtitleFile>? = null
 )
 
 @Serializable
 private data class SubtitleFile(
+    @SerialName("file_id")
     val fileId: Long,
+    @SerialName("file_name")
     val fileName: String? = null
 )
 
