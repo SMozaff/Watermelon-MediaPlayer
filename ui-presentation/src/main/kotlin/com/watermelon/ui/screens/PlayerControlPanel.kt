@@ -77,6 +77,7 @@ fun QuickToolsSheet(
     autoSyncEnabled: Boolean = false,
     autoSyncStatus: com.watermelon.common.subtitle.sync.SyncStatus =
         com.watermelon.common.subtitle.sync.SyncStatus.IDLE,
+    onFindOnlineSubtitles: (() -> Unit)? = null,
     onSpeedChange: (Float) -> Unit,
     onMuteToggle: () -> Unit,
     onRatioChange: (VideoRatio) -> Unit,
@@ -213,12 +214,23 @@ fun QuickToolsSheet(
                 )
             }
         } else {
-            SheetAction(
-                label = "Subtitle controls",
-                detail = "No subtitle track is available for this video.",
-                enabled = false,
-                onClick = {},
-            )
+            // No subtitle loaded: offer online search as explicit user action
+            SheetDivider()
+            SheetSectionLabel("Subtitles")
+            if (onFindOnlineSubtitles != null) {
+                SheetAction(
+                    label = "Find online subtitles",
+                    detail = "Search OpenSubtitles for this video",
+                    onClick = onFindOnlineSubtitles,
+                )
+            } else {
+                SheetAction(
+                    label = "Subtitle controls",
+                    detail = "No subtitle track is available for this video.",
+                    enabled = false,
+                    onClick = {},
+                )
+            }
         }
         SheetAction(
             label = "Sleep timer",
