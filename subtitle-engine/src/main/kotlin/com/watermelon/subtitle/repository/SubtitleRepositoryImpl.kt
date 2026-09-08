@@ -22,6 +22,7 @@ import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import com.watermelon.subtitle.provider.registry.SubtitleProviderRegistry
 import com.watermelon.subtitle.source.LocalSidecarSourceImpl
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
 import io.ktor.http.HttpHeaders
@@ -36,7 +37,7 @@ class SubtitleRepositoryImpl(
 ) : SubtitleRepository {
 
     private val sidecarSource = LocalSidecarSourceImpl(context)
-    private val downloadClient: io.ktor.client.HttpClient by lazy { io.ktor.client.HttpClient(Android) }
+    private val downloadClient: HttpClient by lazy { HttpClient(Android) }
     private val cacheDir: File by lazy {
         File(context.cacheDir, "subtitles").apply { mkdirs() }
     }
@@ -81,7 +82,8 @@ class SubtitleRepositoryImpl(
             return OnlineSubtitleSearchResult.Offline
         }
 
-        val hash = runCatching { hashFor(mediaItem) }.getOrNull() ?: return@withContext OnlineSubtitleSearchResult.Failure("Failed to compute media hash")
+        val hash = runCatching { hashFor(mediaItem) }.getOrNull()
+            ?: return@withContext OnlineSubtitleSearchResult.Failure("Failed to compute media hash")
 
         val query = SubtitleProviderQuery(
             movieHash = hash,
@@ -90,46 +92,64 @@ class SubtitleRepositoryImpl(
             preferredLanguages = preferredLanguages
         )
 
-        val tracks = providerRegistry.search(query)
-        if (tracks.isEmpty()) {
-            return OnlineSubtitleSearchResult.NoResults
+        try {
+            val tracks = providerRegistry.search(query)
+            if (tracks.isEmpty()) {
+                return OnlineSubtitleSearchResult.NoResults
+            }
+            return OnlineSubtitleSearchResult.Success(tracks)
+        } catch (e: AuthenticationRequiredException) {
+            return OnlineSubtitleSearchResult.AuthenticationRequired
+        } catch (e: PermissionDeniedException) {
+            return OnlineSubtitleSearchResult.PermissionDenied
+        } catch (e: QuotaExceededException) {
+            return OnlineSubtitleSearchResult.QuotaExceeded
+        } catch (e: ProviderUnavailableException) {
+            return OnlineSubtitleSearchResult.Failure(e.message)
+        } catch (e: ProviderResponseException) {
+            return OnlineSubtitleSearchResult.Failure(e.message)
+        } catch (e: ProviderException) {
+            return OnlineSubtitleSearchResult.Failure(e.message)
+        } catch (e: Exception) {
+            return OnlineSubtitleSearchResult.Failure(e.message ?: "Unknown error")
         }
-        OnlineSubtitleSearchResult.Success(tracks)
     }
 
     override suspend fun downloadSubtitle(
+        mediaItem: MediaItem,
         track: SubtitleTrack
     ): DownloadedSubtitle = withContext(Dispatchers.IO) {
-        require(isAllowedDownloadUrl(track.downloadUrl)) {
-            "Refusing to download subtitle from untrusted URL: ${track.downloadUrl}"
+        // Resolve the download URL through the provider registry
+        val downloadLink = providerRegistry.resolveDownload(track)
+        
+        // Validate the resolved URL
+        require(isAllowedDownloadUrl(downloadLink.url)) {
+            "Refusing to download subtitle from untrusted URL: ${downloadLink.url}"
         }
 
-        val response = downloadClient.get(track.downloadUrl)
+        val response = downloadClient.get(downloadLink.url)
         if (!response.status.isSuccess()) {
             throw RuntimeException("Subtitle download failed: HTTP ${response.status.value}")
         }
 
         val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-        if (contentLength != null && contentLength > 5_000_000L) {
-            throw RuntimeException("Subtitle file too large: $contentLength bytes (max: 5 MiB)")
+        if (contentLength != null && contentLength > MAX_SUBTITLE_SIZE_BYTES) {
+            throw RuntimeException("Subtitle file too large: $contentLength bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
         }
 
-        val bytes = response.body()
-        if (bytes.size > 5_000_000L) {
-            throw RuntimeException("Subtitle file too large: ${bytes.size} bytes (max: 5 MiB)")
+        val bytes = response.body<ByteArray>()
+        if (bytes.size > MAX_SUBTITLE_SIZE_BYTES) {
+            throw RuntimeException("Subtitle file too large: ${bytes.size} bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
+        }
+
+        // Validate the final redirected URL
+        val finalUrl = response.request.url.toString()
+        require(isAllowedDownloadUrl(finalUrl)) {
+            "Final redirect URL not allowed: $finalUrl"
         }
 
         val cachedFile = cacheStore.write(
-            mediaItem = MediaItem(
-                uri = "",
-                fileSize = 0L,
-                displayName = "",
-                parentFolder = "",
-                durationMs = 0L,
-                width = 0,
-                height = 0,
-                mimeType = "",
-            ),
+            mediaItem = mediaItem,
             track = track,
             providerId = track.providerId ?: "opensubtitles.com",
             bytes = bytes

@@ -1,4 +1,3 @@
-```
 # Compiled and build artifacts
 *.class
 *.o
@@ -19,6 +18,7 @@ libs/
 # Editors
 .idea/
 .vscode/
+*.iml
 
 # Environment
 .env
@@ -32,4 +32,16 @@ htmlcov/
 
 # Package manager
 node_modules/
-```
+
+# Android
+local.properties
+*.iml
+*.log
+*.tmp
+*.swp
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

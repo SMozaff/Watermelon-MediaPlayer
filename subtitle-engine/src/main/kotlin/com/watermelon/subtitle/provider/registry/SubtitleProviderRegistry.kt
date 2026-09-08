@@ -1,6 +1,13 @@
 package com.watermelon.subtitle.provider.registry
 
 import com.watermelon.common.model.SubtitleTrack
+import com.watermelon.subtitle.provider.AuthenticationRequiredException
+import com.watermelon.subtitle.provider.PermissionDeniedException
+import com.watermelon.subtitle.provider.ProviderException
+import com.watermelon.subtitle.provider.ProviderResponseException
+import com.watermelon.subtitle.provider.ProviderUnavailableException
+import com.watermelon.subtitle.provider.QuotaExceededException
+import com.watermelon.subtitle.provider.SubtitleDownloadLink
 import com.watermelon.subtitle.provider.SubtitleProvider
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 

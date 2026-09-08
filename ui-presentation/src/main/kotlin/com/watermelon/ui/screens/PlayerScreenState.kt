@@ -24,6 +24,7 @@ class PlayerScreenState {
     var showTunerSeekTip by mutableStateOf(false)
     var showSleepTimerDialog by mutableStateOf(false)
     var showOnlineSubtitlesSheet by mutableStateOf(false)
+    var onlineSubtitlesUiState: OnlineSubtitlesUiState by mutableStateOf(OnlineSubtitlesUiState.Idle)
     var isPiPEnabled by mutableStateOf(false)
     var isBackgroundEnabled by mutableStateOf(false)
 

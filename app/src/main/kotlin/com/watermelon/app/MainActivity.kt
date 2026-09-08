@@ -161,7 +161,17 @@ class MainActivity : ComponentActivity() {
 
     private val vhsReverseSound by lazy { VhsReverseSound() }
     private val subtitleRepository by lazy {
-        com.watermelon.subtitle.repository.SubtitleRepositoryImpl(applicationContext)
+        val openSubtitlesProvider = com.watermelon.subtitle.provider.opensubtitles.OpenSubtitlesProvider(
+            apiKey = BuildConfig.OPEN_SUBTITLES_API_KEY,
+            userAgent = "WatermelonMediaPlayer/1.0.0"
+        )
+        val providerRegistry = com.watermelon.subtitle.provider.registry.SubtitleProviderRegistry(
+            listOf(openSubtitlesProvider)
+        )
+        com.watermelon.subtitle.repository.SubtitleRepositoryImpl(
+            applicationContext,
+            providerRegistry
+        )
     }
     private val phase1Sweep by lazy { Phase1Sweep(contentResolver) }
     private val indexer by lazy {
@@ -1413,6 +1423,12 @@ class MainActivity : ComponentActivity() {
                                     "compress/${Uri.encode(mediaUri)}/${Uri.encode(displayName)}"
                                 )
                             }
+                        },
+                        subtitleRepository = subtitleRepository,
+                        onSubtitleLoaded = { parsedSubtitle ->
+                            subtitleTrackState = parsedSubtitle
+                            subtitleOffsetMs = 0L
+                            autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
                         },
                         surface = { modifier ->
                             AndroidView(

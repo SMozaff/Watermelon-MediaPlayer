@@ -10,6 +10,7 @@ import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleDownloadLink
 import com.watermelon.subtitle.provider.SubtitleProvider
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -38,7 +39,7 @@ private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
 class OpenSubtitlesProvider(
     private val apiKey: String,
     private val userAgent: String,
-    private val httpClient: io.ktor.client.HttpClient = HttpClient(Android) {
+    private val httpClient: HttpClient = HttpClient(Android) {
         install(ContentNegotiation) {
             json(
                 Json {

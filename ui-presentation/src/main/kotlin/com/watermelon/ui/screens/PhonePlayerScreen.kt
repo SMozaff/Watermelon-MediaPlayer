@@ -96,7 +96,9 @@ fun PhonePlayerScreen(
     onCompressVideo: (() -> Unit)? = null,
     onLockChanged: ((Boolean) -> Unit)? = null,
     isInPipMode: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    subtitleRepository: com.watermelon.common.repository.SubtitleRepository? = null,
+    onSubtitleLoaded: (com.watermelon.common.model.ParsedSubtitle) -> Unit = {}
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -234,20 +236,32 @@ fun PhonePlayerScreen(
         onTunerSeekBarEnabledChange = onTunerSeekBarEnabledChange,
         tunerSeekBarEnabled = tunerSeekBarEnabled,
         tunerSeekStepSeconds = tunerSeekStepSeconds,
-        subtitleRepository = viewModel.subtitleRepository,
-        onSubtitleLoaded = { parsedSubtitle ->
-            // Activate the downloaded subtitle immediately
-            uiState.subtitleTrack = parsedSubtitle
-            // Reset sync state for the new subtitle
-            uiState.subtitleOffsetMs = 0L
-            uiState.autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
-        },
+        subtitleRepository = subtitleRepository,
+        onSubtitleLoaded = onSubtitleLoaded,
         haptic = haptic,
         scope = scope,
         context = context,
         audioManager = audioManager,
         maxVolume = maxVolume,
         onBack = onBack,
+        mediaItem = subtitleRepository?.let { repo ->
+            // Only pass mediaItem if we have a repository (meaning we can do online search)
+            // This prevents creating synthetic MediaItems
+            runCatching {
+                // Try to get the real media item - but for now we use what we have
+                // In MainActivity we'll wire the real media repository
+                com.watermelon.common.model.MediaItem(
+                    uri = uri,
+                    displayName = mediaTitle,
+                    fileSize = 0L,
+                    durationMs = durationMs,
+                    parentFolder = "",
+                    width = 0,
+                    height = 0,
+                    mimeType = "",
+                )
+            }.getOrNull()
+        },
     )
 
     TransientIndicatorsLayer(

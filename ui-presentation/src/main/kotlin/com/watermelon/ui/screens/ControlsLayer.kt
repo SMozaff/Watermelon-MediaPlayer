@@ -102,6 +102,7 @@ fun ControlsLayer(
     audioManager: AudioManager,
     maxVolume: Int,
     onBack: () -> Unit,
+    mediaItem: com.watermelon.common.model.MediaItem? = null,
 ) {
     if (!ui.controlsVisible) return
 
@@ -447,7 +448,7 @@ private fun PlayerTransportControls(
     }
 
     // Online subtitles sheet
-    if (state.showOnlineSubtitlesSheet) {
+    if (state.showOnlineSubtitlesSheet && mediaItem != null && subtitleRepository != null) {
         OnlineSubtitlesSheet(
             uiState = state.onlineSubtitlesUiState,
             onSearch = {
@@ -455,12 +456,7 @@ private fun PlayerTransportControls(
                     state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Searching
                     try {
                         val result = subtitleRepository.searchOnlineSubtitles(
-                            mediaItem = com.watermelon.common.model.MediaItem(
-                                uri = uri,
-                                displayName = mediaTitle,
-                                fileSize = 0L,
-                                durationMs = durationMs,
-                            ),
+                            mediaItem = mediaItem,
                             preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
                         )
                         state.onlineSubtitlesUiState = when (result) {
@@ -491,12 +487,7 @@ private fun PlayerTransportControls(
                     state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
                     try {
                         val downloaded = subtitleRepository.downloadSubtitle(
-                            mediaItem = com.watermelon.common.model.MediaItem(
-                                uri = uri,
-                                displayName = mediaTitle,
-                                fileSize = 0L,
-                                durationMs = durationMs,
-                            ),
+                            mediaItem = mediaItem,
                             track = track
                         )
                         // Activate the downloaded subtitle immediately
