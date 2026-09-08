@@ -133,7 +133,7 @@ class SubtitleRepositoryImpl(
             throw RuntimeException("Subtitle file too large: $contentLength bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
         }
 
-        val bytes = response.body<ByteArray>()
+        val bytes: ByteArray = response.body()
         if (bytes.size > MAX_SUBTITLE_SIZE_BYTES) {
             throw RuntimeException("Subtitle file too large: ${bytes.size} bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
         }
