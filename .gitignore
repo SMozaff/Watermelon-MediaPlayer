@@ -2,17 +2,20 @@
 # Gradle
 .gradle/
 build/
-!gradle/libs.versions.toml
+target/
 
-# Kotlin
-*.class
-*.kotlin_metadata
-*.kotlin_built
-*.ktm
+# Local configuration file (sdk path, etc)
+local.properties
 
 # IDE
 .idea/
 .vscode/
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.aar
 
 # Logs
 *.log
@@ -22,41 +25,7 @@ build/
 .env.local
 *.env.*
 
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Dependencies
+node_modules/
+**/libs/
 ```
