@@ -4,8 +4,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,6 +14,7 @@ import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.common.model.SleepTimerMode
 import com.watermelon.ui.player.rememberVhsEffectController
+import com.watermelon.ui.screens.PLAYER_GESTURE_SURFACE_TAG
 import com.watermelon.ui.screens.PhonePlayerScreen
 import com.watermelon.ui.viewmodel.PlayerViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +86,9 @@ class PlayerUiStatePreservationTest {
     }
 
     private fun openControls() {
-        composeRule.onRoot().performTouchInput { click(center) }
+        composeRule
+            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+            .performTouchInput { click(center) }
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("Play").assertIsDisplayed()
     }

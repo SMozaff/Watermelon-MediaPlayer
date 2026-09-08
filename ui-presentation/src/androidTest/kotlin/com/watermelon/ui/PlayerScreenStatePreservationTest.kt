@@ -8,8 +8,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -18,6 +18,7 @@ import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.common.model.SleepTimerMode
 import com.watermelon.ui.player.rememberVhsEffectController
+import com.watermelon.ui.screens.PLAYER_GESTURE_SURFACE_TAG
 import com.watermelon.ui.screens.PhonePlayerScreen
 import com.watermelon.ui.viewmodel.PlayerViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -113,7 +114,9 @@ class PlayerScreenStatePreservationTest {
     }
 
     private fun openControls() {
-        composeRule.onRoot().performTouchInput { click(center) }
+        composeRule
+            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+            .performTouchInput { click(center) }
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("Play").assertIsDisplayed()
     }
@@ -257,13 +260,17 @@ class PlayerScreenStatePreservationTest {
         // Simulate a held reverse gesture on the left half of the screen for long enough to
         // cross the 500ms long-press threshold and accumulate several loop iterations at the
         // fastest step interval used by the hold loop (40ms floor).
-        composeRule.onRoot().performTouchInput {
-            down(center.copy(x = center.x / 2))
-        }
+        composeRule
+            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+            .performTouchInput {
+                down(center.copy(x = center.x / 2))
+            }
         // Real elapsed time, not just waitForIdle — the hold loop's own delay() calls need
         // wall-clock time to progress since they aren't driven by the compose test clock.
         Thread.sleep(900)
-        composeRule.onRoot().performTouchInput { up() }
+        composeRule
+            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+            .performTouchInput { up() }
         composeRule.waitForIdle()
 
         val calls = controller.seekCalls.toList()
