@@ -77,7 +77,12 @@ class SubtitleCacheStore(
      */
     fun list(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
         val prefix = mediaKey(mediaItem.uri)
-        val files = cacheDir.listFiles { f -> f.name.startsWith(prefix) } ?: return emptyList()
+        val files = cacheDir.listFiles { f -> 
+            f.isFile && 
+            f.name.startsWith(prefix) && 
+            f.name.endsWith(".srt") && 
+            !f.name.endsWith(".part")
+        } ?: return emptyList()
 
         return files.mapNotNull { file ->
             // Parse filename: <mediaSha>.<language>.<provider>.<remoteId>.srt
@@ -136,6 +141,7 @@ class SubtitleCacheStore(
      * @param track The subtitle track metadata
      * @param providerId The provider that supplied this subtitle
      * @param bytes The raw subtitle file bytes (must be SRT format)
+     * @return The exact cached File after successful write
      * @throws IllegalArgumentException if bytes exceed maximum size
      * @throws IllegalStateException if write fails
      */
@@ -144,7 +150,7 @@ class SubtitleCacheStore(
         track: SubtitleTrack,
         providerId: String,
         bytes: ByteArray
-    ) {
+    ): File {
         require(bytes.size <= MAX_SUBTITLE_SIZE_BYTES) {
             "Subtitle file too large: ${bytes.size} bytes (max: $MAX_SUBTITLE_SIZE_BYTES)"
         }
@@ -161,6 +167,8 @@ class SubtitleCacheStore(
             if (!tempFile.renameTo(targetFile)) {
                 throw IllegalStateException("Failed to rename temporary file to $targetFile")
             }
+            
+            return targetFile
         } catch (e: Exception) {
             // Clean up temporary file on failure
             tempFile.delete()

@@ -33,10 +33,12 @@ class SubtitleProviderRegistry(
                 emptyList() // Silently skip unavailable providers
             }
         }.sortedWith(
-            compareBy(
+            compareBy<SubtitleTrack>(
                 { track -> providers.indexOfFirst { it.id == track.providerId }.takeIf { i -> i >= 0 } ?: Int.MAX_VALUE },
-                { -track.rating },
-                { if (track.hashMatched) 0 else 1 }
+                { track -> if (track.hashMatched) 0 else 1 },
+                { track -> -track.rating },
+                { track -> -track.downloadCount },
+                { track -> track.label },
             )
         )
     }

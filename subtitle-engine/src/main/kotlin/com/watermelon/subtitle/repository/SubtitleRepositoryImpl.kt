@@ -14,14 +14,17 @@ import com.watermelon.common.util.FileLogger
 import com.watermelon.subtitle.cache.SubtitleCacheStore
 import com.watermelon.subtitle.hash.OpenSubtitlesHasher
 import com.watermelon.subtitle.parser.SrtParser
-import com.watermelon.subtitle.provider.SubtitleProvider
+import com.watermelon.subtitle.provider.AuthenticationRequiredException
+import com.watermelon.subtitle.provider.PermissionDeniedException
+import com.watermelon.subtitle.provider.ProviderUnavailableException
+import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import com.watermelon.subtitle.provider.registry.SubtitleProviderRegistry
+import com.watermelon.subtitle.source.LocalSidecarSourceImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.utils.io.jvm.javaio.copyTo
+import io.ktor.client.statement.bodyAsBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -101,6 +104,18 @@ class SubtitleRepositoryImpl(
             } else {
                 OnlineSubtitleSearchResult.Success(tracks)
             }
+        } catch (e: AuthenticationRequiredException) {
+            FileLogger.e("Subtitle", "Authentication required: ${e.message}")
+            OnlineSubtitleSearchResult.AuthenticationRequired
+        } catch (e: PermissionDeniedException) {
+            FileLogger.e("Subtitle", "Permission denied: ${e.message}")
+            OnlineSubtitleSearchResult.PermissionDenied
+        } catch (e: QuotaExceededException) {
+            FileLogger.e("Subtitle", "Quota exceeded: ${e.message}")
+            OnlineSubtitleSearchResult.QuotaExceeded
+        } catch (e: ProviderUnavailableException) {
+            FileLogger.e("Subtitle", "Provider unavailable: ${e.message}")
+            OnlineSubtitleSearchResult.Failure(e.message ?: "Provider unavailable")
         } catch (e: Exception) {
             FileLogger.e("Subtitle", "Online search failed: ${e.message}")
             OnlineSubtitleSearchResult.Failure(e.message ?: "Unknown error")
@@ -127,21 +142,29 @@ class SubtitleRepositoryImpl(
         // Validate download URL before fetching
         validateDownloadUrl(downloadLink.url)
 
-        // Download the subtitle file
+        // Download the subtitle file with size check
         val bytes = try {
-            downloadClient.get(downloadLink.url).bodyAsChannel().toByteArray()
+            val response = downloadClient.get(downloadLink.url)
+            
+            // Check Content-Length if available
+            val contentLength = response.headers["Content-Length"]?.toLongOrNull()
+            if (contentLength != null && contentLength > MAX_SUBTITLE_SIZE_BYTES) {
+                throw RuntimeException("Subtitle file too large: $contentLength bytes")
+            }
+            
+            response.bodyAsBytes()
         } catch (e: Exception) {
             throw RuntimeException("Download failed: ${e.message}", e)
         }
 
-        // Enforce size limit
-        val maxSize = 5 * 1024 * 1024 // 5 MiB
+        // Enforce size limit after reading
+        val maxSize = MAX_SUBTITLE_SIZE_BYTES
         require(bytes.size <= maxSize) {
             "Subtitle file too large: ${bytes.size} bytes (max: $maxSize)"
         }
 
-        // Write to cache atomically
-        cacheStore.write(mediaItem, track, providerId, bytes)
+        // Write to cache atomically and get the exact file
+        val cachedFile = cacheStore.write(mediaItem, track, providerId, bytes)
 
         // Parse the downloaded subtitle
         val content = String(bytes, Charsets.UTF_8)
@@ -149,12 +172,13 @@ class SubtitleRepositoryImpl(
             ?: throw RuntimeException("Failed to parse downloaded subtitle as SRT")
 
         DownloadedSubtitle(
-            localPath = cacheStore.first(mediaItem, listOf(track.language))?.absolutePath
-                ?: File(context.cacheDir, "subtitles").listFiles()
-                    ?.firstOrNull { it.name.endsWith(".srt") }?.absolutePath
-                ?: throw RuntimeException("Cache write succeeded but file not found"),
+            localPath = cachedFile.absolutePath,
             subtitle = parsed
         )
+    }
+
+    companion object {
+        private const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
     }
 
     // ── S1 extension: parsed render-ready subtitle (offline only) ───────────────
@@ -210,7 +234,7 @@ class SubtitleRepositoryImpl(
             "Download URL must use HTTPS: $url"
         }
         val host = uri.host.lowercase()
-        require(host.endsWith("opensubtitles.com") || host.endsWith("opensubtitles.org")) {
+        require(host == "opensubtitles.com" || host.endsWith(".opensubtitles.com")) {
             "Download URL host not allowed: $host"
         }
     }
@@ -234,11 +258,4 @@ class SubtitleRepositoryImpl(
             return OpenSubtitlesHasher.hash(pfd.fileDescriptor, mediaItem.fileSize)
         }
     }
-}
-
-// Helper extension to convert Channel to ByteArray
-private suspend fun io.ktor.utils.io.ByteChannel.toByteArray(): ByteArray {
-    val buffer = java.io.ByteArrayOutputStream()
-    this.copyTo(buffer)
-    return buffer.toByteArray()
 }
