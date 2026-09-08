@@ -104,9 +104,11 @@ fun ControlsLayer(
     onBack: () -> Unit,
     mediaItem: com.watermelon.common.model.MediaItem? = null,
 ) {
+    val actualState = state
     val actualMediaItem = mediaItem
     val actualSubtitleRepository = subtitleRepository
     val actualScope = scope
+    val actualOnSubtitleLoaded = onSubtitleLoaded
     
     if (!ui.controlsVisible) return
 
@@ -466,7 +468,7 @@ private fun PlayerTransportControls(
                             mediaItem = actualMediaItem,
                             preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
                         )
-                        state.onlineSubtitlesUiState = when (result) {
+                        actualState.onlineSubtitlesUiState = when (result) {
                             is com.watermelon.common.repository.OnlineSubtitleSearchResult.Success ->
                                 OnlineSubtitlesUiState.Results(result.tracks)
                             com.watermelon.common.repository.OnlineSubtitleSearchResult.NoResults ->
@@ -485,30 +487,30 @@ private fun PlayerTransportControls(
                                 OnlineSubtitlesUiState.Error(result.message)
                         }
                     } catch (e: Exception) {
-                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
                     }
                 }
             },
             onDownload = { track ->
                 actualScope.launch {
-                    state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
+                    actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
                     try {
                         val downloaded = actualSubtitleRepository.downloadSubtitle(
                             mediaItem = actualMediaItem,
                             track = track
                         )
                         // Activate the downloaded subtitle immediately
-                        onSubtitleLoaded?.invoke(downloaded.subtitle)
-                        state.showOnlineSubtitlesSheet = false
-                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+                        actualOnSubtitleLoaded?.invoke(downloaded.subtitle)
+                        actualState.showOnlineSubtitlesSheet = false
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
                     } catch (e: Exception) {
-                        state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
                     }
                 }
             },
             onDismiss = {
-                state.showOnlineSubtitlesSheet = false
-                state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+                actualState.showOnlineSubtitlesSheet = false
+                actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
             },
         )
     }

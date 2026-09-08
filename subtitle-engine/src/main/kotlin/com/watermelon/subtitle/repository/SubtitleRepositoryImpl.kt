@@ -47,14 +47,10 @@ class SubtitleRepositoryImpl(
         mediaItem: MediaItem,
         preferredLanguages: List<String>
     ): List<SubtitleTrack> = withContext(Dispatchers.IO) {
-        val cached = cachedTracks(mediaItem, preferredLanguages)
-        if (cached.isNotEmpty()) {
-            return@withContext cached
-        }
-        emptyList()
+        cachedTracks(mediaItem, preferredLanguages)
     }
 
-    private fun cachedTracks(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
+    private suspend fun cachedTracks(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
         val tracks = cacheStore.list(mediaItem, preferredLanguages)
         if (tracks.isNotEmpty()) {
             return tracks
