@@ -43,6 +43,10 @@ class SubtitleRepositoryImpl(
     }
     private val cacheStore: SubtitleCacheStore = SubtitleCacheStore(cacheDir)
 
+    companion object {
+        private const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
+    }
+
     override suspend fun findSubtitles(
         mediaItem: MediaItem,
         preferredLanguages: List<String>
@@ -71,11 +75,11 @@ class SubtitleRepositoryImpl(
     ): OnlineSubtitleSearchResult = withContext(Dispatchers.IO) {
         val configuredProviders = providerRegistry.configuredProviders()
         if (configuredProviders.isEmpty()) {
-            return OnlineSubtitleSearchResult.ProviderNotConfigured
+            return@withContext OnlineSubtitleSearchResult.ProviderNotConfigured
         }
 
         if (!isNetworkAvailable()) {
-            return OnlineSubtitleSearchResult.Offline
+            return@withContext OnlineSubtitleSearchResult.Offline
         }
 
         val hash = runCatching { hashFor(mediaItem) }.getOrNull()
@@ -91,23 +95,23 @@ class SubtitleRepositoryImpl(
         try {
             val tracks = providerRegistry.search(query)
             if (tracks.isEmpty()) {
-                return OnlineSubtitleSearchResult.NoResults
+                return@withContext OnlineSubtitleSearchResult.NoResults
             }
-            return OnlineSubtitleSearchResult.Success(tracks)
+            return@withContext OnlineSubtitleSearchResult.Success(tracks)
         } catch (e: AuthenticationRequiredException) {
-            return OnlineSubtitleSearchResult.AuthenticationRequired
+            return@withContext OnlineSubtitleSearchResult.AuthenticationRequired
         } catch (e: PermissionDeniedException) {
-            return OnlineSubtitleSearchResult.PermissionDenied
+            return@withContext OnlineSubtitleSearchResult.PermissionDenied
         } catch (e: QuotaExceededException) {
-            return OnlineSubtitleSearchResult.QuotaExceeded
+            return@withContext OnlineSubtitleSearchResult.QuotaExceeded
         } catch (e: ProviderUnavailableException) {
-            return OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
         } catch (e: ProviderResponseException) {
-            return OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
         } catch (e: ProviderException) {
-            return OnlineSubtitleSearchResult.Failure(e.message)
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message)
         } catch (e: Exception) {
-            return OnlineSubtitleSearchResult.Failure(e.message ?: "Unknown error")
+            return@withContext OnlineSubtitleSearchResult.Failure(e.message ?: "Unknown error")
         }
     }
 
@@ -164,19 +168,18 @@ class SubtitleRepositoryImpl(
     }
 
     private fun isAllowedDownloadUrl(url: String): Boolean {
-        val parsed = runCatching { java.net.URI(url) }.getOrNull() ?: return false
-        val host = parsed.host?.lowercase() ?: return false
-        return parsed.scheme.equals("https", ignoreCase = true) &&
-            ("opensubtitles.com" == host || host.endsWith(".opensubtitles.com"))
+        val parsed = runCatching { java.net.URI(url) }.getOrNull()
+        val host = parsed?.host?.lowercase()
+        return parsed?.scheme?.equals("https", ignoreCase = true) == true &&
+            (host == "opensubtitles.com" || host?.endsWith(".opensubtitles.com") == true)
     }
 
     @Suppress("MissingPermission")
     private fun isNetworkAvailable(): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-            ?: return false
-        val capabilities = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        val capabilities = cm?.getNetworkCapabilities(cm.activeNetwork)
+        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
     }
 
     private fun hashFor(mediaItem: MediaItem): String {
@@ -214,7 +217,7 @@ class SubtitleRepositoryImpl(
         }
 
     private fun parseCachedFile(file: File): ParsedSubtitle? {
-        val content = runCatching { file.readText(Charsets.UTF_8) }.getOrNull() ?: return null
+        val content = runCatching { file.readText(Charsets.UTF_8) }.getOrNull() ?: return@parseCachedFile null
         val lang = file.nameWithoutExtension.substringAfterLast('.', "").ifEmpty { null }
         return when (file.extension.lowercase()) {
             "srt" -> runCatching { SrtParser.parse(content, lang) }.getOrNull()
@@ -224,5 +227,5 @@ class SubtitleRepositoryImpl(
 }
 
 object SubtitleRepositoryImpl {
-    private const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
+    const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB
 }
