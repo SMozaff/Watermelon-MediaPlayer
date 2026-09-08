@@ -6,48 +6,27 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.Presentation
-import androidx.media3.transformer.ExperimentalFrameExtractor
+import androidx.media3.inspector.frame.FrameExtractor
 import com.watermelon.common.util.FileLogger
 import kotlinx.coroutines.guava.await
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val TAG = "FilmstripExtractor"
 
 /**
  * Extracts a row of evenly-spaced decoded thumbnail frames for TrimScreen's filmstrip.
  *
- * CONFIRMED API/package for this project's pinned Media3 version (1.8.0, per
- * gradle/libs.versions.toml): [androidx.media3.transformer.ExperimentalFrameExtractor] --
- * NOT androidx.media3.effect (an incorrect first guess this session, corrected after
- * checking the real 1.6.0 GitHub source path), and NOT the newer
- * androidx.media3.inspector.frame.FrameExtractor (a Context7 query this session kept
- * surfacing only that class, which lives in the separate media3-inspector-frame module
- * that Media3's own 1.9.0/1.10.0/1.11.0 release notes confirm didn't exist until 1.9.0 and
- * only fully replaced ExperimentalFrameExtractor at 1.11.0 -- this project's pinned 1.8.0 is
- * before both changes, confirmed by 1.8.0's own release notes not mentioning either).
- * `ExperimentalFrameExtractor` was introduced in 1.6.0 still under
- * androidx.media3.transformer and stayed there through 1.8.0. Usage per the real source
- * (fetched directly this session, not just the announcement blog):
- * `ExperimentalFrameExtractor(context, configuration)`, `.setMediaItem(mediaItem, effects)`,
- * `.getFrame(positionMs).await()` -- positionMs is milliseconds, confirmed against the
- * method's own javadoc, not the us/ms-ambiguous blog snippet -- returning a Frame with a
- * `.bitmap` field, then `.release()`.
+ * Uses Media3 1.11.0's [FrameExtractor] API which replaced ExperimentalFrameExtractor.
+ * The new API requires all FrameExtractor operations (construction, getFrame, close)
+ * to be accessed from a single application thread. This implementation uses a dedicated
+ * single-thread dispatcher to ensure thread-safe access throughout the extraction session.
  *
  * Frames are decoded, not just metadata reads (unlike [VideoCompressor.detectShortSidePx]'s
  * MediaMetadataRetriever use) -- this is real GPU/CPU decode work per frame, done here
  * off-main-thread by the caller (TrimViewModel), one extractor instance reused across all
  * requested timestamps rather than one per frame.
- *
- * THREADING CAVEAT, flagged not resolved: Android's own official FrameExtractor docs
- * (developer.android.com/media/media3/inspector/extract-frames, checked via web search this
- * session) state "FrameExtractor instances must be accessed from a single application
- * thread" -- but their own example code calls it from inside `withContext(Dispatchers.IO)`,
- * which is a thread *pool*, not one fixed OS thread. TrimViewModel.loadTrimAids calls this
- * extractor's full sequence of getFrame().await() calls within one continuous
- * viewModelScope.launch(Dispatchers.IO) block without hopping dispatchers mid-flight, which
- * should keep it on one thread in practice for a single coroutine -- but this hasn't been
- * verified against Kotlin coroutines' actual thread-continuity guarantees for IO dispatcher
- * work, only reasoned through. If filmstrip extraction crashes or behaves oddly on a real
- * device, this constraint is the first thing to check.
  *
  * NOT run on-device -- signature/shape confirmed via docs, not verified against a real
  * device or emulator this session.
@@ -66,6 +45,9 @@ class FilmstripExtractor(private val context: Context) {
      * extract (e.g. an unreadable timestamp near a corrupt GOP) -- callers should render a
      * placeholder for null entries rather than treating any single failure as fatal to the
      * whole strip.
+     *
+     * All FrameExtractor operations are executed on a dedicated single-thread dispatcher
+     * to satisfy the API requirement that instances must be accessed from a single thread.
      */
     suspend fun extractFilmstrip(
         uri: Uri,
@@ -76,34 +58,42 @@ class FilmstripExtractor(private val context: Context) {
         if (durationMs <= 0 || frameCount <= 0) return emptyList()
 
         val mediaItem = MediaItem.fromUri(uri)
-        val configuration = ExperimentalFrameExtractor.Configuration.Builder().build()
-        val extractor = ExperimentalFrameExtractor(context, configuration)
-
+        
+        // Use a dedicated single-thread dispatcher to ensure all FrameExtractor operations
+        // happen on the same OS thread, as required by the FrameExtractor API.
+        val singleThreadDispatcher = Dispatchers.IO.limitedParallelism(1)
+        
         return try {
-            extractor.setMediaItem(mediaItem, listOf(Presentation.createForShortSide(targetShortSidePx)))
+            withContext(singleThreadDispatcher) {
+                val extractor = FrameExtractor.Builder(context, mediaItem)
+                    .setEffects(listOf(Presentation.createForShortSide(targetShortSidePx)))
+                    .build()
 
-            // Evenly spaced across the full duration, including both ends, so the strip's
-            // first/last thumbnails represent the actual start/end of the source -- matters
-            // for trim specifically since the handles range over [0, durationMs].
-            val stepMs = if (frameCount == 1) 0L else durationMs / (frameCount - 1)
-            (0 until frameCount).map { i ->
-                val timestampMs = (i * stepMs).coerceIn(0L, durationMs)
                 try {
-                    // getFrame takes positionMs, NOT microseconds -- confirmed directly from
-                    // ExperimentalFrameExtractor.java's real source (getFrame(long positionMs)
-                    // javadoc), not inferred from the announcement blog's ambiguous variable
-                    // naming ("timestamps"), which could have been misread as microseconds.
-                    extractor.getFrame(timestampMs).await().bitmap
-                } catch (e: Exception) {
-                    FileLogger.e(TAG, "frame extraction failed at ${timestampMs}ms for $uri", e)
-                    null
+                    // Evenly spaced across the full duration, including both ends, so the strip's
+                    // first/last thumbnails represent the actual start/end of the source -- matters
+                    // for trim specifically since the handles range over [0, durationMs].
+                    val stepMs = if (frameCount == 1) 0L else durationMs / (frameCount - 1)
+                    (0 until frameCount).map { i ->
+                        val timestampMs = (i * stepMs).coerceIn(0L, durationMs)
+                        try {
+                            // getFrame takes positionMs, NOT microseconds -- confirmed directly from
+                            // FrameExtractor.java's real source (getFrame(long positionMs)
+                            // javadoc), not inferred from the announcement blog's ambiguous variable
+                            // naming ("timestamps"), which could have been misread as microseconds.
+                            extractor.getFrame(timestampMs).await().bitmap
+                        } catch (e: Exception) {
+                            FileLogger.e(TAG, "frame extraction failed at ${timestampMs}ms for $uri", e)
+                            null
+                        }
+                    }
+                } finally {
+                    extractor.close()
                 }
             }
         } catch (e: Exception) {
             FileLogger.e(TAG, "extractFilmstrip failed for $uri", e)
             emptyList()
-        } finally {
-            extractor.release()
         }
     }
 }

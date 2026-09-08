@@ -93,7 +93,7 @@ class Phase2Extractor(
                            (mediaId,fileSize,displayName,parentFolder,
                             durationMs,width,height,mimeType,firstSeenAt,dateAdded,dateModified)
                            VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-                        arrayOf(uriString, size, displayName, bucket,
+                        arrayOf<Any?>(uriString, size, displayName, bucket,
                                 duration, width, height, mime, now, dateAdded, dateModified)
                     )
 
@@ -103,7 +103,7 @@ class Phase2Extractor(
                            fileSize=?,displayName=?,parentFolder=?,
                            durationMs=?,width=?,height=?,mimeType=?,dateAdded=?,dateModified=?
                            WHERE mediaId=?""",
-                        arrayOf(size, displayName, bucket,
+                        arrayOf<Any?>(size, displayName, bucket,
                                 duration, width, height, mime, dateAdded, dateModified, uriString)
                     )
                 }
