@@ -11,6 +11,8 @@ import com.watermelon.subtitle.provider.SubtitleDownloadLink
 import com.watermelon.subtitle.provider.SubtitleProvider
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import io.ktor.client.call.body
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -18,10 +20,11 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
+private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
 
 /**
  * Modern OpenSubtitles.com REST API client (api.opensubtitles.com).
@@ -35,8 +38,17 @@ import kotlinx.serialization.json.Json
 class OpenSubtitlesProvider(
     private val apiKey: String,
     private val userAgent: String,
-    private val httpClient: io.ktor.client.HttpClient,
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val httpClient: io.ktor.client.HttpClient = HttpClient(Android) {
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                }
+            )
+        }
+        expectSuccess = false
+    }
 ) : SubtitleProvider {
 
     override val id: String = "opensubtitles.com"
@@ -44,15 +56,30 @@ class OpenSubtitlesProvider(
     override val isConfigured: Boolean
         get() = apiKey.isNotBlank()
 
+    private fun throwForProviderStatus(status: HttpStatusCode) {
+        when {
+            status.value in 200..299 -> Unit
+            status == HttpStatusCode.Unauthorized ->
+                throw AuthenticationRequiredException()
+            status == HttpStatusCode.Forbidden ->
+                throw PermissionDeniedException()
+            status == HttpStatusCode.TooManyRequests ->
+                throw QuotaExceededException()
+            status.value in 500..599 ->
+                throw ProviderUnavailableException("OpenSubtitles HTTP ${status.value}")
+            else ->
+                throw ProviderResponseException("OpenSubtitles HTTP ${status.value}")
+        }
+    }
+
     override suspend fun search(query: SubtitleProviderQuery): List<SubtitleTrack> {
         if (!isConfigured) throw ProviderUnavailableException("OpenSubtitles API key not configured")
 
         return try {
-            val response = httpClient.get("${BASE_URL}/subtitles") {
+            val response = httpClient.get("$BASE_URL/subtitles") {
                 header("Api-Key", apiKey)
                 header("User-Agent", userAgent)
                 header("Accept", "application/json")
-                
                 query.movieHash?.let { parameter("moviehash", it) }
                 query.fileSize.takeIf { it > 0 }?.let { parameter("moviebytesize", it.toString()) }
                 if (query.preferredLanguages.isNotEmpty()) {
@@ -60,26 +87,20 @@ class OpenSubtitlesProvider(
                 }
             }
 
-            when (response.status) {
-                HttpStatusCode.OK -> {
-                    val subtitlesResponse: SubtitlesResponse = response.body()
-                    subtitlesResponse.data.flatMap { item ->
-                        item.attributes.toSubtitleTracks(id).filter { track ->
-                            query.preferredLanguages.isEmpty() || track.language in query.preferredLanguages
-                        }.sortedWith(
-                            compareBy(
-                                { if (query.preferredLanguages.isEmpty()) 0 else query.preferredLanguages.indexOf(it.language).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE },
-                                { if (it.hashMatched) 0 else 1 },
-                                { -it.rating },
-                                { -it.downloadCount }
-                            )
-                        )
-                    }
-                }
-                HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden -> throw AuthenticationRequiredException("OpenSubtitles authentication failed")
-                HttpStatusCode.TooManyRequests -> throw QuotaExceededException("OpenSubtitles API quota exceeded")
-                HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout -> throw ProviderUnavailableException("OpenSubtitles service unavailable")
-                else -> throw ProviderResponseException("OpenSubtitles search failed: ${response.status}")
+            throwForProviderStatus(response.status)
+
+            val subtitlesResponse: SubtitlesResponse = response.body()
+            subtitlesResponse.data.flatMap { item ->
+                item.attributes.toSubtitleTracks(id).filter { track ->
+                    query.preferredLanguages.isEmpty() || track.language in query.preferredLanguages
+                }.sortedWith(
+                    compareBy(
+                        { if (query.preferredLanguages.isEmpty()) 0 else query.preferredLanguages.indexOf(it.language).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE },
+                        { if (it.hashMatched) 0 else 1 },
+                        { -it.rating },
+                        { -it.downloadCount }
+                    )
+                )
             }
         } catch (e: ProviderException) {
             throw e
@@ -97,33 +118,32 @@ class OpenSubtitlesProvider(
             ?: throw IllegalArgumentException("Track missing remoteFileId")
 
         return try {
-            val response = httpClient.post("${BASE_URL}/download") {
+            val response = httpClient.post("$BASE_URL/download") {
                 header("Api-Key", apiKey)
                 header("User-Agent", userAgent)
                 header("Accept", "application/json")
                 contentType(ContentType.Application.Json)
-                setBody(DownloadRequest(fileId = remoteFileId, subFormat = "srt"))
-            }
-
-            when (response.status) {
-                HttpStatusCode.OK -> {
-                    val downloadResponse: DownloadResponse = response.body()
-                    val downloadUrl = downloadResponse.link
-                        ?: throw ProviderResponseException("Download response missing link")
-
-                    // Validate the download URL
-                    validateDownloadUrl(downloadUrl)
-
-                    SubtitleDownloadLink(
-                        url = downloadUrl,
-                        fileName = track.remoteFileName ?: "subtitle_${track.language}.srt"
+                setBody(
+                    DownloadRequest(
+                        fileId = remoteFileId,
+                        subFormat = "srt",
                     )
-                }
-                HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden -> throw AuthenticationRequiredException("OpenSubtitles authentication failed")
-                HttpStatusCode.TooManyRequests -> throw QuotaExceededException("OpenSubtitles API quota exceeded")
-                HttpStatusCode.ServiceUnavailable, HttpStatusCode.GatewayTimeout -> throw ProviderUnavailableException("OpenSubtitles service unavailable")
-                else -> throw ProviderResponseException("OpenSubtitles download resolution failed: ${response.status}")
+                )
             }
+
+            throwForProviderStatus(response.status)
+
+            val downloadResponse: DownloadResponse = response.body()
+            val downloadUrl = downloadResponse.link
+                ?: throw ProviderResponseException("Download response missing link")
+
+            // Validate the download URL
+            validateDownloadUrl(downloadUrl)
+
+            SubtitleDownloadLink(
+                url = downloadUrl,
+                fileName = track.remoteFileName ?: "subtitle_${track.language}.srt"
+            )
         } catch (e: ProviderException) {
             throw e
         } catch (e: Exception) {
@@ -166,25 +186,32 @@ private data class SubtitleAttributes(
     val language: String,
     val release: String? = null,
     val ratings: Float? = null,
+
     @SerialName("download_count")
     val downloadCount: Int? = null,
+
     @SerialName("moviehash_match")
     val moviehashMatch: Boolean? = null,
-    val files: List<SubtitleFile>? = null
+
+    val files: List<SubtitleFile> = emptyList()
 )
 
 @Serializable
 private data class SubtitleFile(
     @SerialName("file_id")
     val fileId: Long,
+
     @SerialName("file_name")
     val fileName: String? = null
 )
 
 @Serializable
 private data class DownloadRequest(
-    @SerialName("file_id") val fileId: Long,
-    @SerialName("sub_format") val subFormat: String,
+    @SerialName("file_id")
+    val fileId: Long,
+
+    @SerialName("sub_format")
+    val subFormat: String,
 )
 
 @Serializable
@@ -193,9 +220,7 @@ private data class DownloadResponse(
 )
 
 private fun SubtitleAttributes.toSubtitleTracks(providerId: String): List<SubtitleTrack> {
-    val filesList = files ?: return emptyList()
-    
-    return filesList.mapNotNull { file ->
+    return files.mapNotNull { file ->
         SubtitleTrack(
             language = language,
             label = release ?: file.fileName ?: "$language subtitle",
