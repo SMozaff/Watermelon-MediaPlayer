@@ -118,6 +118,7 @@ fun ControlsLayer(
                             state.showControlPanel = false
                             state.showQuickTools = false
                             state.showFileActions = false
+                            state.showOnlineSubtitlesSheet = false
                         } else {
                             state.lastInteraction = System.nanoTime(); ui.hideControls()
                         }
@@ -149,6 +150,7 @@ fun ControlsLayer(
                 state.showControlPanel = false
                 state.showQuickTools = false
                 state.showFileActions = false
+                state.showOnlineSubtitlesSheet = false
             } else {
                 onBack()
             }
@@ -190,6 +192,7 @@ fun ControlsLayer(
             state.showControlPanel = !state.showControlPanel
             state.showQuickTools = false
             state.showFileActions = false
+            state.showOnlineSubtitlesSheet = false
         }) {
             WatermelonGlyph(
                 WatermelonIcons.MoreVert,
@@ -476,7 +479,7 @@ private fun PlayerTransportControls(
                                 OnlineSubtitlesUiState.QuotaExceeded
                             is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
                                 OnlineSubtitlesUiState.Error(result.message)
-                        }
+                        } as OnlineSubtitlesUiState
                     } catch (e: Exception) {
                         state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
                     }
