@@ -104,6 +104,10 @@ fun ControlsLayer(
     onBack: () -> Unit,
     mediaItem: com.watermelon.common.model.MediaItem? = null,
 ) {
+    val actualMediaItem = mediaItem
+    val actualSubtitleRepository = subtitleRepository
+    val actualScope = scope
+    
     if (!ui.controlsVisible) return
 
     // Full-screen overlay scope: reproduces the original root Box so .align()
@@ -451,15 +455,15 @@ private fun PlayerTransportControls(
     }
 
     // Online subtitles sheet
-    if (state.showOnlineSubtitlesSheet && mediaItem != null && subtitleRepository != null) {
+    if (state.showOnlineSubtitlesSheet && actualMediaItem != null && actualSubtitleRepository != null) {
         OnlineSubtitlesSheet(
             uiState = state.onlineSubtitlesUiState,
             onSearch = {
-                scope.launch {
+                actualScope.launch {
                     state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Searching
                     try {
-                        val result = subtitleRepository.searchOnlineSubtitles(
-                            mediaItem = mediaItem,
+                        val result = actualSubtitleRepository.searchOnlineSubtitles(
+                            mediaItem = actualMediaItem,
                             preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
                         )
                         state.onlineSubtitlesUiState = when (result) {
@@ -479,18 +483,18 @@ private fun PlayerTransportControls(
                                 OnlineSubtitlesUiState.QuotaExceeded
                             is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
                                 OnlineSubtitlesUiState.Error(result.message)
-                        } as OnlineSubtitlesUiState
+                        }
                     } catch (e: Exception) {
                         state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
                     }
                 }
             },
             onDownload = { track ->
-                scope.launch {
+                actualScope.launch {
                     state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
                     try {
-                        val downloaded = subtitleRepository.downloadSubtitle(
-                            mediaItem = mediaItem,
+                        val downloaded = actualSubtitleRepository.downloadSubtitle(
+                            mediaItem = actualMediaItem,
                             track = track
                         )
                         // Activate the downloaded subtitle immediately
