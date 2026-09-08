@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.app"
-    compileSdk = 35
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.watermelon.mediaplayer"
         minSdk = 23
