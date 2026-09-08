@@ -117,21 +117,21 @@ fun ControlsLayer(
     Box(Modifier.fillMaxSize()) {
     Box(
         Modifier.fillMaxSize()
-            .pointerInput(state.isPlayerSheetOpen) {
+            .pointerInput(actualState.isPlayerSheetOpen) {
                 detectTapGestures(
                     onTap = {
-                        if (state.isPlayerSheetOpen) {
-                            state.showControlPanel = false
-                            state.showQuickTools = false
-                            state.showFileActions = false
-                            state.showOnlineSubtitlesSheet = false
+                        if (actualState.isPlayerSheetOpen) {
+                            actualState.showControlPanel = false
+                            actualState.showQuickTools = false
+                            actualState.showFileActions = false
+                            actualState.showOnlineSubtitlesSheet = false
                         } else {
-                            state.lastInteraction = System.nanoTime(); ui.hideControls()
+                            actualState.lastInteraction = System.nanoTime(); ui.hideControls()
                         }
                     },
                     onDoubleTap = {
                         viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                        state.lastInteraction = System.nanoTime()
+                        actualState.lastInteraction = System.nanoTime()
                     }
                 )
             }
@@ -152,11 +152,11 @@ fun ControlsLayer(
     ) {
         IconButton(onClick = {
             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-            if (state.isPlayerSheetOpen) {
-                state.showControlPanel = false
-                state.showQuickTools = false
-                state.showFileActions = false
-                state.showOnlineSubtitlesSheet = false
+            if (actualState.isPlayerSheetOpen) {
+                actualState.showControlPanel = false
+                actualState.showQuickTools = false
+                actualState.showFileActions = false
+                actualState.showOnlineSubtitlesSheet = false
             } else {
                 onBack()
             }
@@ -164,7 +164,7 @@ fun ControlsLayer(
             WatermelonGlyph(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
         }
         TextButton(
-            onClick = { state.showMediaInfo = true },
+            onClick = { actualState.showMediaInfo = true },
             modifier = Modifier.weight(1f),
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -195,15 +195,15 @@ fun ControlsLayer(
         }
         IconButton(onClick = {
             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-            state.showControlPanel = !state.showControlPanel
-            state.showQuickTools = false
-            state.showFileActions = false
-            state.showOnlineSubtitlesSheet = false
+            actualState.showControlPanel = !actualState.showControlPanel
+            actualState.showQuickTools = false
+            actualState.showFileActions = false
+            actualState.showOnlineSubtitlesSheet = false
         }) {
             WatermelonGlyph(
                 WatermelonIcons.MoreVert,
                 "Player actions",
-                tint = if (state.showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault
+                tint = if (actualState.showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault
             )
         }
     }
@@ -220,19 +220,19 @@ fun ControlsLayer(
             onPrevious = {
                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                 if (position > 3_000L) viewModel.onIntent(UserIntent.Seek(0L))
-                else PlaybackQueue.previousOf(uri)?.let { state.onSkipToTrack?.invoke(it) }
+                else PlaybackQueue.previousOf(uri)?.let { actualState.onSkipToTrack?.invoke(it) }
                     ?: viewModel.onIntent(UserIntent.Seek(0L))
-                state.lastInteraction = System.nanoTime(); ui.showControls()
+                actualState.lastInteraction = System.nanoTime(); ui.showControls()
             },
             onPlayPause = {
                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                 viewModel.onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume)
-                state.lastInteraction = System.nanoTime(); ui.showControls()
+                actualState.lastInteraction = System.nanoTime(); ui.showControls()
             },
             onNext = {
                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                PlaybackQueue.nextOf(uri)?.let { state.onSkipToTrack?.invoke(it) }
-                state.lastInteraction = System.nanoTime(); ui.showControls()
+                PlaybackQueue.nextOf(uri)?.let { actualState.onSkipToTrack?.invoke(it) }
+                actualState.lastInteraction = System.nanoTime(); ui.showControls()
             },
             modifier = Modifier.padding(bottom = WatermelonSpacing.md)
         )
@@ -243,20 +243,20 @@ fun ControlsLayer(
                 onSeek = { viewModel.onIntent(UserIntent.Seek(it)) },
                 secondsPerTick = tunerSeekStepSeconds,
                 onScrubChange = { scrubbing ->
-                    state.lastInteraction = System.nanoTime()
-                    state.isScrubbingSeekBar = scrubbing
+                    actualState.lastInteraction = System.nanoTime()
+                    actualState.isScrubbingSeekBar = scrubbing
                     ui.showControls()
                 },
-                onPreviewPositionChanged = { state.tunerPreviewPosition = it },
+                onPreviewPositionChanged = { actualState.tunerPreviewPosition = it },
                 onDetent = {
                     haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                 },
                 modifier = Modifier
             )
             Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp)) {
-                Text(formatTime(state.tunerPreviewPosition), color = PlayerColors.current.textPrimary)
+                Text(formatTime(actualState.tunerPreviewPosition), color = PlayerColors.current.textPrimary)
                 Spacer(Modifier.weight(1f))
-                Text("-${formatTime((durationMs - state.tunerPreviewPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
+                Text("-${formatTime((durationMs - actualState.tunerPreviewPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
             }
         } else {
             Row(Modifier.fillMaxWidth()) {
@@ -269,8 +269,8 @@ fun ControlsLayer(
                 durationMs = durationMs,
                 onSeek = { viewModel.onIntent(UserIntent.Seek(it)) },
                 onScrubChange = { scrubbing ->
-                    state.lastInteraction = System.nanoTime()
-                    state.isScrubbingSeekBar = scrubbing
+                    actualState.lastInteraction = System.nanoTime()
+                    actualState.isScrubbingSeekBar = scrubbing
                     ui.showControls()
                 },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
@@ -278,126 +278,183 @@ fun ControlsLayer(
         }
     }
 
-    if (state.showControlPanel) {
+    if (actualState.showControlPanel) {
         PlayerActionsSheet(
             onQuickTools = {
-                state.showControlPanel = false
-                state.showQuickTools = true
+                actualState.showControlPanel = false
+                actualState.showQuickTools = true
             },
             onFileActions = {
-                state.showControlPanel = false
-                state.showFileActions = true
+                actualState.showControlPanel = false
+                actualState.showFileActions = true
             },
-            onDismiss = { state.showControlPanel = false },
+            onDismiss = { actualState.showControlPanel = false },
         )
     }
-    if (state.showQuickTools) {
+    if (actualState.showQuickTools) {
         QuickToolsSheet(
-            currentSpeed = state.playbackSpeed,
-            isMuted = state.currentVolume == 0,
-            currentRatio = state.currentRatio,
-            currentOrientation = state.currentOrientation,
+            currentSpeed = actualState.playbackSpeed,
+            isMuted = actualState.currentVolume == 0,
+            currentRatio = actualState.currentRatio,
+            currentOrientation = actualState.currentOrientation,
             tunerSeekBarEnabled = tunerSeekBarEnabled,
             tunerSeekStepSeconds = tunerSeekStepSeconds,
             repeatMode = repeatMode,
             isShuffled = isShuffled,
-            isPiP = state.isPiPEnabled,
+            isPiP = actualState.isPiPEnabled,
             canUsePip = onPipClick != null,
-            isBackground = state.isBackgroundEnabled,
+            isBackground = actualState.isBackgroundEnabled,
             hasSubtitleTrack = subtitleTrack != null,
             subtitleOffsetMs = subtitleOffsetMs,
             autoSyncEnabled = autoSyncEnabled,
             autoSyncStatus = autoSyncStatus,
             onFindOnlineSubtitles = {
-                state.showQuickTools = false
-                state.showOnlineSubtitlesSheet = true
+                actualState.showQuickTools = false
+                actualState.showOnlineSubtitlesSheet = true
             },
             onSubtitleNudge = onSubtitleNudge,
             onAutoSync = onAutoSync,
             onSpeedChange = { speed ->
-                state.playbackSpeed = speed
+                actualState.playbackSpeed = speed
                 viewModel.onIntent(UserIntent.SetSpeed(speed))
             },
             onMuteToggle = {
-                val muted = state.currentVolume == 0
+                val muted = actualState.currentVolume == 0
                 val volume = if (muted) (maxVolume / 2).coerceAtLeast(1) else 0
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
-                state.currentVolume = volume
-                state.volumeFraction = volume.toFloat() / maxVolume
+                actualState.currentVolume = volume
+                actualState.volumeFraction = volume.toFloat() / maxVolume
             },
-            onRatioChange = { state.currentRatio = it },
-            onOrientationChange = { state.currentOrientation = it },
+            onRatioChange = { actualState.currentRatio = it },
+            onOrientationChange = { actualState.currentOrientation = it },
             onTunerSeekBarEnabledChange = { enabled ->
                 onTunerSeekBarEnabledChange?.invoke(enabled)
-                state.showQuickTools = false
+                actualState.showQuickTools = false
             },
             onRepeat = { viewModel.cycleRepeat() },
             onShuffle = { viewModel.toggleShuffle() },
             onScreenshot = {
-                scope.launch {
+                actualScope.launch {
                     val mode = when (screenshotMode) {
                         ScreenshotMode.BURST -> ScreenshotManager.Mode.BURST
                         ScreenshotMode.SINGLE -> ScreenshotManager.Mode.SINGLE
                     }
                     val result = ScreenshotManager.takeScreenshot(context, uri, position, durationMs, mode)
-                    state.screenshotMessage = when (result) {
+                    actualState.screenshotMessage = when (result) {
                         is ScreenshotResult.Success -> "Saved ${result.uris.size} screenshot(s)"
                         is ScreenshotResult.Error -> "Screenshot failed"
                     }
                 }
             },
             onSleepTimer = {
-                state.showQuickTools = false
-                state.showSleepTimerDialog = true
+                actualState.showQuickTools = false
+                actualState.showSleepTimerDialog = true
             },
             onPip = {
                 if (onPipClick != null) {
-                    state.showQuickTools = false
-                    state.isPiPEnabled = true
-                    state.isBackgroundEnabled = false
+                    actualState.showQuickTools = false
+                    actualState.isPiPEnabled = true
+                    actualState.isBackgroundEnabled = false
                     ui.hideControls()
                     onPipClick.invoke()
                 }
             },
             onBackground = {
-                if (!state.isBackgroundEnabled) {
-                    state.isBackgroundEnabled = true
-                    state.isPiPEnabled = false
+                if (!actualState.isBackgroundEnabled) {
+                    actualState.isBackgroundEnabled = true
+                    actualState.isPiPEnabled = false
                     onBackgroundClick?.invoke(true)
                 } else {
-                    state.isBackgroundEnabled = false
+                    actualState.isBackgroundEnabled = false
                     onBackgroundClick?.invoke(false)
                 }
             },
-            onDismiss = { state.showQuickTools = false },
+            onDismiss = { actualState.showQuickTools = false },
         )
     }
-    if (state.showFileActions) {
+    if (actualState.showFileActions) {
         FileActionsSheet(
             isFavourite = isFavourite,
             onShare = {
-                state.showFileActions = false
+                actualState.showFileActions = false
                 onShare?.invoke()
             },
             onFavourite = { onFavourite?.invoke(!isFavourite) },
             onAddToPlaylist = {
-                state.showFileActions = false
+                actualState.showFileActions = false
                 onAddToPlaylist?.invoke()
             },
             onExtractAudio = onExtractAudio?.let { action ->
-                { state.showFileActions = false; action() }
+                { actualState.showFileActions = false; action() }
             },
             onTrimVideo = onTrimVideo?.let { action ->
-                { state.showFileActions = false; action() }
+                { actualState.showFileActions = false; action() }
             },
             onCompressVideo = onCompressVideo?.let { action ->
-                { state.showFileActions = false; action() }
+                { actualState.showFileActions = false; action() }
             },
             onDelete = {
-                state.showFileActions = false
+                actualState.showFileActions = false
                 onDelete?.invoke()
             },
-            onDismiss = { state.showFileActions = false },
+            onDismiss = { actualState.showFileActions = false },
+        )
+    }
+    if (actualState.showOnlineSubtitlesSheet && actualMediaItem != null && actualSubtitleRepository != null) {
+        OnlineSubtitlesSheet(
+            uiState = actualState.onlineSubtitlesUiState,
+            onSearch = {
+                actualScope.launch {
+                    actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Searching
+                    try {
+                        val result = actualSubtitleRepository.searchOnlineSubtitles(
+                            mediaItem = actualMediaItem,
+                            preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
+                        )
+                        actualState.onlineSubtitlesUiState = when (result) {
+                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Success ->
+                                OnlineSubtitlesUiState.Results(result.tracks)
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.NoResults ->
+                                OnlineSubtitlesUiState.Results(emptyList())
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.Offline ->
+                                OnlineSubtitlesUiState.Offline
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.ProviderNotConfigured ->
+                                OnlineSubtitlesUiState.ProviderNotConfigured
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.AuthenticationRequired ->
+                                OnlineSubtitlesUiState.AuthenticationRequired
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.PermissionDenied ->
+                                OnlineSubtitlesUiState.Error("Permission denied")
+                            com.watermelon.common.repository.OnlineSubtitleSearchResult.QuotaExceeded ->
+                                OnlineSubtitlesUiState.QuotaExceeded
+                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
+                                OnlineSubtitlesUiState.Error(result.message)
+                        }
+                    } catch (e: Exception) {
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
+                    }
+                }
+            },
+            onDownload = { track ->
+                actualScope.launch {
+                    actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
+                    try {
+                        val downloaded = actualSubtitleRepository.downloadSubtitle(
+                            mediaItem = actualMediaItem,
+                            track = track
+                        )
+                        // Activate the downloaded subtitle immediately
+                        actualOnSubtitleLoaded?.invoke(downloaded.subtitle)
+                        actualState.showOnlineSubtitlesSheet = false
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+                    } catch (e: Exception) {
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
+                    }
+                }
+            },
+            onDismiss = {
+                actualState.showOnlineSubtitlesSheet = false
+                actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
+            },
         )
     }
     }
@@ -454,64 +511,5 @@ private fun PlayerTransportControls(
         } else {
             Spacer(Modifier.width(48.dp))
         }
-    }
-
-    // Online subtitles sheet
-    if (state.showOnlineSubtitlesSheet && actualMediaItem != null && actualSubtitleRepository != null) {
-        OnlineSubtitlesSheet(
-            uiState = state.onlineSubtitlesUiState,
-            onSearch = {
-                actualScope.launch {
-                    state.onlineSubtitlesUiState = OnlineSubtitlesUiState.Searching
-                    try {
-                        val result = actualSubtitleRepository.searchOnlineSubtitles(
-                            mediaItem = actualMediaItem,
-                            preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
-                        )
-                        actualState.onlineSubtitlesUiState = when (result) {
-                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Success ->
-                                OnlineSubtitlesUiState.Results(result.tracks)
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.NoResults ->
-                                OnlineSubtitlesUiState.Results(emptyList())
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.Offline ->
-                                OnlineSubtitlesUiState.Offline
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.ProviderNotConfigured ->
-                                OnlineSubtitlesUiState.ProviderNotConfigured
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.AuthenticationRequired ->
-                                OnlineSubtitlesUiState.AuthenticationRequired
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.PermissionDenied ->
-                                OnlineSubtitlesUiState.Error("Permission denied")
-                            com.watermelon.common.repository.OnlineSubtitleSearchResult.QuotaExceeded ->
-                                OnlineSubtitlesUiState.QuotaExceeded
-                            is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
-                                OnlineSubtitlesUiState.Error(result.message)
-                        }
-                    } catch (e: Exception) {
-                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
-                    }
-                }
-            },
-            onDownload = { track ->
-                actualScope.launch {
-                    actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Downloading(track)
-                    try {
-                        val downloaded = actualSubtitleRepository.downloadSubtitle(
-                            mediaItem = actualMediaItem,
-                            track = track
-                        )
-                        // Activate the downloaded subtitle immediately
-                        actualOnSubtitleLoaded?.invoke(downloaded.subtitle)
-                        actualState.showOnlineSubtitlesSheet = false
-                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
-                    } catch (e: Exception) {
-                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
-                    }
-                }
-            },
-            onDismiss = {
-                actualState.showOnlineSubtitlesSheet = false
-                actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
-            },
-        )
     }
 }
