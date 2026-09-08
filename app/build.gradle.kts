@@ -19,7 +19,8 @@ android {
         val openSubtitlesApiKey = project.providers.gradleProperty("OPEN_SUBTITLES_API_KEY")
             .orElse(project.providers.environmentVariable("OPEN_SUBTITLES_API_KEY"))
             .orElse("")
-        buildConfigField("String", "OPEN_SUBTITLES_API_KEY", "\"\${openSubtitlesApiKey.get().replace("\"", "\\\"")}\"")
+        val apiKeyValue = openSubtitlesApiKey.get().replace("\"", "\\\"")
+        buildConfigField("String", "OPEN_SUBTITLES_API_KEY", "\"$apiKeyValue\"")
     }
     buildFeatures {
         compose = true
