@@ -26,7 +26,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
-import io.ktor.client.statement.request
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -131,8 +130,8 @@ class SubtitleRepositoryImpl(
             throw RuntimeException("Subtitle file too large: ${bytes.size} bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
         }
 
-        // Validate the final redirected URL
-        val finalUrl = response.request.url.toString()
+        // Validate the final redirected URL (member access — no extension import needed)
+        val finalUrl = response.call.request.url.toString()
         require(isAllowedDownloadUrl(finalUrl)) {
             "Final redirect URL not allowed: $finalUrl"
         }
