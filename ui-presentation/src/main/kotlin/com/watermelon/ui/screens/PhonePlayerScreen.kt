@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.UserIntent
+import com.watermelon.common.model.MediaItem
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.LevelIndicator
 import com.watermelon.ui.components.SleepTimerDialog
@@ -39,23 +40,24 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 
 /**
- * Phone video player — X-Player-style, layered architecture.
+ * Phone video player â X-Player-style, layered architecture.
  *
- * LAYER ORDER (bottom → top), each layer's touch handling is explicit:
+ * LAYER ORDER (bottom â top), each layer's touch handling is explicit:
  *   1. Video surface
- *   2. Gesture surface        — active ONLY when ui.gesturesEnabled (no sheet, not locked)
- *   3. Tap/scrim + controls   — controls are tap-toggled; a light gradient sits only behind
+ *   2. Gesture surface        â active ONLY when ui.gesturesEnabled (no sheet, not locked)
+ *   3. Tap/scrim
+ + controls   â controls are tap-toggled; a light gradient sits only behind
  *                               the top/bottom bars (NOT a full-screen pause dim)
- *   4. Transient indicators   — brightness/volume level, hold speed
- *   5. Panels / dialogs       — control panel, sleep timer (suspend auto-hide while open)
+ *   4. Transient indicators   â brightness/volume level, hold speed
+ *   5. Panels / dialogs       â control panel, sleep timer (suspend auto-hide while open)
  *
  * VHS is fully external: this screen only calls vhs.configure / onSurfaceSize / setRewind /
- * effectOrNull, and — on API 23–32 devices where AGSL isn't available — draws a lightweight
+ * effectOrNull, and â on API 23â32 devices where AGSL isn't available â draws a lightweight
  * Compose scanline overlay driven by vhs.usesLegacyOverlay / scanlinePhase / overlayAlpha, so
  * the effect isn't AGSL/API-33-exclusive. When VHS is disabled in settings the controller is a
  * complete no-op either way.
  *
- * FF/FR hold gesture is core and stays here (hold → 2×, drag ramps 3/4/8×, left = reverse).
+ * FF/FR hold gesture is core and stays here (hold â 2Ã, drag ramps 3/4/8Ã, left = reverse).
  */
 @Composable
 fun PhonePlayerScreen(
@@ -85,7 +87,8 @@ fun PhonePlayerScreen(
     onPipClick: (() -> Unit)? = null,
     onBackgroundClick: ((Boolean) -> Unit)? = null,
     onBrightnessChange: ((Float) -> Unit)? = null,
-    onSkipToTrack: ((String) -> Unit)? = null,
+    onSkipToTrack: ((
+String) -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     isFavourite: Boolean = false,
     onFavourite: ((Boolean) -> Unit)? = null,
@@ -99,6 +102,7 @@ fun PhonePlayerScreen(
     modifier: Modifier = Modifier,
     subtitleRepository: com.watermelon.common.repository.SubtitleRepository? = null,
     onSubtitleLoaded: (com.watermelon.common.model.ParsedSubtitle) -> Unit = {}
+    mediaItem: com.watermelon.common.model.MediaItem? = null,
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -126,7 +130,8 @@ fun PhonePlayerScreen(
     uiState.subtitleOffsetMs = subtitleOffsetMs
     uiState.autoSyncEnabled = autoSyncEnabled
     uiState.autoSyncStatus = autoSyncStatus
-    uiState.repeatMode = repeatMode
+    uiState.repeatMode = repeatMo
+de
     uiState.isShuffled = isShuffled
     uiState.sleepTimerRunning = sleepTimerRunning
     uiState.sleepTimerRemainingMs = sleepTimerRemainingMs
@@ -181,7 +186,8 @@ fun PhonePlayerScreen(
         subtitleStyle = subtitleStyle,
         subtitleOffsetMs = subtitleOffsetMs,
         position = position,
-        ui = ui,
+        ui 
+= ui,
     )
 
     GestureLayer(
@@ -242,26 +248,10 @@ fun PhonePlayerScreen(
         scope = scope,
         context = context,
         audioManager = audioManager,
-        maxVolume = maxVolume,
+ 
+       maxVolume = maxVolume,
         onBack = onBack,
-        mediaItem = subtitleRepository?.let { repo ->
-            // Only pass mediaItem if we have a repository (meaning we can do online search)
-            // This prevents creating synthetic MediaItems
-            runCatching {
-                // Try to get the real media item - but for now we use what we have
-                // In MainActivity we'll wire the real media repository
-                com.watermelon.common.model.MediaItem(
-                    uri = uri,
-                    displayName = mediaTitle,
-                    fileSize = 0L,
-                    durationMs = durationMs,
-                    parentFolder = "",
-                    width = 0,
-                    height = 0,
-                    mimeType = "",
-                )
-            }.getOrNull()
-        },
+        mediaItem = mediaItem,
     )
 
     TransientIndicatorsLayer(
@@ -301,7 +291,8 @@ fun PhonePlayerScreen(
         }
     }
 
-    // Pushes "is this the last item in the queue" to the controller
+    // Pushes "is 
+this the last item in the queue" to the controller
     LaunchedEffect(uri) {
         viewModel.setQueueContext(PlaybackQueue.nextOf(uri) == null)
     }
@@ -328,14 +319,15 @@ fun PhonePlayerScreen(
     }
 
     // Capture the pre-player window brightness exactly once, before this screen ever
-    // touches it — `remember` (no key) ensures this runs only on first composition, not on
+    // touches it â `remember` (no key) ensures this runs only on first composition, not on
     // every recomposition, so a later re-read here can never pick up a brightness value
     // the player itself already changed (A3).
     val originalWindowBrightness = remember { activity?.window?.attributes?.screenBrightness ?: -1f }
 
     // Restore brightness on launch (window-scoped, reverts on exit).
     LaunchedEffect(Unit) {
-        val startBrightness = initialBrightness.takeIf { it in 0f..1f }
+        val startBrightness = init
+ialBrightness.takeIf { it in 0f..1f }
             ?: originalWindowBrightness.takeIf { it in 0f..1f }
             ?: 0.5f
         if (startBrightness in 0f..1f) activity?.window?.let { win ->
@@ -350,7 +342,7 @@ fun PhonePlayerScreen(
         }
     }
 
-    // FF/FR hold gesture (CORE — independent of VHS). Notifies vhs.setRewind for the effect.
+    // FF/FR hold gesture (CORE â independent of VHS). Notifies vhs.setRewind for the effect.
     LaunchedEffect(uiState.isPointerDown, uiState.isGestureMoving) {
         if (uiState.isPointerDown && !uiState.isGestureMoving) {
             kotlinx.coroutines.delay(500L)
@@ -361,12 +353,13 @@ fun PhonePlayerScreen(
                 // iteration. `position` is driven by a 250ms background ticker
                 // (PlaybackControllerImpl.startPositionTicker) that overwrites the
                 // controller's position StateFlow from the real player independently of our
-                // own seeks — at fast rewind speeds this loop issues a new seek faster than
+                // own seeks â at fast rewind speeds this loop issues a new seek faster than
                 // that ticker's 250ms cadence, so reading `position` back can observe a
                 // not-yet-caught-up value and repeat/undo the previous step instead of
                 // continuing to count down (A4). Seed from the live position once, then walk
                 // it ourselves so every step is relative to where we last commanded, not to
-                // a racing external tick.
+                // a racing ex
+ternal tick.
                 var seekTarget = position
                 while (uiState.isPointerDown) {
                     if (uiState.holdIsLeft) {
@@ -392,10 +385,10 @@ fun PhonePlayerScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            // Don't pause if the user chose background play or PiP — that's the whole point.
+            // Don't pause if the user chose background play or PiP â that's the whole point.
             if (!isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
-            // Revert the window brightness to whatever it was before the player opened —
+            // Revert the window brightness to whatever it was before the player opened â
             // uses the value captured once above, not a fresh re-read (A3: re-reading here
             // would just pick up the player's own brightness change, not the original).
             activity?.window?.let { win ->
@@ -407,7 +400,8 @@ fun PhonePlayerScreen(
     }
     BackHandler(enabled = true) {
         when {
-            ui.isLocked -> { /* locked: Back does nothing — must use the slide-unlock */ }
+            ui.isLocked 
+-> { /* locked: Back does nothing â must use the slide-unlock */ }
             ui.sheetOpen || uiState.isPlayerSheetOpen -> {
                 uiState.showControlPanel = false
                 uiState.showQuickTools = false
