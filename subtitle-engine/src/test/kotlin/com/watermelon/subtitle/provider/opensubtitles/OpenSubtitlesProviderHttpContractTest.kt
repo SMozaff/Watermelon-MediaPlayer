@@ -1,6 +1,10 @@
 package com.watermelon.subtitle.provider.opensubtitles
 
+import com.watermelon.subtitle.provider.AuthenticationRequiredException
+import com.watermelon.subtitle.provider.PermissionDeniedException
+import com.watermelon.subtitle.provider.ProviderResponseException
 import com.watermelon.subtitle.provider.ProviderUnavailableException
+import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -457,6 +461,219 @@ class OpenSubtitlesProviderHttpContractTest {
             throw AssertionError("Expected ProviderUnavailableException when API key is blank")
         } catch (e: ProviderUnavailableException) {
             assertTrue(e.message?.contains("not configured") == true)
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `isConfigured returns false when user agent is blank`() = runTest {
+        val client = HttpClient(MockEngine { respond("", HttpStatusCode.OK) })
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = "   ",
+            httpClient = client
+        )
+
+        assertFalse(provider.isConfigured)
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected ProviderUnavailableException when user agent is blank")
+        } catch (e: ProviderUnavailableException) {
+            assertTrue(e.message?.contains("not configured") == true)
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `search maps 401 to AuthenticationRequiredException`() = runTest {
+        val client = testClient { respond("", HttpStatusCode.Unauthorized) }
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected AuthenticationRequiredException for 401")
+        } catch (e: AuthenticationRequiredException) {
+            // expected
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `search maps 403 to PermissionDeniedException`() = runTest {
+        val client = testClient { respond("", HttpStatusCode.Forbidden) }
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected PermissionDeniedException for 403")
+        } catch (e: PermissionDeniedException) {
+            // expected
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `search maps 429 to QuotaExceededException`() = runTest {
+        val client = testClient { respond("", HttpStatusCode.TooManyRequests) }
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected QuotaExceededException for 429")
+        } catch (e: QuotaExceededException) {
+            // expected
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `search maps 5xx to ProviderUnavailableException`() = runTest {
+        val statuses = listOf(
+            HttpStatusCode.InternalServerError,
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.ServiceUnavailable
+        )
+        for (status in statuses) {
+            val client = testClient { respond("", status) }
+            val provider = OpenSubtitlesProvider(
+                apiKey = testApiKey,
+                userAgent = testUserAgent,
+                httpClient = client
+            )
+
+            try {
+                provider.search(
+                    SubtitleProviderQuery(
+                        displayName = "Movie.2024.mkv",
+                        preferredLanguages = listOf("en")
+                    )
+                )
+                throw AssertionError("Expected ProviderUnavailableException for $status")
+            } catch (e: ProviderUnavailableException) {
+                // expected
+            }
+
+            client.close()
+        }
+    }
+
+    @Test
+    fun `search maps other non-2xx to ProviderResponseException`() = runTest {
+        val client = testClient { respond("", HttpStatusCode.UnprocessableEntity) }
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected ProviderResponseException for 422")
+        } catch (e: ProviderResponseException) {
+            // expected
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `search maps malformed successful JSON to typed provider failure`() = runTest {
+        val client = testClient { respond("this is not json", HttpStatusCode.OK, jsonHeaders()) }
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        try {
+            provider.search(
+                SubtitleProviderQuery(
+                    displayName = "Movie.2024.mkv",
+                    preferredLanguages = listOf("en")
+                )
+            )
+            throw AssertionError("Expected ProviderUnavailableException for malformed JSON")
+        } catch (e: ProviderUnavailableException) {
+            // expected — deserialization failure is wrapped, never leaks raw
+        }
+
+        client.close()
+    }
+
+    @Test
+    fun `resolveDownload rejects response missing link`() = runTest {
+        val handler: MockRequestHandler = { request ->
+            respond(
+                content = """{"link": null}""",
+                status = HttpStatusCode.OK,
+                headers = jsonHeaders()
+            )
+        }
+
+        val client = testClient(handler)
+        val provider = OpenSubtitlesProvider(
+            apiKey = testApiKey,
+            userAgent = testUserAgent,
+            httpClient = client
+        )
+
+        val track = com.watermelon.common.model.SubtitleTrack(
+            language = "en",
+            label = "English",
+            downloadUrl = "",
+            rating = 0f,
+            providerId = "opensubtitles.com",
+            remoteFileId = 12345
+        )
+
+        try {
+            provider.resolveDownload(track)
+            throw AssertionError("Expected ProviderResponseException for missing link")
+        } catch (e: ProviderResponseException) {
+            assertTrue(e.message?.contains("link") == true)
         }
 
         client.close()

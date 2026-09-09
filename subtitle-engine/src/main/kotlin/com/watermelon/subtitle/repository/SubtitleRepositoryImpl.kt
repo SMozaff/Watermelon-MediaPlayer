@@ -22,6 +22,7 @@ import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import com.watermelon.subtitle.provider.registry.SubtitleProviderRegistry
 import com.watermelon.subtitle.source.LocalSidecarSourceImpl
+import com.watermelon.subtitle.source.SidecarSource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -33,17 +34,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class SubtitleRepositoryImpl(
-    private val context: Context,
+class SubtitleRepositoryImpl internal constructor(
     private val providerRegistry: SubtitleProviderRegistry,
+    private val sidecarSource: SidecarSource,
+    private val downloadClient: HttpClient,
+    private val cacheStore: SubtitleCacheStore,
+    private val isNetworkAvailable: () -> Boolean,
+    private val hashFor: (MediaItem) -> String,
 ) : SubtitleRepository {
 
-    private val sidecarSource = LocalSidecarSourceImpl(context)
-    private val downloadClient: HttpClient by lazy { HttpClient(Android) }
-    private val cacheDir: File by lazy {
-        File(context.cacheDir, "subtitles").apply { mkdirs() }
-    }
-    private val cacheStore: SubtitleCacheStore = SubtitleCacheStore(cacheDir)
+    constructor(
+        context: Context,
+        providerRegistry: SubtitleProviderRegistry,
+    ) : this(
+        providerRegistry = providerRegistry,
+        sidecarSource = LocalSidecarSourceImpl(context),
+        downloadClient = HttpClient(Android),
+        cacheStore = SubtitleCacheStore(
+            File(context.cacheDir, "subtitles").apply { mkdirs() }
+        ),
+        isNetworkAvailable = { defaultNetworkAvailable(context) },
+        hashFor = { mediaItem -> defaultHashFor(context, mediaItem) },
+    )
 
     override suspend fun findSubtitles(
         mediaItem: MediaItem,
@@ -110,7 +122,7 @@ class SubtitleRepositoryImpl(
     ): DownloadedSubtitle = withContext(Dispatchers.IO) {
         // Resolve the download URL through the provider registry
         val downloadLink = providerRegistry.resolveDownload(track)
-        
+
         // Validate the resolved URL
         require(isAllowedDownloadUrl(downloadLink.url)) {
             "Refusing to download subtitle from untrusted URL: ${downloadLink.url}"
@@ -122,9 +134,7 @@ class SubtitleRepositoryImpl(
         }
 
         val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-        if (contentLength != null && contentLength > MAX_SUBTITLE_SIZE_BYTES) {
-            throw RuntimeException("Subtitle file too large: $contentLength bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
-        }
+        checkContentLength(contentLength)
 
         val bytes: ByteArray = response.body()
         if (bytes.size > MAX_SUBTITLE_SIZE_BYTES) {
@@ -137,6 +147,14 @@ class SubtitleRepositoryImpl(
             "Final redirect URL not allowed: $finalUrl"
         }
 
+        // Validate BEFORE committing to cache: a download with no valid cues must
+        // never be finalized, or the next reopen would keep surfacing it.
+        val content = String(bytes, Charsets.UTF_8)
+        val parsed = SrtParser.parse(content, track.language)
+        require(parsed.cues.isNotEmpty()) {
+            "Downloaded SRT contains no valid cues"
+        }
+
         val cachedFile = cacheStore.write(
             mediaItem = mediaItem,
             track = track,
@@ -144,16 +162,16 @@ class SubtitleRepositoryImpl(
             bytes = bytes
         )
 
-        val content = String(bytes, Charsets.UTF_8)
-        val parsed = SrtParser.parse(content, track.language)
-        if (parsed.cues.isEmpty()) {
-            throw RuntimeException("Downloaded SRT contains no valid cues")
-        }
-
         DownloadedSubtitle(
             localPath = cachedFile.absolutePath,
             subtitle = parsed
         )
+    }
+
+    internal fun checkContentLength(contentLength: Long?) {
+        if (contentLength != null && contentLength > MAX_SUBTITLE_SIZE_BYTES) {
+            throw RuntimeException("Subtitle file too large: $contentLength bytes (max: $MAX_SUBTITLE_SIZE_BYTES)")
+        }
     }
 
     private fun isAllowedDownloadUrl(url: String): Boolean {
@@ -161,22 +179,6 @@ class SubtitleRepositoryImpl(
         val host = parsed?.host?.lowercase()
         return parsed?.scheme?.equals("https", ignoreCase = true) == true &&
             (host == "opensubtitles.com" || host?.endsWith(".opensubtitles.com") == true)
-    }
-
-    @Suppress("MissingPermission")
-    private fun isNetworkAvailable(): Boolean {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        val capabilities = cm?.getNetworkCapabilities(cm.activeNetwork)
-        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
-    }
-
-    private fun hashFor(mediaItem: MediaItem): String {
-        val uri = android.net.Uri.parse(mediaItem.uri)
-        context.contentResolver.openFileDescriptor(uri, "r").use { pfd ->
-            requireNotNull(pfd) { "Unable to open file descriptor for ${mediaItem.uri}" }
-            return OpenSubtitlesHasher.hash(pfd.fileDescriptor, mediaItem.fileSize)
-        }
     }
 
     // ── S1 extension: parsed render-ready subtitle (offline only) ───────────────
@@ -207,10 +209,34 @@ class SubtitleRepositoryImpl(
 
     private fun parseCachedFile(file: File): ParsedSubtitle? {
         val content = runCatching { file.readText(Charsets.UTF_8) }.getOrNull() ?: return@parseCachedFile null
-        val lang = file.nameWithoutExtension.substringAfterLast('.', "").ifEmpty { null }
+        // Hierarchical layout is <mediaSha>/<language>/<provider>/<remoteId>.srt,
+        // so the language is the grandparent directory name. Fall back to the old
+        // flat-layout heuristic for any legacy file still on disk.
+        val lang = file.parentFile?.parentFile
+            ?.takeIf { it.name.isNotEmpty() }
+            ?.name
+            ?: file.nameWithoutExtension.substringAfterLast('.', "").ifEmpty { null }
         return when (file.extension.lowercase()) {
             "srt" -> runCatching { SrtParser.parse(content, lang) }.getOrNull()
             else -> null
+        }
+    }
+
+    companion object {
+        @Suppress("MissingPermission")
+        internal fun defaultNetworkAvailable(context: Context): Boolean {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            val capabilities = cm?.getNetworkCapabilities(cm.activeNetwork)
+            return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+        }
+
+        internal fun defaultHashFor(context: Context, mediaItem: MediaItem): String {
+            val uri = android.net.Uri.parse(mediaItem.uri)
+            context.contentResolver.openFileDescriptor(uri, "r").use { pfd ->
+                requireNotNull(pfd) { "Unable to open file descriptor for ${mediaItem.uri}" }
+                return OpenSubtitlesHasher.hash(pfd.fileDescriptor, mediaItem.fileSize)
+            }
         }
     }
 }

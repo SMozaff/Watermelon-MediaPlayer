@@ -34,11 +34,7 @@ class SubtitleCacheStoreTest {
 
     private fun track(
         language: String = "en",
-        // NOTE: intentionally dot-free. SubtitleCacheStore separates filename fields
-        // with '.', so a real-world providerId such as opensubtitles.com does not
-        // round-trip exactly through list() (pre-existing store limitation, which has
-        // no live callers today — findSubtitles is interface surface for future use).
-        providerId: String = "testprovider",
+        providerId: String = "opensubtitles.com",
         remoteFileId: Long = 100L
     ) = SubtitleTrack(
         language = language,
@@ -63,28 +59,28 @@ class SubtitleCacheStoreTest {
     @Test
     fun `list is empty before anything is cached`() {
         assertTrue(store.list(mediaItem, listOf("en")).isEmpty())
-        assertFalse(store.isCached(mediaItem, track(), "testprovider"))
+        assertFalse(store.isCached(mediaItem, track(), "opensubtitles.com"))
     }
 
     @Test
     fun `write then list returns the cached track`() {
-        val written = store.write(mediaItem, track(), "testprovider", srtBytes)
+        val written = store.write(mediaItem, track(), "opensubtitles.com", srtBytes)
 
         assertTrue(written.isFile)
-        assertTrue(store.isCached(mediaItem, track(), "testprovider"))
+        assertTrue(store.isCached(mediaItem, track(), "opensubtitles.com"))
 
         val tracks = store.list(mediaItem, listOf("en"))
         assertEquals(1, tracks.size)
         assertEquals("en", tracks[0].language)
-        assertEquals("testprovider", tracks[0].providerId)
+        assertEquals("opensubtitles.com", tracks[0].providerId)
         assertEquals(100L, tracks[0].remoteFileId)
         assertTrue(tracks[0].downloadUrl.startsWith("file:"))
     }
 
     @Test
     fun `list filters by preferred languages`() {
-        store.write(mediaItem, track(language = "en"), "testprovider", srtBytes)
-        store.write(mediaItem, track(language = "fa", remoteFileId = 101L), "testprovider", srtBytes)
+        store.write(mediaItem, track(language = "en"), "opensubtitles.com", srtBytes)
+        store.write(mediaItem, track(language = "fa", remoteFileId = 101L), "opensubtitles.com", srtBytes)
 
         assertEquals(1, store.list(mediaItem, listOf("fa")).size)
         assertEquals("fa", store.list(mediaItem, listOf("fa"))[0].language)
@@ -93,8 +89,8 @@ class SubtitleCacheStoreTest {
 
     @Test
     fun `list orders by language preference`() {
-        store.write(mediaItem, track(language = "en"), "testprovider", srtBytes)
-        store.write(mediaItem, track(language = "fa", remoteFileId = 101L), "testprovider", srtBytes)
+        store.write(mediaItem, track(language = "en"), "opensubtitles.com", srtBytes)
+        store.write(mediaItem, track(language = "fa", remoteFileId = 101L), "opensubtitles.com", srtBytes)
 
         val tracks = store.list(mediaItem, listOf("fa", "en"))
         assertEquals(listOf("fa", "en"), tracks.map { it.language })
@@ -103,7 +99,7 @@ class SubtitleCacheStoreTest {
     @Test
     fun `write is scoped to the owning media item`() {
         val other = mediaItem.copy(uri = "file:///storage/Movies/Other.mkv")
-        store.write(mediaItem, track(), "testprovider", srtBytes)
+        store.write(mediaItem, track(), "opensubtitles.com", srtBytes)
 
         assertTrue(store.list(other, listOf("en")).isEmpty())
         assertEquals(1, store.list(mediaItem, listOf("en")).size)
@@ -114,7 +110,7 @@ class SubtitleCacheStoreTest {
         val oversized = ByteArray(5 * 1024 * 1024 + 1)
 
         try {
-            store.write(mediaItem, track(), "testprovider", oversized)
+            store.write(mediaItem, track(), "opensubtitles.com", oversized)
             throw AssertionError("Expected IllegalArgumentException for oversized payload")
         } catch (e: IllegalArgumentException) {
             assertTrue(e.message?.contains("too large") == true)
@@ -123,8 +119,18 @@ class SubtitleCacheStoreTest {
     }
 
     @Test
+    fun `dotted provider id round-trips exactly with remote file id`() {
+        store.write(mediaItem, track(remoteFileId = 987654321L), "opensubtitles.com", srtBytes)
+
+        val tracks = store.list(mediaItem, listOf("en"))
+        assertEquals(1, tracks.size)
+        assertEquals("opensubtitles.com", tracks[0].providerId)
+        assertEquals(987654321L, tracks[0].remoteFileId)
+    }
+
+    @Test
     fun `clear removes all cached files`() {
-        store.write(mediaItem, track(), "testprovider", srtBytes)
+        store.write(mediaItem, track(), "opensubtitles.com", srtBytes)
         assertEquals(1, store.list(mediaItem, listOf("en")).size)
 
         store.clear()

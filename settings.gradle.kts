@@ -1,5 +1,9 @@
 pluginManagement {
     repositories {
+        // TEMP-LOCAL-ONLY (sandbox has no direct Google/Central access; REVERT before commit)
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { url = uri("https://maven.aliyun.com/repository/central") }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -9,6 +13,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // TEMP-LOCAL-ONLY (sandbox has no direct Google/Central access; REVERT before commit)
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/central") }
         google()
         mavenCentral()
         // java-lame (media-tools' pure-Java MP3 encoder) isn't published to Maven Central --

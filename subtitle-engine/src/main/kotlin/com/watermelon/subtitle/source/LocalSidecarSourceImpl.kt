@@ -20,7 +20,7 @@ import java.nio.charset.Charset
  * Language is inferred from the filename's secondary extension (fa/ar/ur/ku + aliases).
  * Encoding: auto-detects UTF-8; falls back to Windows-1256 for legacy FA/AR subtitles.
  */
-class LocalSidecarSourceImpl(private val context: Context) {
+class LocalSidecarSourceImpl(private val context: Context) : SidecarSource {
 
     /**
      * Memoizes [resolveFolder] results by the raw `parentFolder` string (including a cached
@@ -39,7 +39,7 @@ class LocalSidecarSourceImpl(private val context: Context) {
      * Find and return the best-matching parsed subtitle for [query], or null if none found.
      * Tries candidates in language-preference order.
      */
-    suspend fun findAndParse(query: VideoQuery): ParsedSubtitle? =
+    override suspend fun findAndParse(query: VideoQuery): ParsedSubtitle? =
         withContext(Dispatchers.IO) {
             val folder = resolveFolder(query.parentFolder) ?: run {
                 FileLogger.i("Subtitle", "sidecar: folder not found: ${query.parentFolder}")

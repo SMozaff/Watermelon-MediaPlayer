@@ -309,10 +309,19 @@ fun ControlsLayer(
             subtitleOffsetMs = subtitleOffsetMs,
             autoSyncEnabled = autoSyncEnabled,
             autoSyncStatus = autoSyncStatus,
-            onFindOnlineSubtitles = {
-                actualState.showQuickTools = false
-                actualState.showOnlineSubtitlesSheet = true
-            },
+            // Only expose online search when the sheet can actually render (it
+            // requires both mediaItem and subtitleRepository) — otherwise the
+            // tap would set showOnlineSubtitlesSheet with no visible sheet and
+            // leave isPlayerSheetOpen stuck true.
+            onFindOnlineSubtitles =
+                if (actualMediaItem != null && actualSubtitleRepository != null) {
+                    {
+                        actualState.showQuickTools = false
+                        actualState.showOnlineSubtitlesSheet = true
+                    }
+                } else {
+                    null
+                },
             onSubtitleNudge = onSubtitleNudge,
             onAutoSync = onAutoSync,
             onSpeedChange = { speed ->

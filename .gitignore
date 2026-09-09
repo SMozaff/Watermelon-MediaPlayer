@@ -53,3 +53,9 @@ __pycache__/
 # Scratch / diagnostic files
 .ui-errors*.txt
 test_push*.txt
+
+# Local Kotlin compiler state (stale error logs, never source)
+.kotlin/
+
+# Quarantined stale build outputs (undeletable leftover dirs, never source)
+*-stale-root/

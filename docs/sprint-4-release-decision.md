@@ -1,5 +1,11 @@
 # Sprint 4 Release Decision (WM-407)
 
+> **Historical note (2026-09-09):** this decision record is preserved as evidence. Its
+> subtitle rows describe the legacy network stack (`SubtitleApiClient` mirror
+> rotation), which has since been removed in favour of the modern OpenSubtitles.com
+> provider/registry architecture. See `docs/release/subtitle-network-inventory.md`
+> for the current architecture.
+
 **Prepared:** 2026-08-26
 **Evaluated against:** branch `claude/clone-repo-read-audit-5ye1cd` (this session's remediation
 work, based on `main` at `2d5eacc`) — this branch is not yet merged to `main`; `main` itself

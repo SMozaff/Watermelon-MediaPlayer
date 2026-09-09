@@ -27,8 +27,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
-
 /**
  * Modern OpenSubtitles.com REST API client (api.opensubtitles.com).
  *
@@ -38,24 +36,37 @@ private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
  *
  * Does NOT fall back to legacy opensubtitles.org mirrors.
  */
-class OpenSubtitlesProvider(
+class OpenSubtitlesProvider private constructor(
     private val apiKey: String,
     private val userAgent: String,
-    private val httpClient: HttpClient = HttpClient(Android) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                explicitNulls = false
-            })
-        }
-        expectSuccess = false
-    }
+    private val httpClient: HttpClient,
+    private val ownsClient: Boolean,
 ) : SubtitleProvider {
+
+    /**
+     * App path: the provider owns its default client and closes it in [close].
+     */
+    constructor(apiKey: String, userAgent: String) : this(
+        apiKey = apiKey,
+        userAgent = userAgent,
+        httpClient = createDefaultClient(),
+        ownsClient = true,
+    )
+
+    /**
+     * Injected-client path (tests, shared clients): the caller owns the client.
+     */
+    constructor(apiKey: String, userAgent: String, httpClient: HttpClient) : this(
+        apiKey = apiKey,
+        userAgent = userAgent,
+        httpClient = httpClient,
+        ownsClient = false,
+    )
 
     override val id: String = "opensubtitles.com"
 
     override val isConfigured: Boolean
-        get() = apiKey.isNotBlank()
+        get() = apiKey.isNotBlank() && userAgent.isNotBlank()
 
     private fun throwForProviderStatus(status: HttpStatusCode) {
         when {
@@ -161,7 +172,7 @@ class OpenSubtitlesProvider(
     }
 
     override fun close() {
-        // Caller is responsible for closing the shared HttpClient
+        if (ownsClient) httpClient.close()
     }
 
     private fun validateDownloadUrl(url: String) {
@@ -169,7 +180,8 @@ class OpenSubtitlesProvider(
         require(uri.scheme.equals("https", ignoreCase = true)) {
             "Download URL must use HTTPS: $url"
         }
-        val host = uri.host.lowercase()
+        val host = uri.host?.lowercase()
+            ?: throw ProviderResponseException("Download URL missing host: $url")
         require(host == "opensubtitles.com" || host.endsWith(".opensubtitles.com")) {
             "Download URL host not allowed: $host"
         }
@@ -177,6 +189,16 @@ class OpenSubtitlesProvider(
 
     companion object {
         private const val BASE_URL = "https://api.opensubtitles.com/api/v1"
+
+        private fun createDefaultClient(): HttpClient = HttpClient(Android) {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                })
+            }
+            expectSuccess = false
+        }
     }
 }
 

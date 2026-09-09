@@ -39,7 +39,7 @@ jobs:
           SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -n 1)"
           test -n "$SDKMANAGER" || { echo "Android sdkmanager was not found."; exit 1; }
           yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
@@ -51,14 +51,24 @@ jobs:
       # This workflow never receives release-signing credentials.
       - name: Build Android sources for analysis
         run: |
+          success=0
           for i in 1 2 3; do
-            ./gradlew :app:assembleDebug --no-daemon --dependency-verification=strict --stacktrace \
+            if ./gradlew :app:assembleDebug --no-daemon --dependency-verification=strict --stacktrace \
               -Dorg.gradle.internal.http.connectionTimeout=180000 \
               -Dorg.gradle.internal.http.socketTimeout=180000 \
-              -Dorg.gradle.internal.http.retry.max=3 && break
-            echo "Retry $i/3 failed, waiting 30s..."
-            sleep 30
+              -Dorg.gradle.internal.http.retry.max=3; then
+              success=1
+              break
+            fi
+            echo "Retry $i/3 failed"
+            if [ "$i" -lt 3 ]; then
+              sleep 30
+            fi
           done
+          if [ "$success" -ne 1 ]; then
+            echo "Gradle build failed after 3 attempts."
+            exit 1
+          fi
 
       - name: Analyze source
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9

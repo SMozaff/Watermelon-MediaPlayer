@@ -1,5 +1,11 @@
 # Watermelon MediaPlayer — Remediation Session Report
 
+> **Historical note (2026-09-09):** this report is preserved as session evidence. It
+> describes the legacy subtitle network stack (`SubtitleApiClient`, `MirrorRotator`,
+> `rest.opensubtitles.org` mirrors), which has since been removed in favour of the
+> modern OpenSubtitles.com provider/registry architecture. See
+> `docs/release/subtitle-network-inventory.md` for the current architecture.
+
 **Date:** 2026-08-26
 **PR:** [#4](https://github.com/SMozaff/Watermelon-MediaPlayer/pull/4) — `claude/clone-repo-read-audit-5ye1cd` → `main` (draft)
 **Status at time of writing:** All 4 CI checks green on the latest commit (`6ac7905`), no merge conflicts, no unresolved review comments.
