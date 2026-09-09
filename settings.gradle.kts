@@ -1,6 +1,6 @@
 pluginManagement {
     repositories {
-        // TEMP-LOCAL-ONLY (sandbox has no direct Google/Central access; REVERT before commit)
+        // TEMP-LOCAL-ONLY (Aliyun-first: sandbox proxy forges 404s for dl.google.com; REVERT before commit)
         maven { url = uri("https://maven.aliyun.com/repository/google") }
         maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
         maven { url = uri("https://maven.aliyun.com/repository/central") }
@@ -13,7 +13,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // TEMP-LOCAL-ONLY (sandbox has no direct Google/Central access; REVERT before commit)
+        // TEMP-LOCAL-ONLY (Aliyun-first: sandbox proxy forges 404s for dl.google.com; REVERT before commit)
         maven { url = uri("https://maven.aliyun.com/repository/google") }
         maven { url = uri("https://maven.aliyun.com/repository/central") }
         google()
