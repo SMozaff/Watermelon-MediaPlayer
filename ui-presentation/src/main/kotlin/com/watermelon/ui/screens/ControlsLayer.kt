@@ -38,6 +38,7 @@ import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.common.model.SleepTimerMode
 import com.watermelon.common.model.UserIntent
+import com.watermelon.common.PLAYER_SUBTITLE_LANGUAGE_PRIORITY
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.LevelIndicator
 import com.watermelon.ui.components.SleepTimerDialog
@@ -409,7 +410,7 @@ fun ControlsLayer(
                     try {
                         val result = actualSubtitleRepository.searchOnlineSubtitles(
                             mediaItem = actualMediaItem,
-                            preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
+                            preferredLanguages = PLAYER_SUBTITLE_LANGUAGE_PRIORITY
                         )
                         actualState.onlineSubtitlesUiState = when (result) {
                             is com.watermelon.common.repository.OnlineSubtitleSearchResult.Success ->
