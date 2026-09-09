@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.watermelon.subtitle"
-    compileSdk = 34
-    // TEMP-LOCAL-ONLY: container SDK has 34.0.0 only. Revert before commit.
-    buildToolsVersion = "34.0.0"
+    compileSdk = 37
     defaultConfig { minSdk = 24 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

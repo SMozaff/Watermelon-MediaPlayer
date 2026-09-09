@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.benchmarks"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24 // Macrobenchmark requires API 24+

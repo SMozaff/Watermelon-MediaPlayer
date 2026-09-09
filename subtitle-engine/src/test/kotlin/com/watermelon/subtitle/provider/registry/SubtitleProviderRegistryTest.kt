@@ -89,11 +89,14 @@ class SubtitleProviderRegistryTest {
         val first = FakeProvider(
             "a",
             searchResult = listOf(
-                track(label = "a-plain", rating = 9f, hashMatched = false),
-                track(label = "a-hash", rating = 1f, hashMatched = true)
+                track(label = "a-plain", rating = 9f, hashMatched = false, providerId = "a"),
+                track(label = "a-hash", rating = 1f, hashMatched = true, providerId = "a")
             )
         )
-        val second = FakeProvider("b", searchResult = listOf(track(label = "b-best", rating = 10f)))
+        val second = FakeProvider(
+            "b",
+            searchResult = listOf(track(label = "b-best", rating = 10f, providerId = "b"))
+        )
         val registry = SubtitleProviderRegistry(listOf(first, second))
 
         val results = registry.search(query())

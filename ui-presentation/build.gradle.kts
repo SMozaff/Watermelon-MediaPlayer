@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.ui"
-    compileSdk = 34
+    compileSdk = 37
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
