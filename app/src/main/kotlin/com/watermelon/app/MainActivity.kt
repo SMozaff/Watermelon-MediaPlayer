@@ -1186,28 +1186,25 @@ class MainActivity : ComponentActivity() {
                     val isTelevision = remember {
                         com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(this@MainActivity)
                     }
-                    val subtitleTrackState = run {
-                        var track by remember(mediaUri) {
-                            mutableStateOf<com.watermelon.common.model.ParsedSubtitle?>(null)
-                        }
-                        LaunchedEffect(mediaUri) {
-                            subtitleSyncSession += 1
-                            subtitleOffsetMs = 0L
-                            autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
-                            val discovered = discoverSubtitle(mediaUri)
-                            track = discovered
-                            if (discovered != null) {
-                                val mediaItem = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
-                                if (mediaItem != null) {
-                                    val fingerprint = subtitleFingerprintProvider.fingerprint(discovered)
-                                    val profile = runCatching {
-                                        subtitleSyncRepository.get(mediaUri, mediaItem.fileSize, fingerprint)
-                                    }.getOrNull()
-                                    subtitleOffsetMs = profile?.effectiveOffsetMs() ?: 0L
-                                }
+                    var subtitleTrackState by remember(mediaUri) {
+                        mutableStateOf<com.watermelon.common.model.ParsedSubtitle?>(null)
+                    }
+                    LaunchedEffect(mediaUri) {
+                        subtitleSyncSession += 1
+                        subtitleOffsetMs = 0L
+                        autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
+                        val discovered = discoverSubtitle(mediaUri)
+                        subtitleTrackState = discovered
+                        if (discovered != null) {
+                            val mediaItem = runCatching { mediaRepository.getByUri(mediaUri) }.getOrNull()
+                            if (mediaItem != null) {
+                                val fingerprint = subtitleFingerprintProvider.fingerprint(discovered)
+                                val profile = runCatching {
+                                    subtitleSyncRepository.get(mediaUri, mediaItem.fileSize, fingerprint)
+                                }.getOrNull()
+                                subtitleOffsetMs = profile?.effectiveOffsetMs() ?: 0L
                             }
                         }
-                        track
                     }
                     // controller.duration is a plain Media3 Player getter, not something
                     // Compose observes — reading it directly in the composable body means it
@@ -1314,6 +1311,7 @@ class MainActivity : ComponentActivity() {
                         onBack = { navController.popBackStack() },
                         durationMs = durationMs,
                         subtitleTrack = subtitleTrackState,
+                        subtitleStyle = settingsState.subtitleStyle,
                         subtitleOffsetMs = subtitleOffsetMs,
                         autoSyncEnabled = settingsState.autoSyncEnabled,
                         autoSyncStatus = autoSyncStatus,
@@ -1430,6 +1428,7 @@ class MainActivity : ComponentActivity() {
                             subtitleOffsetMs = 0L
                             autoSyncStatus = com.watermelon.common.subtitle.sync.SyncStatus.IDLE
                         },
+                        mediaItem = playerMedia,
                         surface = { modifier ->
                             AndroidView(
                                 modifier = modifier,
@@ -1730,7 +1729,7 @@ class MainActivity : ComponentActivity() {
         val item = runCatching { mediaRepository.getByUri(uri) }.getOrNull() ?: return null
         return subtitleRepository.parsedFor(
             mediaItem = item,
-            preferredLanguages = listOf("fa", "ar", "ur", "ku", "en")
+            preferredLanguages = com.watermelon.common.PLAYER_SUBTITLE_LANGUAGE_PRIORITY
         )
     }
 

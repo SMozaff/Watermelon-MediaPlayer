@@ -45,3 +45,11 @@ local.properties
 
 # Windows
 Thumbs.db
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+
+# Scratch / diagnostic files
+.ui-errors*.txt
+test_push*.txt

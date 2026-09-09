@@ -90,18 +90,22 @@ class OpenSubtitlesProvider(
             throwForProviderStatus(response.status)
 
             val subtitlesResponse: SubtitlesResponse = response.body()
-            subtitlesResponse.data.flatMap { item ->
+            // Flatten every item's files first, then sort globally: per-item sorting would
+            // be meaningless (all tracks from one item share a language) and would leave
+            // the API's response order in place instead of the documented
+            // preferred-language → hash-match → rating → download-count order.
+            return subtitlesResponse.data.flatMap { item ->
                 item.attributes.toSubtitleTracks(id).filter { track ->
                     query.preferredLanguages.isEmpty() || track.language in query.preferredLanguages
-                }.sortedWith(
-                    compareBy(
-                        { if (query.preferredLanguages.isEmpty()) 0 else query.preferredLanguages.indexOf(it.language).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE },
-                        { if (it.hashMatched) 0 else 1 },
-                        { -it.rating },
-                        { -it.downloadCount }
-                    )
+                }
+            }.sortedWith(
+                compareBy(
+                    { if (query.preferredLanguages.isEmpty()) 0 else query.preferredLanguages.indexOf(it.language).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE },
+                    { if (it.hashMatched) 0 else 1 },
+                    { -it.rating },
+                    { -it.downloadCount }
                 )
-            }
+            )
         } catch (e: ProviderException) {
             throw e
         } catch (e: Exception) {
@@ -145,6 +149,10 @@ class OpenSubtitlesProvider(
                 fileName = track.remoteFileName ?: "subtitle_${track.language}.srt"
             )
         } catch (e: ProviderException) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            // Contract validation (missing ids, non-HTTPS/untrusted URLs) is a caller
+            // error, not a provider failure — let it propagate unchanged.
             throw e
         } catch (e: Exception) {
             throw ProviderUnavailableException("OpenSubtitles download resolution failed: ${e.message}")
@@ -198,8 +206,11 @@ private data class SubtitleAttributes(
 
 @Serializable
 private data class SubtitleFile(
+    // Nullable: the real API occasionally omits file_id on entries that cannot be
+    // downloaded — those entries are dropped in toSubtitleTracks() instead of
+    // failing the whole response.
     @SerialName("file_id")
-    val fileId: Long,
+    val fileId: Long? = null,
 
     @SerialName("file_name")
     val fileName: String? = null
@@ -221,13 +232,14 @@ private data class DownloadResponse(
 
 private fun SubtitleAttributes.toSubtitleTracks(providerId: String): List<SubtitleTrack> {
     return files.mapNotNull { file ->
+        val fileId = file.fileId ?: return@mapNotNull null
         SubtitleTrack(
             language = language,
             label = release ?: file.fileName ?: "$language subtitle",
             downloadUrl = "", // Empty until resolved via POST /download
             rating = ratings ?: 0f,
             providerId = providerId,
-            remoteFileId = file.fileId,
+            remoteFileId = fileId,
             remoteFileName = file.fileName,
             downloadCount = downloadCount ?: 0,
             hashMatched = moviehashMatch == true

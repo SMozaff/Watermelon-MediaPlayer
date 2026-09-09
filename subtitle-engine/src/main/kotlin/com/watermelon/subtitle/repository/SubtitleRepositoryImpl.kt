@@ -25,6 +25,8 @@ import com.watermelon.subtitle.source.LocalSidecarSourceImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
+import io.ktor.client.request.get
+import io.ktor.client.statement.request
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -50,19 +52,10 @@ class SubtitleRepositoryImpl(
         return@withContext cachedTracks(mediaItem, preferredLanguages)
     }
 
-    private suspend fun cachedTracks(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
-        val tracks = cacheStore.list(mediaItem, preferredLanguages)
-        if (tracks.isNotEmpty()) {
-            return tracks
-        }
-        val sidecarTracks = sidecarSource.findAndParse(VideoQuery(
-            displayName = mediaItem.displayName,
-            parentFolder = mediaItem.parentFolder,
-            sizeBytes = mediaItem.fileSize,
-            durationMs = mediaItem.durationMs,
-            languages = preferredLanguages
-        ))
-        return sidecarTracks ?: emptyList()
+    private fun cachedTracks(mediaItem: MediaItem, preferredLanguages: List<String>): List<SubtitleTrack> {
+        // Cache-only: previously downloaded subtitles. Sidecar discovery lives in
+        // parsedFor() which returns the render-ready ParsedSubtitle directly.
+        return cacheStore.list(mediaItem, preferredLanguages)
     }
 
     override suspend fun searchOnlineSubtitles(

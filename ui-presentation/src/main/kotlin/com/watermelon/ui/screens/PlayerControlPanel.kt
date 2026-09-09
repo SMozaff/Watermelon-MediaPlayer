@@ -213,6 +213,13 @@ fun QuickToolsSheet(
                     onClick = onAutoSync,
                 )
             }
+            if (onFindOnlineSubtitles != null) {
+                SheetAction(
+                    label = "Find another subtitle",
+                    detail = "Search OpenSubtitles for this video",
+                    onClick = onFindOnlineSubtitles,
+                )
+            }
         } else {
             // No subtitle loaded: offer online search as explicit user action
             SheetDivider()
