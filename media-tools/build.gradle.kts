@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.watermelon.mediatools"
-    compileSdk = 37
+    compileSdk = 34
     defaultConfig {
         minSdk = 24
     }
