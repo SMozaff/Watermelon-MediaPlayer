@@ -1,6 +1,6 @@
 package com.watermelon.app
 
-import androidx.activity.runCatching
+import kotlin.runCatching
 import com.watermelon.common.model.MediaRepository
 import com.watermelon.common.model.MediaRepositoryImpl
 import com.watermelon.common.model.MediaItem

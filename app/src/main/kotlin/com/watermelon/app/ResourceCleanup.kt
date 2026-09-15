@@ -1,6 +1,6 @@
 package com.watermelon.app
 
-import androidx.activity.runCatching
+import kotlin.runCatching
 
 /**
  * Extension function for safe stop and release of MediaCodec resources.

@@ -91,7 +91,7 @@ import com.watermelon.ui.viewmodel.VideoListViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-import androidx.activity.runCatching
+import kotlin.runCatching
 
 @UnstableApi
 class MainActivity : ComponentActivity() {
