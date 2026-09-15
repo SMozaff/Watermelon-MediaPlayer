@@ -51,6 +51,7 @@ import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.Playlist
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.components.IconType
 import com.watermelon.ui.components.LabeledIconButton
 import com.watermelon.ui.components.MultiSelectionDock
 import com.watermelon.ui.components.StatusBadge
@@ -242,12 +243,14 @@ fun VideoListScreen(
                     }
                 } else {
                     LabeledIconButton(
-                        icon = WatermelonIcons.Sort,
+                        icon = IconType.DrawableIcon(WatermelonIcons.Sort),
                         label = "Sort: ${currentSort.label}",
                         onClick = { sortMenuOpen = true },
                     )
                     LabeledIconButton(
-                        icon = if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList,
+                        icon = IconType.DrawableIcon(
+                            if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList
+                        ),
                         label = "View: ${if (isGrid) "Grid" else "List"}",
                         onClick = { viewOptionsOpen = true },
                     )

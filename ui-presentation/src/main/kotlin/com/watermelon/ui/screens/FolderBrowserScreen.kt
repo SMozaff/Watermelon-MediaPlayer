@@ -44,6 +44,7 @@ import com.watermelon.common.model.FolderNode
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.FolderListItem
+import com.watermelon.ui.components.IconType
 import com.watermelon.ui.components.LabeledIconButton
 import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.components.FolderLoadingAnimation
@@ -146,12 +147,14 @@ fun FolderBrowserScreen(
             horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm),
         ) {
             LabeledIconButton(
-                icon = WatermelonIcons.Sort,
+                icon = IconType.DrawableIcon(WatermelonIcons.Sort),
                 label = "Sort: ${currentSort.label()}",
                 onClick = { sortMenuOpen = true },
             )
             LabeledIconButton(
-                icon = if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList,
+                icon = IconType.DrawableIcon(
+                    if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList
+                ),
                 label = "View: ${if (isGrid) "Grid" else "List"}",
                 onClick = { viewOptionsOpen = true },
             )
