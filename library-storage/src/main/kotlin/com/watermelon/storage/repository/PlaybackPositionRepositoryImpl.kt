@@ -13,18 +13,13 @@ import kotlinx.coroutines.withContext
  * Table: PlaybackPositions(mediaId TEXT, fileSize INTEGER, positionMs INTEGER,
  *                          updatedAt INTEGER, PRIMARY KEY (mediaId, fileSize))
  * `mediaId` stores the content:// URI, mirroring the convention used by MediaItems.
- *
- * NOTE: Database operations intentionally do NOT use runCatching. SQLite exceptions
- * (disk full, locked, corruption) should propagate up to the caller where proper
- * error handling and user feedback can be provided. Silent failure of database
- * operations is a critical risk to data integrity.
  */
 class PlaybackPositionRepositoryImpl(
     private val db: WatermelonDatabase
 ) : PlaybackPositionRepository {
 
-    override suspend fun savePosition(uri: String, fileSize: Long, positionMs: Long): Long? {
-        return withContext(Dispatchers.IO) {
+    override suspend fun savePosition(uri: String, fileSize: Long, positionMs: Long) {
+        withContext(Dispatchers.IO) {
             db.writableDatabase.insertWithOnConflict(
                 "PlaybackPositions",
                 null,
@@ -39,16 +34,13 @@ class PlaybackPositionRepositoryImpl(
         }
     }
 
-    override suspend fun getPosition(uri: String, fileSize: Long): Long? {
-        return withContext(Dispatchers.IO) {
+    override suspend fun getPosition(uri: String, fileSize: Long): Long? =
+        withContext(Dispatchers.IO) {
             db.readableDatabase.rawQuery(
                 "SELECT positionMs FROM PlaybackPositions WHERE mediaId = ? AND fileSize = ?",
                 arrayOf(uri, fileSize.toString())
-            ).use { c ->
-                if (c.moveToFirst()) c.getLong(0) else null
-            }
+            ).use { c -> if (c.moveToFirst()) c.getLong(0) else null }
         }
-    }
 
     override suspend fun clearPosition(uri: String, fileSize: Long) {
         withContext(Dispatchers.IO) {
