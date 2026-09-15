@@ -58,4 +58,4 @@ test_push*.txt
 .kotlin/
 
 # Quarantined stale build outputs (undeletable leftover dirs, never source)
-*-stale-root/
+*-stale-root/.jan/agent/threads/
