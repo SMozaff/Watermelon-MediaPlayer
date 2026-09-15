@@ -12,7 +12,6 @@ import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -378,7 +377,6 @@ class MainActivity : ComponentActivity() {
                             val completed = job.state as? com.watermelon.mediatools.job.MediaJobState.Completed
                             val outputUri = completed?.outputUri
                             if (outputUri == null) return@MediaJobsSheet
-                            com.watermelon.common.util.FileLogger.e("Jobs", "opening output: $outputUri")
                             runCatching {
                                 val viewIntent = Intent(Intent.ACTION_VIEW).apply {
                                     setDataAndType(Uri.parse(outputUri), contentResolver.getType(Uri.parse(outputUri)))
@@ -455,4 +453,16 @@ class MainActivity : ComponentActivity() {
     }
 
     // ... (rest of the activity methods would be updated to use modules)
+
+    /**
+     * Determine if bottom navigation bar should be shown.
+     * Hide for full-screen player and PiP mode, and hide unconditionally on TV — TV has no
+     * touch-oriented bottom nav at all; its root/home surface is TvFolderBrowserScreen's own
+     * pinned Settings/All Videos/Playlists rows (D-pad rows, not a bottom bar), reached at the
+     * same Routes.FOLDERS start destination every device uses.
+     */
+    private fun shouldShowBottomBar(destination: androidx.navigation.NavDestination?): Boolean {
+        if (com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(this)) return false
+        return destination?.route != "player/{uri}" && !isPiPActive
+    }
 }
