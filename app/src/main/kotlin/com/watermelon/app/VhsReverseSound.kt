@@ -50,22 +50,6 @@ class VhsReverseSound {
             .setTransferMode(AudioTrack.MODE_STREAM)
             .build()
             .also { it.play() }
-
-        genThread = Thread {
-            val chunk = ShortArray(1024)
-            var phase = 0.0
-            while (running) {
-                // base freq scales with rewind speed; faint, dry tone (no harmonics/wobble).
-                val baseFreq = 70.0 + speed * 18.0
-                for (i in chunk.indices) {
-                    phase += 2.0 * PI * baseFreq / sampleRate
-                    if (phase > 2 * PI) phase -= 2 * PI
-                    val s = sin(phase)
-                    chunk[i] = (s * 0.14 * Short.MAX_VALUE).toInt().toShort()  // faint, dry
-                }
-                track?.write(chunk, 0, chunk.size)
-            }
-        }.also { it.isDaemon = true; it.start() }
     }
 
     /** Update the pitch as rewind speed changes, without restarting. */
@@ -73,10 +57,33 @@ class VhsReverseSound {
 
     fun stop() {
         running = false
-        runCatching { genThread?.join(200) }
+        // Gracefully wait for the generator thread to finish, if it's still alive.
+        // A 200ms timeout is used to avoid blocking stop() indefinitely — if the thread
+        // doesn't terminate in time, it will be garbage collected and the AudioTrack
+        // resources will be released below.
+        try {
+            genThread?.join(200)
+        } catch (e: IllegalThreadStateException) {
+            FileLogger.w(TAG, "VhsReverseSound.stop() — thread join failed (thread may have already ended)", e)
+        }
         genThread = null
-        runCatching { track?.stop() }
-        runCatching { track?.release() }
+
+        // Stop and release the AudioTrack. Exceptions here are non-critical — the track
+        // will be garbage collected and cleaned up by the system.
+        try {
+            track?.stop()
+        } catch (e: Exception) {
+            FileLogger.w(TAG, "VhsReverseSound.stop() — failed to stop AudioTrack", e)
+        }
+        try {
+            track?.release()
+        } catch (e: Exception) {
+            FileLogger.w(TAG, "VhsReverseSound.stop() — failed to release AudioTrack", e)
+        }
         track = null
+    }
+
+    companion object {
+        private val TAG = "VhsReverseSound"
     }
 }

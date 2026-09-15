@@ -1,6 +1,5 @@
 package com.watermelon.storage.repository
 
-import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.Playlist
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import com.watermelon.common.util.FileLogger
 import java.util.UUID
 
 /**
@@ -45,6 +45,8 @@ class PlaylistRepositoryImpl(
 ) : PlaylistRepository {
 
     private val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
+
+    private val TAG = "PlaylistRepositoryImpl"
 
     /** All media, minus anything living in a folder the user has hidden. */
     private fun visibleMedia(all: List<MediaItem>): List<MediaItem> =
@@ -172,7 +174,7 @@ class PlaylistRepositoryImpl(
 
     private fun getCustomOrderMap(containerId: String): Map<String, Int> {
         val map = mutableMapOf<String, Int>()
-        runCatching {
+        try {
             db.readableDatabase.rawQuery(
                 "SELECT uri, position FROM CustomOrder WHERE containerId = ? ORDER BY position ASC",
                 arrayOf(containerId)
@@ -181,6 +183,8 @@ class PlaylistRepositoryImpl(
                     map[cursor.getString(0)] = cursor.getInt(1)
                 }
             }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "getCustomOrderMap() — failed to read custom order for containerId=$containerId", e)
         }
         return map
     }
@@ -295,7 +299,7 @@ class PlaylistRepositoryImpl(
 
     private fun observeUserPlaylistRows(): Flow<List<UserPlaylistRow>> = flow {
         val rows = mutableListOf<UserPlaylistRow>()
-        runCatching {
+        try {
             db.readableDatabase.rawQuery(
                 "SELECT id, name, createdAt FROM Playlists WHERE type = ? ORDER BY createdAt ASC",
                 arrayOf(PlaylistType.USER.name)
@@ -310,6 +314,8 @@ class PlaylistRepositoryImpl(
                     )
                 }
             }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "observeUserPlaylistRows() — failed to read user playlists", e)
         }
         emit(rows)
     }.flowOn(Dispatchers.IO)
@@ -321,7 +327,7 @@ class PlaylistRepositoryImpl(
      */
     private fun getContinueWatchingPositions(): Map<Pair<String, Long>, Long> {
         val map = mutableMapOf<Pair<String, Long>, Long>()
-        runCatching {
+        try {
             db.readableDatabase.rawQuery(
                 "SELECT mediaId, fileSize, updatedAt FROM PlaybackPositions WHERE positionMs > 0",
                 null
@@ -333,29 +339,35 @@ class PlaylistRepositoryImpl(
                     map[uri to fileSize] = updated
                 }
             }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "getContinueWatchingPositions() — failed to read playback positions", e)
         }
         return map
     }
 
     private fun getFavouriteUris(): Set<String> {
         val uris = mutableSetOf<String>()
-        runCatching {
+        try {
             db.readableDatabase.rawQuery("SELECT uri FROM Favourites", null).use { cursor ->
                 while (cursor.moveToNext()) uris += cursor.getString(0)
             }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "getFavouriteUris() — failed to read favourite URIs", e)
         }
         return uris
     }
 
     private fun getPlaylistItemUris(playlistId: String): List<String> {
         val uris = mutableListOf<String>()
-        runCatching {
+        try {
             db.readableDatabase.rawQuery(
                 "SELECT uri FROM PlaylistItems WHERE playlistId = ? ORDER BY addedAt ASC",
                 arrayOf(playlistId)
             ).use { cursor ->
                 while (cursor.moveToNext()) uris += cursor.getString(0)
             }
+        } catch (e: Exception) {
+            FileLogger.e(TAG, "getPlaylistItemUris() — failed to read playlist items for $playlistId", e)
         }
         return uris
     }
