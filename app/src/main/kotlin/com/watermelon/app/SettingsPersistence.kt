@@ -28,14 +28,14 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
     vhsEnabled = prefs.getBoolean("vhs_enabled", true),
     vhsIntensity = runCatching {
         VhsIntensity.valueOf(prefs.getString("vhs_intensity", null) ?: VhsIntensity.MED.name)
-    }.getOrDefault(VhsIntensity.MED).also { FileLogger.w("Settings", "vhsIntensity default applied: ${it.name}") },
+    }.getOrDefault(VhsIntensity.MED),
     tunerSeekBarEnabled = prefs.getBoolean("tuner_seekbar_enabled", true),
     tunerSeekStepSeconds = prefs.getInt("tuner_seek_step_seconds", 5).coerceIn(1, 20),
     memorySafety = prefs.getBoolean("memory_safety", false),
     fullFolderAccess = prefs.getBoolean("full_folder_access", false),
     screenshotMode = runCatching {
         ScreenshotMode.valueOf(prefs.getString("screenshot_mode", null) ?: ScreenshotMode.SINGLE.name)
-    }.getOrDefault(ScreenshotMode.SINGLE).also { FileLogger.w("Settings", "screenshotMode default applied: ${it.name}") },
+    }.getOrDefault(ScreenshotMode.SINGLE),
     continueWatchingEnabled = prefs.getBoolean("continue_watching_enabled", true),
     mp3OutputPath = prefs.getString("mt_mp3_output_path", null)
         ?: "Music/Watermelon",
@@ -51,17 +51,54 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
         textColorArgb = prefs.getLong("subtitle_color_argb", 0xFFFFFFFF.toLong()),
         position = runCatching {
             SubtitlePosition.valueOf(prefs.getString("subtitle_position", null) ?: SubtitlePosition.BOTTOM.name)
-        }.getOrDefault(SubtitlePosition.BOTTOM).also { FileLogger.w("Settings", "subtitlePosition default applied: ${it.name}") },
+        }.getOrDefault(SubtitlePosition.BOTTOM),
         bold = prefs.getBoolean("subtitle_bold", false),
         italic = prefs.getBoolean("subtitle_italic", false),
         underline = prefs.getBoolean("subtitle_underline", false),
         direction = runCatching {
             SubtitleDirection.valueOf(prefs.getString("subtitle_direction", null) ?: SubtitleDirection.AUTO.name)
-        }.getOrDefault(SubtitleDirection.AUTO).also { FileLogger.w("Settings", "subtitleDirection default applied: ${it.name}") },
+        }.getOrDefault(SubtitleDirection.AUTO),
         secondaryDirection = runCatching {
             SubtitleDirection.valueOf(
                 prefs.getString("subtitle_secondary_direction", null) ?: SubtitleDirection.AUTO.name
             )
-        }.getOrDefault(SubtitleDirection.AUTO).also { FileLogger.w("Settings", "subtitleSecondaryDirection default applied: ${it.name}") }
+        }.getOrDefault(SubtitleDirection.AUTO)
     )
 )
+
+/**
+ * Writes every field of [state] to [prefs] in one batch `apply()`. Called on every
+ * SettingsScreen.onStateChange, so any toggle — not just the 3 that used to be wired
+ * (vhsEnabled/vhsIntensity/tunerSeekBarEnabled) — survives an app restart.
+ */
+fun saveSettingsState(prefs: SharedPreferences, state: SettingsState) {
+    prefs.edit()
+        .putBoolean("forced_rtl", state.forcedRtl)
+        .putBoolean("grid_default", state.gridDefault)
+        .putBoolean("show_thumbnails", state.showThumbnails)
+        .putBoolean("show_durations", state.showDurations)
+        .putBoolean("show_file_size", state.showFileSize)
+        .putBoolean("vhs_enabled", state.vhsEnabled)
+        .putString("vhs_intensity", state.vhsIntensity.name)
+        .putBoolean("tuner_seekbar_enabled", state.tunerSeekBarEnabled)
+        .putInt("tuner_seek_step_seconds", state.tunerSeekStepSeconds)
+        .putBoolean("memory_safety", state.memorySafety)
+        .putBoolean("full_folder_access", state.fullFolderAccess)
+        .putString("screenshot_mode", state.screenshotMode.name)
+        .putBoolean("continue_watching_enabled", state.continueWatchingEnabled)
+        .putString("mt_mp3_output_path", state.mp3OutputPath)
+        .putString("mt_compressed_output_path", state.compressedOutputPath)
+        .putString("mt_trimmed_output_path", state.trimmedOutputPath)
+        .putBoolean("mt_premium_unlocked", state.isPremiumUnlocked)
+        .putBoolean("subtitle_auto_sync_enabled", state.autoSyncEnabled)
+        .putBoolean("subtitle_enabled", state.subtitleStyle.enabled)
+        .putInt("subtitle_size_sp", state.subtitleStyle.sizeSp)
+        .putLong("subtitle_color_argb", state.subtitleStyle.textColorArgb)
+        .putString("subtitle_position", state.subtitleStyle.position.name)
+        .putBoolean("subtitle_bold", state.subtitleStyle.bold)
+        .putBoolean("subtitle_italic", state.subtitleStyle.italic)
+        .putBoolean("subtitle_underline", state.subtitleStyle.underline)
+        .putString("subtitle_direction", state.subtitleStyle.direction.name)
+        .putString("subtitle_secondary_direction", state.subtitleStyle.secondaryDirection.name)
+        .apply()
+}
