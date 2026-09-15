@@ -25,11 +25,20 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
+ * Sealed class representing the possible icon types for [LabeledIconButton].
+ * Ensures type safety between [ImageVector] and [Int] (drawable resource) icons.
+ */
+sealed class IconType {
+    data class ImageVectorIcon(val icon: ImageVector) : IconType()
+    data class DrawableIcon(val icon: Int) : IconType()
+}
+
+/**
  * An icon button with a visible text label beneath it. Used app-wide in toolbars,
  * action bars, list controls and settings so every icon is identifiable (Issue 11).
  * NOT used in the player control panel (which intentionally has no labels).
  *
- * @param icon drawable resource (Int) or ImageVector from WatermelonIcons
+ * @param icon icon type, either an [ImageVector] from WatermelonIcons or an [Int] drawable resource
  * @param label visible caption shown under the icon
  * @param onClick tap handler
  * @param active when true, icon + label use the primary/active color
@@ -40,7 +49,7 @@ import com.watermelon.ui.theme.WatermelonSpacing
  */
 @Composable
 fun LabeledIconButton(
-    icon: Any,
+    icon: IconType,
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -53,44 +62,66 @@ fun LabeledIconButton(
         active   -> MaterialTheme.colorScheme.primary
         else     -> tint
     }
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
-            .clickable(
-                enabled = enabled,
-                role = Role.Button,
-                onClick = onClick
-            )
-            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-            .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2)
-    ) {
-        when (icon) {
-            is ImageVector -> {
+    when (icon) {
+        is IconType.ImageVectorIcon -> {
+            val iv = icon.icon
+            Column(
+                modifier = modifier
+                    .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
+                    .clickable(
+                        enabled = enabled,
+                        role = Role.Button,
+                        onClick = onClick
+                    )
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                    .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2)
+            ) {
                 Icon(
-                    imageVector       = icon,
+                    imageVector       = iv,
                     contentDescription = label,
                     tint               = resolvedTint,
                     modifier           = Modifier.size(24.dp)
                 )
+                Text(
+                    text      = label,
+                    color     = resolvedTint,
+                    fontSize  = 10.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines  = 1
+                )
             }
-            is Int -> {
+        }
+        is IconType.DrawableIcon -> {
+            val drawableId = icon.icon
+            Column(
+                modifier = modifier
+                    .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
+                    .clickable(
+                        enabled = enabled,
+                        role = Role.Button,
+                        onClick = onClick
+                    )
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                    .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2)
+            ) {
                 Icon(
-                    painter            = painterResource(icon),
+                    painter            = painterResource(drawableId),
                     contentDescription = label,
                     tint               = Color.Unspecified,
                     modifier           = Modifier.size(24.dp)
                 )
+                Text(
+                    text      = label,
+                    color     = resolvedTint,
+                    fontSize  = 10.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines  = 1
+                )
             }
-            else -> {}
         }
-        Text(
-            text      = label,
-            color     = resolvedTint,
-            fontSize  = 10.sp,
-            textAlign = TextAlign.Center,
-            maxLines  = 1
-        )
     }
 }

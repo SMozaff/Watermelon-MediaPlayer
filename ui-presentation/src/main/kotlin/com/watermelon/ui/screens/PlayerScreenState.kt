@@ -91,5 +91,4 @@ class PlayerScreenState {
     var maxVolume: Int = 0
     var screenshotMode: ScreenshotMode = ScreenshotMode.SINGLE
     var initialBrightness: Float = -1f
-    var tvm: Any? = null
 }
