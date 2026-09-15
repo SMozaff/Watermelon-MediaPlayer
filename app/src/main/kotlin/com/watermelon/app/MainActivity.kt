@@ -12,6 +12,7 @@ import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -90,6 +91,8 @@ import com.watermelon.ui.viewmodel.VideoListViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+import androidx.activity.runCatching
+
 @UnstableApi
 class MainActivity : ComponentActivity() {
 
@@ -104,7 +107,7 @@ class MainActivity : ComponentActivity() {
     // WatermelonApplication (see that class's doc — no DI framework in this app, so this
     // Activity just reads the Application-scoped instances rather than constructing new ones).
     private val mediaJobManager by lazy {
-        (application as com.watermelon.app.WatermelonApplication).mediaJobManager
+        (application as com.wamwatermelon.app.WatermelonApplication).mediaJobManager
     }
     private val outputFileStore by lazy {
         (application as com.watermelon.app.WatermelonApplication).outputFileStore
@@ -451,8 +454,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    // ... (rest of the activity methods would be updated to use modules)
 
     /**
      * Determine if bottom navigation bar should be shown.
