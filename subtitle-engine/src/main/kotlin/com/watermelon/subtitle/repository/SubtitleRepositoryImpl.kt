@@ -5,9 +5,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.ParsedSubtitle
+import com.watermelon.common.model.SubtitleTrack
 import com.watermelon.common.model.VideoQuery
 import com.watermelon.common.repository.DownloadedSubtitle
 import com.watermelon.common.repository.OnlineSubtitleSearchResult
+import com.watermelon.common.repository.SubtitleRepository
 import com.watermelon.subtitle.cache.SubtitleCacheStore
 import com.watermelon.subtitle.hash.OpenSubtitlesHasher
 import com.watermelon.subtitle.parser.SrtParser
@@ -15,6 +17,7 @@ import com.watermelon.subtitle.provider.AuthenticationRequiredException
 import com.watermelon.subtitle.provider.PermissionDeniedException
 import com.watermelon.subtitle.provider.ProviderException
 import com.watermelon.subtitle.provider.ProviderResponseException
+import com.watermelon.subtitle.provider.ProviderUnavailableException
 import com.watermelon.subtitle.provider.QuotaExceededException
 import com.watermelon.subtitle.provider.SubtitleProviderQuery
 import com.watermelon.subtitle.provider.registry.SubtitleProviderRegistry
@@ -30,7 +33,6 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.URI
 
 class SubtitleRepositoryImpl internal constructor(
     private val providerRegistry: SubtitleProviderRegistry,
@@ -39,7 +41,7 @@ class SubtitleRepositoryImpl internal constructor(
     private val cacheStore: SubtitleCacheStore,
     private val isNetworkAvailable: () -> Boolean,
     private val hashFor: (MediaItem) -> String,
-)
+) : SubtitleRepository {
 
     constructor(
         context: Context,
@@ -76,19 +78,13 @@ class SubtitleRepositoryImpl internal constructor(
         if (configuredProviders.isEmpty()) {
             return@withContext OnlineSubtitleSearchResult.ProviderNotConfigured
         }
+
         if (!isNetworkAvailable()) {
             return@withContext OnlineSubtitleSearchResult.Offline
         }
-        // Step 2: compute media hash for provider lookup
-        val hash = try {
-            hashFor(mediaItem)
-        } catch (e: Exception) {
-            FileLogger.e("SubtitleRepo", "searchOnlineSubtitles() — hash computation failed", e)
-            null
-        }
-        if (hash == null) {
-            return@withContext OnlineSubtitleSearchResult.Failure("Failed to compute media hash")
-        }
+
+        val hash = runCatching { hashFor(mediaItem) }.getOrNull()
+            ?: return@withContext OnlineSubtitleSearchResult.Failure("Failed to compute media hash")
 
         val query = SubtitleProviderQuery(
             movieHash = hash,
@@ -96,6 +92,7 @@ class SubtitleRepositoryImpl internal constructor(
             displayName = mediaItem.displayName,
             preferredLanguages = preferredLanguages
         )
+
         try {
             val tracks = providerRegistry.search(query)
             if (tracks.isEmpty()) {
@@ -125,6 +122,7 @@ class SubtitleRepositoryImpl internal constructor(
     ): DownloadedSubtitle = withContext(Dispatchers.IO) {
         // Resolve the download URL through the provider registry
         val downloadLink = providerRegistry.resolveDownload(track)
+
         // Validate the resolved URL
         require(isAllowedDownloadUrl(downloadLink.url)) {
             "Refusing to download subtitle from untrusted URL: ${downloadLink.url}"
@@ -163,6 +161,7 @@ class SubtitleRepositoryImpl internal constructor(
             providerId = track.providerId ?: "opensubtitles.com",
             bytes = bytes
         )
+
         DownloadedSubtitle(
             localPath = cachedFile.absolutePath,
             subtitle = parsed
@@ -176,18 +175,14 @@ class SubtitleRepositoryImpl internal constructor(
     }
 
     private fun isAllowedDownloadUrl(url: String): Boolean {
-        val parsed: URI? = try {
-            URI(url)
-        } catch (e: Exception) {
-            FileLogger.e("SubtitleRepo", "isAllowedDownloadUrl() — invalid URL: $url", e)
-            null
-        }
+        val parsed = runCatching { java.net.URI(url) }.getOrNull()
         val host = parsed?.host?.lowercase()
         return parsed?.scheme?.equals("https", ignoreCase = true) == true &&
             (host == "opensubtitles.com" || host?.endsWith(".opensubtitles.com") == true)
     }
 
     // ── S1 extension: parsed render-ready subtitle (offline only) ───────────────
+
     suspend fun parsedFor(mediaItem: MediaItem, preferredLanguages: List<String>): ParsedSubtitle? =
         withContext(Dispatchers.IO) {
             // Step 0: local sidecar (no network)
@@ -198,7 +193,6 @@ class SubtitleRepositoryImpl internal constructor(
                 durationMs = mediaItem.durationMs,
                 languages = preferredLanguages
             )
-
             val sidecar = sidecarSource.findAndParse(query)
             if (sidecar != null) {
                 return@withContext sidecar
@@ -214,28 +208,16 @@ class SubtitleRepositoryImpl internal constructor(
         }
 
     private fun parseCachedFile(file: File): ParsedSubtitle? {
-        val content = try {
-            file.readText(Charsets.UTF_8)
-        } catch (e: Exception) {
-            FileLogger.e("SubtitleRepo", "parseCachedFile() — failed to read cached file: ${file.absolutePath}", e)
-            return@parseCachedFile null
-        }
-
+        val content = runCatching { file.readText(Charsets.UTF_8) }.getOrNull() ?: return@parseCachedFile null
         // Hierarchical layout is <mediaSha>/<language>/<provider>/<remoteId>.srt,
         // so the language is the grandparent directory name. Fall back to the old
         // flat-layout heuristic for any legacy file still on disk.
         val lang = file.parentFile?.parentFile
-            ?{ it.name.isNotEmpty() }
+            ?.takeIf { it.name.isNotEmpty() }
             ?.name
             ?: file.nameWithoutExtension.substringAfterLast('.', "").ifEmpty { null }
-
         return when (file.extension.lowercase()) {
-            "srt" -> try {
-                SrtParser.parse(content, lang)
-            } catch (e: Exception) {
-                FileLogger.e("SubtitleRepo", "parseCachedFile() — SRT parse failed for: ${file.absolutePath}", e)
-                null
-            }
+            "srt" -> runCatching { SrtParser.parse(content, lang) }.getOrNull()
             else -> null
         }
     }
@@ -258,3 +240,5 @@ class SubtitleRepositoryImpl internal constructor(
         }
     }
 }
+
+const val MAX_SUBTITLE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MiB

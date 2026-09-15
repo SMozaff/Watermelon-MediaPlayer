@@ -53,8 +53,11 @@ import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.LabeledIconButton
 import com.watermelon.ui.components.MultiSelectionDock
-import com.watermelon.ui.components.VideoListItem
 import com.watermelon.ui.components.StatusBadge
+import com.watermelon.ui.components.VideoListItem
+import com.watermelon.ui.components.VelocityGuardImage
+import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.WatermelonLoadingAnimation
 import com.watermelon.ui.components.VideoItemSize
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
@@ -62,7 +65,6 @@ import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.LibraryUiState
 import com.watermelon.ui.viewmodel.VideoListViewModel
-import com.watermelon.app.scrollToTop
 
 private enum class VideoSort(val label: String) {
     NAME("Name"), DATE("Date"), DURATION("Duration"),
@@ -187,8 +189,9 @@ fun VideoListScreen(
         derivedStateOf { listState.isScrollInProgress || gridState.isScrollInProgress }
     }
 
-    LaunchedEffect(listState.hashCode(), gridState.hashCode()) {
-        scrollToTop(listState, gridState)
+    LaunchedEffect(currentSort, ascending, currentLayout, currentItemSize) {
+        runCatching { listState.scrollToItem(0) }
+        runCatching { gridState.scrollToItem(0) }
     }
 
     val gridColumns = when (currentItemSize) {

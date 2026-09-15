@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import com.watermelon.app.scrollToTop
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -115,8 +115,9 @@ fun FolderBrowserScreen(
     val isScrolling by remember {
         derivedStateOf { listState.isScrollInProgress || gridState.isScrollInProgress }
     }
-    androidx.compose.runtime.LaunchedEffect(listState.hashCode() ?: 0, gridState.hashCode() ?: 0) {
-        scrollToTop(listState, gridState)
+    androidx.compose.runtime.LaunchedEffect(currentSort, ascending, currentLayout, currentItemSize) {
+        runCatching { listState.scrollToItem(0) }
+        runCatching { gridState.scrollToItem(0) }
     }
 
     val isGrid = currentLayout == FolderLayout.GRID
