@@ -260,20 +260,34 @@ class PlayerScreenStatePreservationTest {
         // Simulate a held reverse gesture on the left half of the screen for long enough to
         // cross the 500ms long-press threshold and accumulate several loop iterations at the
         // fastest step interval used by the hold loop (40ms floor).
-        composeRule
-            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
-            .performTouchInput {
+        val gestureSurface =
+            composeRule.onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+
+        composeRule.mainClock.autoAdvance = false
+
+        try {
+            gestureSurface.performTouchInput {
                 down(center.copy(x = center.x / 2))
             }
-        // The production hold detector is a LaunchedEffect with delay(500L).
-        // MainTestClock drives delayed LaunchedEffects in Compose tests.
-        // Advance far enough to cross the threshold and allow loop iterations.
-        composeRule.mainClock.advanceTimeBy(900L)
-        composeRule
-            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
-            .performTouchInput {
+
+            // Flush Android input so DOWN is delivered before advancing Compose time.
+            composeRule.waitForIdle()
+
+            // Recompose / launch the hold effect.
+            composeRule.mainClock.advanceTimeByFrame()
+
+            // Cross the 500ms threshold and allow multiple rewind iterations.
+            composeRule.mainClock.advanceTimeBy(1_000L)
+
+            gestureSurface.performTouchInput {
                 up()
             }
+
+            composeRule.mainClock.advanceTimeByFrame()
+        } finally {
+            composeRule.mainClock.autoAdvance = true
+        }
+
         composeRule.waitForIdle()
 
         val calls = controller.seekCalls.toList()
