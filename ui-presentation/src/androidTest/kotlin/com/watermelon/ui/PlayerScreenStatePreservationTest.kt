@@ -264,9 +264,14 @@ class PlayerScreenStatePreservationTest {
             .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
             .performTouchInput {
                 down(center.copy(x = center.x / 2))
-                // Real elapsed time, not just waitForIdle — the hold loop's own delay() calls need
-                // wall-clock time to progress since they aren't driven by the compose test clock.
-                Thread.sleep(900)
+            }
+        // The production hold detector is a LaunchedEffect with delay(500L).
+        // MainTestClock drives delayed LaunchedEffects in Compose tests.
+        // Advance far enough to cross the threshold and allow loop iterations.
+        composeRule.mainClock.advanceTimeBy(900L)
+        composeRule
+            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
+            .performTouchInput {
                 up()
             }
         composeRule.waitForIdle()
