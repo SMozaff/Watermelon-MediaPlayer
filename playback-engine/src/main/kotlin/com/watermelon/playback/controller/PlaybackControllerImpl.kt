@@ -375,7 +375,7 @@ class PlaybackControllerImpl(
         const val MIN_SPEED        = 0.5f
         const val MAX_SPEED        = 8.0f
         private const val POSITION_TICK_MS = 250L
-        private const val SAVE_EVERY_N_TICKS = 20  // ~5s at 250ms/tick
+        private const val SAVE_EVERY_N_TICKS = 40  // ~10s at 250ms/tick
         private const val RELEASE_SAVE_TIMEOUT_MS = 300L
     }
 }

@@ -8,63 +8,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.watermelon.mediatools.job.MediaJob
-import com.watermelon.mediatools.job.MediaJobState
-import com.watermelon.mediatools.job.MediaJobType
-import com.watermelon.ui.theme.PlayerColors
-import com.watermelon.ui.theme.WatermelonShapes
-import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 
 /**
- * Shared progress/notification UI for Extract Audio / Trim / Compress jobs (blueprint
- * Phase 1 requirement -- one component, reused everywhere). Mirrors SleepTimerDialog's
- * visual style (Dialog + Box + WatermelonShapes.sheet).
+ * Progress sheet for extract audio, trim, and compress jobs.
  *
- * This is a pure display component: it renders whatever [job] currently is and calls back
- * on user actions. The caller (a screen or MediaJobsViewModel-backed host) is responsible
- * for collecting the actual MediaJob out of MediaJobManager.jobs by id and for deciding
- * when to stop showing this (e.g. dismiss after Cancelled, or once Completed's
- * awaitingOriginalFileDecision has been resolved to false and the caller wants to close).
+ * Shows job type, progress percentage, and allows cancellation.
+ * Called from screens when a job is active and needs user intervention.
  *
- * @param job the current job state to render.
- * @param onCancel called when the user taps Cancel while Queued/Running.
- * @param onDismiss called when the user dismisses a Failed/simple-success state.
- *   Not called for Completed jobs where awaitingOriginalFileDecision is true -- the caller
- *   should show KeepOrDeleteOriginalDialog instead in that case (see that component).
+ * @param job The current MediaJob instance
+ * @param onCancel Callback when user cancels the job
+ * @param onDismiss Callback when user dismisses the job
  */
 @Composable
 fun MediaJobProgressSheet(
     job: MediaJob,
     onCancel: () -> Unit,
     onDismiss: () -> Unit,
-    onContinueInBackground: (() -> Unit)? = null,
-    outputLocation: String? = null,
-    onOpenSettings: (() -> Unit)? = null,
 ) {
     Dialog(
-        onDismissRequest = { /* no-op while running; Failed/simple-success dismiss via button */ },
+        onDismissRequest = { /* no-op while running; dismissed via button */ },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .background(MaterialTheme.colorScheme.surface, WatermelonShapes.sheet)
-                .padding(WatermelonSpacing.lg),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .background(composer.color.surface, composer.color.sheet)
+                .padding(composer.spacing.lg),
+            contentAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                verticalArrangement = Arrangement.spacedBy(composer.spacing.md),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     jobTypeLabel(job.type),
@@ -73,11 +57,11 @@ fun MediaJobProgressSheet(
                 )
 
                 when (val state = job.state) {
-                    is MediaJobState.Queued, is MediaJobState.Running -> {
+                    is MediaJobState.Queued or is MediaJobState.Running -> {
                         LinearProgressIndicator(
-                            progress = { job.progressPercent / 100f },
+                            progress = job.progressPercent / 100f,
                             modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             "${job.progressPercent}% · ${jobProgressLabel(job.type)}",
@@ -86,7 +70,7 @@ fun MediaJobProgressSheet(
                         )
                         Button(
                             onClick = onCancel,
-                            shape = WatermelonShapes.control,
+                            shape = composer.shapes.control,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -95,41 +79,9 @@ fun MediaJobProgressSheet(
                         ) {
                             Text("Cancel")
                         }
-                        onContinueInBackground?.let { continueInBackground ->
-                            TextButton(onClick = continueInBackground) {
-                                Text("Continue in background")
-                            }
-                        }
-                    }
-
-                    is MediaJobState.Completed -> {
-                        // Caller is expected to show KeepOrDeleteOriginalDialog instead when
-                        // awaitingOriginalFileDecision is true (trim/compress) -- this branch
-                        // covers the simple-success case (extract audio, or after the
-                        // decision has already been resolved).
-                        Text(
-                            if (job.type == MediaJobType.EXTRACT_AUDIO) "MP3 ready" else "Done",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = PlayerColors.current.textPrimary
-                        )
-                        if (job.type == MediaJobType.EXTRACT_AUDIO && outputLocation != null) {
-                            Text(
-                                text = "Saved to $outputLocation",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "You can change this folder in Settings › Media tools.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            onOpenSettings?.let { openSettings ->
-                                TextButton(onClick = openSettings) { Text("Open settings") }
-                            }
-                        }
-                        Button(
+                        TextButton(
                             onClick = onDismiss,
-                            shape = WatermelonShapes.control,
+                            shape = composer.shapes.control,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -140,27 +92,57 @@ fun MediaJobProgressSheet(
                         }
                     }
 
+                    is MediaJobState.Completed -> {
+                        Text(
+                            if (job.type == MediaJobType.EXTRACT_AUDIO) "MP3 ready" else "Done",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = composer.color.textPrimary
+                        )
+                        if (job.type == MediaJobType.EXTRACT_AUDIO && job.outputLocation != null) {
+                            Text(
+                                "Saved to $job.outputLocation",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = composer.color.onSurface
+                            )
+                            Text(
+                                "You can change this folder in Settings › Media tools.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = composer.color.onSurfaceVariant
+                            )
+                            TextButton(
+                                onClick = onDismiss,
+                                shape = composer.shapes.control,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = composer.color.primary,
+                                    contentColor = composer.color.onPrimary
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("OK")
+                            }
+                        }
+                    }
+
                     is MediaJobState.Failed -> {
                         Text(
-                            if (job.type == MediaJobType.EXTRACT_AUDIO) {
+                            if (job.type == MediaJobType.EXTRACT_AUDIO)
                                 "MP3 conversion failed"
-                            } else {
-                                "Couldn’t finish"
-                            },
+                            else
+                                "Couldn't finish",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = PlayerColors.current.textPrimary
+                            color = composer.color.textPrimary
                         )
                         Text(
                             state.reason,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = PlayerColors.current.warning
+                            color = composer.color.textWarning
                         )
                         Button(
                             onClick = onDismiss,
-                            shape = WatermelonShapes.control,
+                            shape = composer.shapes.control,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                containerColor = composer.color.surfaceVariant,
+                                contentColor = composer.color.onSurfaceVariant
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -169,8 +151,7 @@ fun MediaJobProgressSheet(
                     }
 
                     is MediaJobState.Cancelled -> {
-                        // Per UI manifest: dismiss immediately, no lingering UI. Caller
-                        // should stop showing this sheet on Cancelled; nothing to render.
+                        // Dismiss immediately for cancelled jobs
                     }
                 }
             }

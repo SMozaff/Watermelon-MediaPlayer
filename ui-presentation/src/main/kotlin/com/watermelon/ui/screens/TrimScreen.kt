@@ -34,6 +34,8 @@ import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 import com.watermelon.ui.components.MediaJobProgressSheet
 import com.watermelon.ui.components.TrimRangeScrubber
+import com.watermelon.ui.components.ThumbnailStrip
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.MediaJobsViewModel
@@ -144,21 +146,28 @@ fun TrimScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        TrimRangeScrubber(
-            startMs = startMs,
-            endMs = endMs,
-            durationMs = durationMs,
-            onRangeChange = { newStart, newEnd ->
-                startMs = newStart
-                endMs = newEnd
-                playerViewModel.onIntent(UserIntent.Seek(newStart))
-            },
-            keyframeTimestampsMs = keyframeTimestampsMs,
-            filmstripFrames = filmstripFrames,
-            modifier = Modifier.fillMaxWidth()
-        )
+         TrimRangeScrubber(
+             startMs = startMs,
+             endMs = endMs,
+             durationMs = durationMs,
+             onRangeChange = { newStart, newEnd ->
+                 startMs = newStart
+                 endMs = newEnd
+                 playerViewModel.onIntent(UserIntent.Seek(newStart))
+             },
+             keyframeTimestampsMs = keyframeTimestampsMs,
+             filmstripFrames = filmstripFrames,
+         )
 
-        Row_TimeLabels(startMs, endMs)
+         // Thumbnail strip for selected range
+         ThumbnailStrip(
+             videos = selectedVideos,
+             startMs = startMs,
+             endMs = endMs,
+             onSelect = { selectedVideo -> onTrimVideo(selectedVideo) }
+         )
+
+         Row_TimeLabels(startMs, endMs)
 
         Button(
             onClick = {
