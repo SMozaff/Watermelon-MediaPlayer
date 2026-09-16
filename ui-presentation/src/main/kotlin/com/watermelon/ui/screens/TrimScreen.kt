@@ -34,8 +34,6 @@ import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 import com.watermelon.ui.components.MediaJobProgressSheet
 import com.watermelon.ui.components.TrimRangeScrubber
-import com.watermelon.ui.components.ThumbnailStrip
-import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.MediaJobsViewModel
@@ -157,13 +155,6 @@ fun TrimScreen(
              },
              keyframeTimestampsMs = keyframeTimestampsMs,
              filmstripFrames = filmstripFrames,
-         )
-
-         // Thumbnail strip for selected range
-         val selectedVideos = listOfNotNull(inputUri.toString()).map { MediaItem(uri = it) }
-         ThumbnailStrip(
-             videos = selectedVideos,
-             onSelect = { video -> trimViewModel.setSelectedVideo(video) }
          )
 
          Row_TimeLabels(startMs, endMs)

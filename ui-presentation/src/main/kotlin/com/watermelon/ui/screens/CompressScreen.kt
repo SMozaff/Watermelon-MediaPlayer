@@ -35,7 +35,7 @@ import androidx.media3.common.util.UnstableApi
 import com.watermelon.mediatools.engine.VideoCompressor
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
-import com.watermelon.ui.components.ThumbnailStrip
+import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 import com.watermelon.ui.components.MediaJobProgressSheet
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing

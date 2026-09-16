@@ -1,14 +1,18 @@
 package com.watermelon.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,15 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.widthIn
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.widthIn
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.MediaItem
-import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
-import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
 /**
@@ -39,15 +40,18 @@ fun ThumbnailStrip(
 ) {
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        contentPadding = Padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 8.dp),
     ) {
-        videos.forEach { video ->
+        items(
+            items = videos,
+            key = { it.uri.toString() }
+        ) { video ->
             Row(
                 modifier = Modifier
                     .clickable { onSelect(video) }
-                    .padding(WatermelonSpacing.xs)
+                    .padding(4.dp)
                     .clip(WatermelonShapes.small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -56,11 +60,10 @@ fun ThumbnailStrip(
                     contentDescription = "Thumbnail for ${video.displayName}",
                     modifier = Modifier
                         .size(48.dp)
-                        .clip(WatermelonShapes.small)
-                        .background(WatermelonColors.Palette.SurfaceVariant),
+                        .clip(WatermelonShapes.small),
                     contentScale = ContentScale.Crop,
                 )
-                Spacer(modifier = Modifier.width(WatermelonSpacing.sm))
+                Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.widthIn(max = 120.dp)) {
                     Text(
                         text = video.displayName,
