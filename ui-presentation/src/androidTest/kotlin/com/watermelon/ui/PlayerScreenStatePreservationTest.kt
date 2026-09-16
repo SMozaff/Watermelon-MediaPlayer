@@ -264,13 +264,11 @@ class PlayerScreenStatePreservationTest {
             .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
             .performTouchInput {
                 down(center.copy(x = center.x / 2))
+                // Real elapsed time, not just waitForIdle — the hold loop's own delay() calls need
+                // wall-clock time to progress since they aren't driven by the compose test clock.
+                Thread.sleep(900)
+                up()
             }
-        // Real elapsed time, not just waitForIdle — the hold loop's own delay() calls need
-        // wall-clock time to progress since they aren't driven by the compose test clock.
-        Thread.sleep(900)
-        composeRule
-            .onNodeWithTag(PLAYER_GESTURE_SURFACE_TAG)
-            .performTouchInput { up() }
         composeRule.waitForIdle()
 
         val calls = controller.seekCalls.toList()

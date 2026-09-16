@@ -4,7 +4,7 @@ import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.SubtitleTrack
 import java.io.File
 import java.security.MessageDigest
-import java.util.Base64
+import kotlin.io.encoding.Base64
 
 /**
  * File-backed cache for downloaded subtitles.
@@ -51,14 +51,16 @@ class SubtitleCacheStore(
             .take(64)
     }
 
+    private val providerBase64 = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT)
+
     private fun encodeProvider(providerId: String): String {
-        return Base64.getUrlEncoder().withoutPadding()
-            .encodeToString(providerId.toByteArray(Charsets.UTF_8))
+        return providerBase64
+            .encode(providerId.toByteArray(Charsets.UTF_8))
             .take(64)
     }
 
     private fun decodeProvider(encoded: String): String {
-        return String(Base64.getUrlDecoder().decode(encoded), Charsets.UTF_8)
+        return String(providerBase64.decode(encoded), Charsets.UTF_8)
     }
 
     private fun trackFile(
