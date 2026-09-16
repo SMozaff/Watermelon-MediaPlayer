@@ -160,11 +160,10 @@ fun TrimScreen(
          )
 
          // Thumbnail strip for selected range
+         val selectedVideos = listOfNotNull(inputUri.toString()).map { MediaItem(uri = it) }
          ThumbnailStrip(
              videos = selectedVideos,
-             startMs = startMs,
-             endMs = endMs,
-             onSelect = { selectedVideo -> onTrimVideo(selectedVideo) }
+             onSelect = { video -> trimViewModel.setSelectedVideo(video) }
          )
 
          Row_TimeLabels(startMs, endMs)

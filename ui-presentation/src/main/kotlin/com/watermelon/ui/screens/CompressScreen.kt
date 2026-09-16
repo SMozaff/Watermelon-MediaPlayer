@@ -61,12 +61,6 @@ fun CompressScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ThumbnailStrip(
-        videos = selectedPreset?.videos ?: [],
-        startMs = startMs,
-        endMs = endMs,
-        onSelect = { selectedVideo -> onSelectVideo(selectedVideo) }
-    )
     var selectedPreset by remember { mutableStateOf<VideoCompressor.Preset?>(null) }
     var customTargetMb by remember { mutableStateOf("") }
     var activeJobId by remember { mutableStateOf<String?>(null) }
