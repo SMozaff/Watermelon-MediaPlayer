@@ -1,5 +1,6 @@
 package com.watermelon.mediatools.engine
 
+import androidx.annotation.OptIn
 import android.content.Context
 import android.net.Uri
 import androidx.media3.common.MediaItem
@@ -33,7 +34,7 @@ import com.watermelon.mediatools.output.OutputNaming
  *
  * NOT run on-device.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class VideoTrimmer(private val context: Context, private val outputFileStore: OutputFileStore) {
 
     /**
