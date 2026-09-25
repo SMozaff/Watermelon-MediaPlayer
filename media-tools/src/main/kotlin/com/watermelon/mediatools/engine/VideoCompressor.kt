@@ -1,5 +1,6 @@
 package com.watermelon.mediatools.engine
 
+import androidx.annotation.OptIn
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -49,7 +50,7 @@ private const val TAG = "VideoCompressor"
  *
  * NOT run on-device.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class VideoCompressor(private val context: Context, private val outputFileStore: OutputFileStore) {
 
     /**
