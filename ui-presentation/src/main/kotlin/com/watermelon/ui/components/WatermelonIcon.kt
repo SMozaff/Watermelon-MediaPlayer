@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 fun WatermelonGlyph(
     @DrawableRes icon: Int,
     contentDescription: String?,
-    tint: Color,
+    tint: Color = Color.Unspecified,
     modifier: Modifier = Modifier,
 ) {
     Image(
@@ -45,7 +45,7 @@ fun WatermelonArtwork(
 }
 
 /**
- * Backward-compatible bridge for existing call sites.
+ * Backward-compatible bridge for external callers that have not migrated yet.
  *
  * A supplied tint now always selects the operational-glyph path; omitting tint preserves the
  * drawable's authored colours as artwork. New code should use [WatermelonGlyph] or
