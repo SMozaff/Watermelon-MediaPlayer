@@ -58,8 +58,10 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform 37
-        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+      - name: Verify Android platform 37
+        run: |
+          test -d "${ANDROID_HOME}/platforms/android-37"
+          test -d "${ANDROID_HOME}/build-tools/37.0.0"
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
@@ -136,8 +138,10 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform 37
-        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+      - name: Verify Android platform 37
+        run: |
+          test -d "${ANDROID_HOME}/platforms/android-37"
+          test -d "${ANDROID_HOME}/build-tools/37.0.0"
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
@@ -190,8 +194,10 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform 37
-        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+      - name: Verify Android platform 37
+        run: |
+          test -d "${ANDROID_HOME}/platforms/android-37"
+          test -d "${ANDROID_HOME}/build-tools/37.0.0"
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
@@ -249,8 +255,10 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform 37
-        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+      - name: Verify Android platform 37
+        run: |
+          test -d "${ANDROID_HOME}/platforms/android-37"
+          test -d "${ANDROID_HOME}/build-tools/37.0.0"
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
