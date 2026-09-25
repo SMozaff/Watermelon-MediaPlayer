@@ -1,5 +1,6 @@
 package com.watermelon.app
 
+import androidx.annotation.OptIn
 import android.Manifest
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
@@ -95,7 +96,7 @@ import com.watermelon.ui.viewmodel.VideoListViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MainActivity : ComponentActivity() {
 
     private val prefs: SharedPreferences by lazy {
