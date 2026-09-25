@@ -1,5 +1,6 @@
 package com.watermelon.playback.service
 
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -13,7 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
  * Standard player transport commands are delegated to the underlying [Player]; only custom
  * session commands need explicit handling here.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MediaSessionCallback(
     private val onScreenshot: () -> String?
 ) : MediaSession.Callback {
