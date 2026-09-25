@@ -19,7 +19,7 @@
 
 **Watermelon MediaPlayer** is an Android media-player project focused on turning a capable playback engine into a product-ready media experience.
 
-The project is being developed with two perspectives in parallel:
+The project is being developed with two perspectives in parallel, under a single product constraint: **Watermelon is intended to be a commercial, proprietary application with paid premium features.**
 
 - **Commercial:** a clear product proposition, differentiated user experience, extensible features, and a foundation that can evolve into a sustainable media application.
 - **Technical:** modular Android architecture, Media3-based playback, automated validation, database migrations, runtime instrumentation, and CI gates intended to keep the codebase maintainable as the product grows.
@@ -40,14 +40,17 @@ Watermelon is positioned as a **smart media-player platform**, rather than only 
 
 ### Potential commercial model
 
-The repository itself does not prescribe a business model. A future commercial distribution could support combinations such as:
+Watermelon is intended for **commercial distribution**, with premium capabilities forming part of the product strategy. The repository is therefore not positioned as a free/open-source media-player product.
 
-- free/core playback with optional premium capabilities;
+The commercial product direction includes:
+
+- a proprietary application and controlled distribution;
+- a capable core media experience with differentiated premium capabilities;
 - premium automation and intelligent media features;
-- TV-oriented or specialized editions;
-- integrations or services built around the media-player platform.
+- TV-oriented and specialized product experiences;
+- future integrations and services where they support the product strategy.
 
-These are product directions rather than claims about currently available paid offerings.
+The exact feature matrix, pricing, packaging, and entitlement model will evolve as the product moves toward release.
 
 ## Technical Perspective
 
@@ -158,7 +161,7 @@ Features and APIs should therefore be considered subject to change until their c
 
 ## License
 
-No open-source license is currently declared in the repository. If this project is distributed commercially or publicly, the licensing and distribution terms should be established explicitly before release.
+**Commercial / proprietary.** Watermelon is not intended to be released as a free open-source application. The final distribution license, end-user terms, premium entitlement model, and any source-availability policy will be established as part of the commercial release process.
 
 ## Links
 
