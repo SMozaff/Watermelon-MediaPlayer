@@ -48,7 +48,7 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
     subtitleStyle = SubtitleStyle(
         enabled = prefs.getBoolean("subtitle_enabled", true),
         sizeSp = prefs.getInt("subtitle_size_sp", 18),
-        textColorArgb = prefs.getLong("subtitle_color_argb", 0xFFFFFFFF.toLong()),
+        textColorArgb = prefs.getLong("subtitle_color_argb", 0xFFFFFFFFL),
         position = runCatching {
             SubtitlePosition.valueOf(prefs.getString("subtitle_position", null) ?: SubtitlePosition.BOTTOM.name)
         }.getOrDefault(SubtitlePosition.BOTTOM),
