@@ -98,6 +98,7 @@ fun PhonePlayerScreen(
     onCompressVideo: (() -> Unit)? = null,
     onLockChanged: ((Boolean) -> Unit)? = null,
     isInPipMode: Boolean = false,
+    initialControlsVisible: Boolean = true,
     modifier: Modifier = Modifier,
     subtitleRepository: com.watermelon.common.repository.SubtitleRepository? = null,
     onSubtitleLoaded: (com.watermelon.common.model.ParsedSubtitle) -> Unit = {},
@@ -166,7 +167,7 @@ fun PhonePlayerScreen(
     // Keep local PiP flag in sync with the real system PiP state
     LaunchedEffect(isInPipMode) {
         uiState.isPiPEnabled = isInPipMode
-        if (!isInPipMode) {
+        if (!isInPipMode && initialControlsVisible) {
             ui.showControls()
         }
     }
