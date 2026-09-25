@@ -1,5 +1,6 @@
 package com.watermelon.app
 
+import androidx.annotation.OptIn
 import android.app.Application
 import androidx.media3.common.util.UnstableApi
 import com.watermelon.mediatools.job.MediaJobManager
@@ -17,7 +18,7 @@ import com.watermelon.storage.prefs.FolderVisibilityStoreImpl
  * MediaJobService (notification/cancel) without either owning the other's lifecycle --
  * an Application-scoped singleton is the simplest correct answer.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class WatermelonApplication : Application() {
 
     lateinit var settingsStore: FolderVisibilityStoreImpl
