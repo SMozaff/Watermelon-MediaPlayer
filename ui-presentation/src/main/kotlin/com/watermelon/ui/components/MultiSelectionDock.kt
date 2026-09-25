@@ -66,7 +66,7 @@ fun MultiSelectionDock(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                WatermelonIcon(
+                WatermelonGlyph(
                     icon = WatermelonIcons.CheckCircle,
                     contentDescription = "Selection active",
                     tint = WatermelonColors.Accent,
