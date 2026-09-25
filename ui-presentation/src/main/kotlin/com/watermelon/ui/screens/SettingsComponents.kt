@@ -109,7 +109,7 @@ internal fun SettingsGroup(
                         modifier = Modifier.padding(top = WatermelonSpacing.xs / 2)
                     )
                 }
-                WatermelonIcon(
+                WatermelonGlyph(
                     icon = R.drawable.ic_arrow_back,
                     contentDescription = if (expanded) "Collapse $title" else "Expand $title",
                     modifier = Modifier.graphicsLayer { rotationZ = if (expanded) 90f else -90f }
@@ -235,7 +235,7 @@ internal fun DropdownNavRow(
                     style = WatermelonTypography.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                WatermelonIcon(
+                WatermelonGlyph(
                     icon = R.drawable.ic_arrow_back,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -292,7 +292,7 @@ internal fun NavRow(
                 style = WatermelonTypography.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
-            WatermelonIcon(
+            WatermelonGlyph(
                 icon = R.drawable.ic_arrow_back,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
