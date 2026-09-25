@@ -179,7 +179,7 @@ fun FolderListItem(
 @Composable
 private fun FolderIcon(size: Dp, isPlaylist: Boolean) {
     if (isPlaylist) {
-        WatermelonIcon(
+        WatermelonGlyph(
             icon = WatermelonIcons.Playlist,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
