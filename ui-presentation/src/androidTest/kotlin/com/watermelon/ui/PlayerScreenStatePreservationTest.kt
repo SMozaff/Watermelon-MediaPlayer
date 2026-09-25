@@ -108,6 +108,7 @@ class PlayerScreenStatePreservationTest {
                 surface = {},
                 onBack = {},
                 uri = "content://test/video.mp4",
+                initialControlsVisible = false,
             )
         }
         composeRule.waitForIdle()
