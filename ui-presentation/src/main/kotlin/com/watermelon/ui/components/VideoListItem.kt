@@ -131,7 +131,7 @@ fun VideoListItem(
                                 .padding(WatermelonSpacing.xs)
                                 .size(32.dp)
                         ) {
-                            WatermelonIcon(
+                            WatermelonGlyph(
                                 icon = WatermelonIcons.MoreVert,
                                 contentDescription = "More options",
                                 tint = MaterialTheme.colorScheme.onSurface
@@ -153,7 +153,7 @@ fun VideoListItem(
                             .size(48.dp)
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f), androidx.compose.foundation.shape.CircleShape)
                     ) {
-                        WatermelonIcon(
+                        WatermelonGlyph(
                             icon = WatermelonIcons.Play,
                             contentDescription = "Play",
                             tint = WatermelonColors.Palette.PaperWhite
@@ -209,7 +209,7 @@ fun VideoListItem(
                                 .align(Alignment.Center)
                                 .size(48.dp)
                     ) {
-                        WatermelonIcon(
+                        WatermelonGlyph(
                             icon = WatermelonIcons.Play,
                             contentDescription = "Play",
                             tint = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.8f)
@@ -273,7 +273,7 @@ fun VideoListItem(
                         onClick = { showMenu = true },
                         modifier = Modifier.size(40.dp)
                     ) {
-                        WatermelonIcon(
+                        WatermelonGlyph(
                             icon = WatermelonIcons.MoreVert,
                             contentDescription = "More options",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -355,7 +355,7 @@ private fun VideoPreview(
             modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            WatermelonIcon(
+            WatermelonGlyph(
                 icon = WatermelonIcons.VideoUnavailable,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
