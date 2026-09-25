@@ -1,5 +1,6 @@
 package com.watermelon.playback.service
 
+import androidx.annotation.OptIn
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Intent
@@ -30,7 +31,7 @@ import java.io.FileOutputStream
  *
  * Issue 15 (service), Issue 14 (notification), Issues 19-21 (tap -> player).
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class WatermelonPlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
