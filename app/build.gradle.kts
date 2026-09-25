@@ -71,13 +71,7 @@ android {
     }
 }
 
-// AGP 9 supplies Kotlin for Android modules. JVM target inherits the Java 17
-// target above; only the Media3 opt-in remains explicit in the modern compiler DSL.
-kotlin {
-    compilerOptions {
-        optIn.add("androidx.media3.common.util.UnstableApi")
-    }
-}
+// AGP 9 supplies Kotlin for Android modules. JVM target inherits the Java 17 target above.
 
 dependencies {
     implementation(project(":ui-presentation"))
