@@ -22,9 +22,9 @@ ANDROID_BUILD_FILES = (
     "benchmarks/build.gradle.kts",
 )
 MEDIA3_OPT_IN_MODULES = (
-    "app/build.gradle.kts",
-    "playback-engine/build.gradle.kts",
-    "media-tools/build.gradle.kts",
+    "app",
+    "playback-engine",
+    "media-tools",
 )
 
 errors: list[str] = []
@@ -48,12 +48,19 @@ properties = (ROOT / "gradle.properties").read_text(encoding="utf-8")
 if re.search(r"(?m)^\s*android\.builtInKotlin\s*=\s*false\s*$", properties):
     errors.append("gradle.properties: android.builtInKotlin=false opts out of the required AGP 9 mode")
 
-for rel in MEDIA3_OPT_IN_MODULES:
+for module in MEDIA3_OPT_IN_MODULES:
+    source_root = ROOT / module / "src"
+    source_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in source_root.rglob("*.kt")
+    )
+    if "UnstableApi" in source_text and "@OptIn(UnstableApi::class)" not in source_text:
+        errors.append(f"{module}: Media3 UnstableApi usage must use androidx.annotation.OptIn")
+
+for rel in ANDROID_BUILD_FILES:
     text = (ROOT / rel).read_text(encoding="utf-8")
-    if "compilerOptions" not in text:
-        errors.append(f"{rel}: Media3 compiler opt-in was not migrated to compilerOptions")
-    if 'optIn.add("androidx.media3.common.util.UnstableApi")' not in text:
-        errors.append(f"{rel}: Media3 UnstableApi opt-in is missing")
+    if 'optIn.add("androidx.media3.common.util.UnstableApi")' in text:
+        errors.append(f"{rel}: Media3 UnstableApi opt-in must not be configured globally in compilerOptions")
 
 if errors:
     print("AGP 9 built-in Kotlin configuration gate FAILED:")
