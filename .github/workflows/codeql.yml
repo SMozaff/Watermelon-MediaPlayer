@@ -30,10 +30,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Verify required Android SDK packages
-        run: |
-          test -d "${ANDROID_HOME}/platforms/android-37"
-          test -d "${ANDROID_HOME}/build-tools/37.0.0"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;37.0.0
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
