@@ -1,5 +1,6 @@
 package com.watermelon.playback.service
 
+import androidx.annotation.OptIn
 import android.content.ComponentName
 import android.content.Context
 import androidx.media3.common.Player
@@ -18,7 +19,7 @@ import com.watermelon.common.util.FileLogger
  * controller is connected; until then [controller] is null and callers should show a
  * brief connecting state.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class PlaybackConnection(private val context: Context) {
 
     private var future: ListenableFuture<MediaController>? = null
