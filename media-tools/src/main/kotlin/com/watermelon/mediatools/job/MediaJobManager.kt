@@ -1,5 +1,6 @@
 package com.watermelon.mediatools.job
 
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.ExportException
@@ -42,7 +43,7 @@ private const val PROGRESS_POLL_MS = 250L
  *   Dispatchers.IO and reports progress via callback.
  * Neither engine talks to UI directly — both push through this manager's [jobs] StateFlow.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MediaJobManager(
     private val outputFileStore: OutputFileStore,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
