@@ -40,7 +40,7 @@ import com.watermelon.common.model.PlaylistType
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonHeader
-import com.watermelon.ui.components.WatermelonIcon
+import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
