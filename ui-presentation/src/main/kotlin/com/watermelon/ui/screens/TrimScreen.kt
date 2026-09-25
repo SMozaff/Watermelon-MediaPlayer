@@ -1,5 +1,6 @@
 package com.watermelon.ui.screens
 
+import androidx.annotation.OptIn
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
@@ -56,7 +57,7 @@ private const val MIN_TRIM_RANGE_MS = 500L
  * @param surface the video render surface, same pattern as PhonePlayerScreen's `surface` param
  *   (caller supplies the actual Compose surface hookup; this screen doesn't own that).
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 @Composable
 fun TrimScreen(
     playerViewModel: PlayerViewModel,
