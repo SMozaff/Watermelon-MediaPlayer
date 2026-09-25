@@ -270,11 +270,12 @@ class PlayerScreenStatePreservationTest {
                 down(center.copy(x = center.x / 2))
             }
 
-            // Flush Android input so DOWN is delivered before advancing Compose time.
-            composeRule.waitForIdle()
-
-            // Recompose / launch the hold effect.
+            // The test clock is frozen, so waitForIdle() alone cannot run the
+            // LaunchedEffect that observes isPointerDown. Advance one frame to
+            // deliver the DOWN state through composition before advancing the
+            // 500ms hold threshold.
             composeRule.mainClock.advanceTimeByFrame()
+            composeRule.waitForIdle()
 
             // Cross the 500ms threshold and allow multiple rewind iterations.
             composeRule.mainClock.advanceTimeBy(1_000L)
