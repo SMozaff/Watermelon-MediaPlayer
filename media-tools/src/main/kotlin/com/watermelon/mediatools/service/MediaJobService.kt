@@ -1,5 +1,6 @@
 package com.watermelon.mediatools.service
 
+import androidx.annotation.OptIn
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -47,21 +48,21 @@ private const val EXTRA_JOB_ID = "job_id"
  *
  * NOT run on-device.
  *
- * @UnstableApi is required on this class because it uses [MediaJobManager] throughout
+ * @OptIn(UnstableApi::class) is required on this class because it uses [MediaJobManager] throughout
  * (the field, the provider, and every call site), and MediaJobManager itself is
- * @UnstableApi-annotated (it touches Media3 Transformer internals). Lint caught 5 separate
+ * @OptIn(UnstableApi::class)-annotated (it touches Media3 Transformer internals). Lint caught 5 separate
  * UnsafeOptInUsageError instances here before this annotation was added -- each usage needs
  * the opt-in propagated, and annotating the whole class is simpler than annotating every
  * individual member/call site separately.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MediaJobService : Service() {
 
-    // Explicitly annotated (not just relying on the class-level @UnstableApi above) since
+    // Explicitly annotated (not just relying on the class-level @OptIn(UnstableApi::class) above) since
     // a companion object is technically a separate declaration and lint's opt-in
     // propagation into nested objects isn't guaranteed -- being explicit rather than
     // assuming inheritance covers jobManagerProvider's MediaJobManager reference.
-    @UnstableApi
+    @OptIn(UnstableApi::class)
     companion object {
         /** Must be set once by the app before this service is started. See class doc. */
         var jobManagerProvider: (() -> MediaJobManager)? = null
