@@ -41,7 +41,7 @@ fun LevelIndicator(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
     ) {
-        WatermelonIcon(
+        WatermelonGlyph(
             icon = icon,
             contentDescription = contentDescription,
             tint = if (isWarning) colors.warning else colors.levelIcon,
