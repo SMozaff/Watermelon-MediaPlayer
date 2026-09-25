@@ -1,5 +1,6 @@
 package com.watermelon.mediatools.engine
 
+import androidx.annotation.OptIn
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -28,7 +29,7 @@ private const val TAG = "FilmstripExtractor"
  * NOT run on-device -- signature/shape confirmed via docs, not verified against a real
  * device or emulator this session.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class FilmstripExtractor(private val context: Context) {
 
     /**
