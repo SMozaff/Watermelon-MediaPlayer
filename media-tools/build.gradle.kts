@@ -15,13 +15,8 @@ android {
     }
 }
 
-// Built-in Kotlin inherits JVM 17 from android.compileOptions. Keep the Media3
-// unstable-API opt-in in compilerOptions so no legacy Android Kotlin compiler DSL remains.
-kotlin {
-    compilerOptions {
-        optIn.add("androidx.media3.common.util.UnstableApi")
-    }
-}
+// Built-in Kotlin inherits JVM 17 from android.compileOptions. Media3 unstable APIs are
+// opted into at their Kotlin declaration sites with androidx.annotation.OptIn.
 
 dependencies {
     implementation(project(":common-interfaces"))
