@@ -1,5 +1,6 @@
 package com.watermelon.ui.viewmodel
 
+import androidx.annotation.OptIn
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
  * invoked from [loadTrimAids] on [viewModelScope] (Dispatchers.IO), never on the calling
  * thread directly.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class TrimViewModel(
     private val jobManager: MediaJobManager,
     private val trimmer: VideoTrimmer,
