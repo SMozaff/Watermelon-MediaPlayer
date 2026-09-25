@@ -159,6 +159,16 @@ Watermelon MediaPlayer is an **actively developed project**. The repository is b
 
 Features and APIs should therefore be considered subject to change until their corresponding product and technical contracts are stabilized.
 
+## Author
+
+**Soheil Mozaffari**
+
+- Email: [soheil.mozaffari@gmail.com](mailto:soheil.mozaffari@gmail.com)
+- GitHub: [SMozaff](https://github.com/SMozaff)
+- ORCID: [0009-0001-2428-1295](https://orcid.org/0009-0001-2428-1295)
+- LinkedIn: [sohmozaffari](https://www.linkedin.com/in/sohmozaffari/)
+- BOUND Method: [bound-method.github.io](https://bound-method.github.io/)
+
 ## License
 
 **Commercial / proprietary.** Watermelon is not intended to be released as a free open-source application. The final distribution license, end-user terms, premium entitlement model, and any source-availability policy will be established as part of the commercial release process.
