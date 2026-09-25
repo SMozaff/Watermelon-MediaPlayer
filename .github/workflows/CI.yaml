@@ -216,7 +216,7 @@ jobs:
           # Force software rendering on GitHub-hosted Linux runners. The UI regression
           # suite intermittently hits emulator gfxstream color-buffer failures with the
           # default renderer ("bad color buffer handle").
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu software -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: ./gradlew :ui-presentation:connectedAndroidTest --stacktrace
 
