@@ -1,5 +1,6 @@
 package com.watermelon.ui.viewmodel
 
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import android.content.ContentResolver
 import androidx.media3.common.util.UnstableApi
@@ -13,11 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
  * constructor call from MainActivity (no ViewModelProvider.Factory in this codebase), with
  * mediaJobManager itself coming from WatermelonApplication's singleton (see that class).
  *
- * @UnstableApi required: holds a MediaJobManager field, and MediaJobManager itself is
- * @UnstableApi-annotated (same reasoning as MediaJobService -- see that class's doc, where
+ * @OptIn(UnstableApi::class) required: holds a MediaJobManager field, and MediaJobManager itself is
+ * @OptIn(UnstableApi::class)-annotated (same reasoning as MediaJobService -- see that class's doc, where
  * lint caught this exact class of error first).
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class MediaJobsViewModel(private val jobManager: MediaJobManager) : ViewModel() {
 
     val jobs: StateFlow<List<MediaJob>> = jobManager.jobs
