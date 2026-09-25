@@ -94,7 +94,7 @@ fun PlaylistsScreen(
                 .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            WatermelonIcon(
+            WatermelonGlyph(
                 icon = WatermelonIcons.PlaylistAdd,
                 contentDescription = null,
                 tint = WatermelonColors.Accent,
@@ -169,7 +169,7 @@ fun PlaylistsScreen(
                             // is easy to miss as a discoverable affordance.
                             if (isUserPlaylist) {
                                 IconButton(onClick = { menuTarget = playlist }) {
-                                    WatermelonIcon(
+                                    WatermelonGlyph(
                                         icon = WatermelonIcons.MoreVert,
                                         contentDescription = "Playlist options",
                                         tint = WatermelonColors.DarkOnSurfaceVariant
