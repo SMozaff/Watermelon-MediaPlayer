@@ -1,5 +1,6 @@
 package com.watermelon.playback.controller
 
+import androidx.annotation.OptIn
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
@@ -39,7 +40,7 @@ import java.io.FileOutputStream
  * ticker) plus flushed on [pause] and [release]. The saved position is cleared once a
  * video finishes naturally (STATE_ENDED) so finished videos don't restart mid-way.
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 class PlaybackControllerImpl(
     private val context: Context,
     private val player: Player,
