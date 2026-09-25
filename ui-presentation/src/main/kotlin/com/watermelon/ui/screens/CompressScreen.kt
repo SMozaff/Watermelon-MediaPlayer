@@ -1,5 +1,6 @@
 package com.watermelon.ui.screens
 
+import androidx.annotation.OptIn
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Build
@@ -47,7 +48,7 @@ import com.watermelon.ui.viewmodel.MediaJobsViewModel
  * per blueprint's "quick" framing. No size estimate shown (nice-to-have, skipped for v1,
  * per manifest §4).
  */
-@UnstableApi
+@OptIn(UnstableApi::class)
 @Composable
 fun CompressScreen(
     compressViewModel: CompressViewModel,
@@ -286,12 +287,12 @@ fun CompressScreen(
     }
 }
 
-// @UnstableApi required: references VideoCompressor.Preset, a nested type inside the
-// @UnstableApi-annotated VideoCompressor class. CompressScreen's own @UnstableApi doesn't
+// @OptIn(UnstableApi::class) required: references VideoCompressor.Preset, a nested type inside the
+// @OptIn(UnstableApi::class)-annotated VideoCompressor class. CompressScreen's own @OptIn(UnstableApi::class) doesn't
 // propagate to this separate private function -- same class of issue caught earlier in
 // MediaJobService/MediaJobsViewModel, just discovered here via a real CI lint failure
 // instead of proactive audit.
-@UnstableApi
+@OptIn(UnstableApi::class)
 @Composable
 private fun PresetCard(
     preset: VideoCompressor.Preset,
@@ -343,7 +344,7 @@ private fun readDurationForEstimate(
     }
 }
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 private fun estimatedPresetOutput(
     durationMs: Long?,
     preset: VideoCompressor.Preset,
