@@ -109,7 +109,7 @@ fun MiniPlayerBar(
 
                     if (!compact) {
                         IconButton(onClick = onPrevious, enabled = hasPrevious) {
-                            WatermelonIcon(
+                            WatermelonGlyph(
                                 WatermelonIcons.SkipPrevious,
                                 contentDescription = "Previous",
                                 tint = if (hasPrevious) MaterialTheme.colorScheme.onSurface
@@ -118,14 +118,14 @@ fun MiniPlayerBar(
                         }
                     }
                     IconButton(onClick = onPlayPause) {
-                        WatermelonIcon(
+                        WatermelonGlyph(
                             if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
                             contentDescription = if (isPlaying) "Pause" else "Play",
                         )
                     }
                     if (!compact) {
                         IconButton(onClick = onNext, enabled = hasNext) {
-                            WatermelonIcon(
+                            WatermelonGlyph(
                                 WatermelonIcons.SkipNext,
                                 contentDescription = "Next",
                                 tint = if (hasNext) MaterialTheme.colorScheme.onSurface
@@ -133,14 +133,14 @@ fun MiniPlayerBar(
                             )
                         }
                         IconButton(onClick = onMuteToggle) {
-                            WatermelonIcon(
+                            WatermelonGlyph(
                                 if (isMuted) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
                                 contentDescription = if (isMuted) "Unmute" else "Mute",
                             )
                         }
                     }
                     IconButton(onClick = onClose) {
-                        WatermelonIcon(WatermelonIcons.Close, contentDescription = "Close player")
+                        WatermelonGlyph(WatermelonIcons.Close, contentDescription = "Close player")
                     }
                 }
 
