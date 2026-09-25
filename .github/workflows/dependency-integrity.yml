@@ -35,6 +35,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          # setup-android v4 defaults to the removed legacy "tools" package.
+          packages: platform-tools
 
       # Do not restore a Gradle dependency cache in this job. Removing module caches
       # forces fresh artifact resolution, including the JitPack java-lame dependency.
