@@ -96,7 +96,7 @@ fun VelocityGuardImage(
                 strokeWidth = 2.dp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            ThumbnailResult.Failed -> WatermelonIcon(
+            ThumbnailResult.Failed -> WatermelonGlyph(
                 icon = com.watermelon.ui.WatermelonIcons.VideoUnavailable,
                 contentDescription = "Thumbnail unavailable",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
