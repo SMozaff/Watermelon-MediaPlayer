@@ -46,7 +46,7 @@ fun ThumbnailStrip(
     ) {
         items(
             items = videos,
-            key = { it.uri.toString() }
+            key = { it.uri }
         ) { video ->
             Row(
                 modifier = Modifier
