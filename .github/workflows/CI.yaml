@@ -152,7 +152,7 @@ jobs:
       # upgrade paths + step idempotency + data preservation) cannot silently fall out
       # of CI when new migration regression tests are added.
       - name: Run all library-storage migration tests on emulator
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
         with:
           api-level: 34
           target: google_apis
@@ -204,7 +204,7 @@ jobs:
       # PlayerScreenStatePreservationTest (A2/A3/A4). Running the module rather than an
       # individual class makes future player-state regressions automatically part of CI.
       - name: Run all player runtime regression tests on emulator
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
         with:
           api-level: 34
           target: google_apis
