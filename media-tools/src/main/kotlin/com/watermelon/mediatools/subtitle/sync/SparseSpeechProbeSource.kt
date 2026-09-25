@@ -176,7 +176,7 @@ class SparseSpeechProbeSource(
         } catch (e: java.io.IOException) {
             return SpeechProbeResult.Failure(e.message ?: "audio probe I/O failure")
         } catch (e: MediaCodec.CodecException) {
-            return SpeechProbeResult.Failure(e.diagnosticInfo ?: e.message ?: "audio decoder failure")
+            return SpeechProbeResult.Failure(e.diagnosticInfo)
         } catch (e: IllegalArgumentException) {
             return SpeechProbeResult.Unsupported
         } catch (e: IllegalStateException) {
