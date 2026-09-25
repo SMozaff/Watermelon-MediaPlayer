@@ -102,7 +102,7 @@ object StatusBadge {
         compact: Boolean,
         modifier: Modifier = Modifier
     ) {
-        WatermelonIcon(
+        WatermelonGlyph(
             icon = icon,
             contentDescription = contentDescription,
             tint = tint,
