@@ -228,7 +228,7 @@ class SubtitleRepositoryImpl internal constructor(
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
             val capabilities = cm?.getNetworkCapabilities(cm.activeNetwork)
             return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-                capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
         }
 
         internal fun defaultHashFor(context: Context, mediaItem: MediaItem): String {
