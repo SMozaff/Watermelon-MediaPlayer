@@ -11,7 +11,7 @@ import com.watermelon.common.model.MediaItem
 
 private data class TetrisRow(val items: List<MediaItem>, val aspectSum: Float)
 
-private fun buildTetrisRows(items: List<MediaItem>, targetWidthDp: Float, targetRowHeightDp: Float = 150f): List<TetrisRow> {
+private fun buildTetrisRows(items: List<MediaItem>, targetWidthDp: Float, targetRowHeightDp: Float = 130f): List<TetrisRow> {
     if (items.isEmpty()) return emptyList()
     val rows = mutableListOf<TetrisRow>()
     val current = mutableListOf<MediaItem>()
@@ -83,6 +83,16 @@ fun TetrisVideoLayout(
                             onCompressVideo = onCompressVideo,
                             modifier = Modifier.weight(ratio),
                         )
+                    }
+                    if (row.items.size == 1) {
+                        val onlyRatio = row.items.first().let { item ->
+                            if (item.width > 0 && item.height > 0) {
+                                (item.width.toFloat() / item.height.toFloat()).coerceIn(0.5625f, 1.7778f)
+                            } else 16f / 9f
+                        }
+                        if (onlyRatio < 1f) {
+                            androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
             }
