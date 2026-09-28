@@ -69,7 +69,15 @@ class Phase1Sweep(private val contentResolver: ContentResolver) {
                 cursor.getColumnIndexOrThrow(MediaStore.Video.Media.VOLUME_NAME) else -1
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idCol)
-                val uri = ContentUris.withAppendedId(collection, id).toString()
+                val volumeName = if (volumeCol >= 0) cursor.getString(volumeCol) ?: "" else ""
+                val uri = if (hasApi29 && volumeName.isNotBlank()) {
+                    ContentUris.withAppendedId(
+                        MediaStore.Video.Media.getContentUri(volumeName),
+                        id
+                    ).toString()
+                } else {
+                    ContentUris.withAppendedId(collection, id).toString()
+                }
                 val rawPath = cursor.getString(pathCol) ?: ""
                 val relativePath = if (hasApi29) rawPath
                     else rawPath.substringBeforeLast('/').substringAfterLast('/').let {
