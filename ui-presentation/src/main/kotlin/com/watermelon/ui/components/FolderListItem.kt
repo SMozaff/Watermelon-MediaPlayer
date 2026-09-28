@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.components.WatermelonGlyph
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -121,9 +122,11 @@ fun FolderListItem(
                     text      = folder.displayName,
                     color     = MaterialTheme.colorScheme.onSurface,
                     style     = when (itemSize) {
+                        ItemSize.TINY   -> MaterialTheme.typography.labelSmall
                         ItemSize.SMALL  -> MaterialTheme.typography.bodySmall
                         ItemSize.MEDIUM -> MaterialTheme.typography.bodyMedium
                         ItemSize.LARGE  -> MaterialTheme.typography.bodyLarge
+                        ItemSize.XLARGE -> MaterialTheme.typography.titleMedium
                     },
                     maxLines  = 2,
                     overflow  = TextOverflow.Ellipsis,
@@ -157,9 +160,11 @@ fun FolderListItem(
                         text       = folder.displayName,
                         color      = MaterialTheme.colorScheme.onSurface,
                         style      = when (itemSize) {
+                            ItemSize.TINY   -> MaterialTheme.typography.bodySmall
                             ItemSize.SMALL  -> MaterialTheme.typography.bodyMedium
                             ItemSize.MEDIUM -> MaterialTheme.typography.bodyLarge
                             ItemSize.LARGE  -> MaterialTheme.typography.titleMedium
+                            ItemSize.XLARGE -> MaterialTheme.typography.titleLarge
                         },
                         maxLines   = 1,
                         overflow   = TextOverflow.Ellipsis,
