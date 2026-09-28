@@ -28,6 +28,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import com.watermelon.ui.components.ItemSizeSlider
+import com.watermelon.ui.components.TetrisVideoLayout
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -73,7 +74,7 @@ private enum class VideoSort(val label: String) {
     FILE_TYPE("File Type"), SIZE("Size"), QUALITY("Quality"), CUSTOM("Custom")
 }
 
-private enum class VideoLayout { LIST, GRID }
+private enum class VideoLayout { LIST, GRID, TETRIS }
 
 private val LayoutSaver = androidx.compose.runtime.saveable.Saver<VideoLayout, String>(
     save = { it.name },
@@ -98,6 +99,7 @@ fun VideoListScreen(
     onRefresh: () -> Unit = { viewModel.refresh() },
     availablePlaylists: List<Playlist> = emptyList(),
     defaultGrid: Boolean = false,
+    tetrisViewEnabled: Boolean = false,
     showThumbnails: Boolean = true,
     showDurations: Boolean = true,
     showFileSize: Boolean = false,
@@ -132,6 +134,9 @@ fun VideoListScreen(
         mutableStateOf(if (defaultGrid) VideoLayout.GRID else VideoLayout.LIST)
     }
     val isGrid = currentLayout == VideoLayout.GRID
+    LaunchedEffect(tetrisViewEnabled) {
+        if (!tetrisViewEnabled && currentLayout == VideoLayout.TETRIS) currentLayout = VideoLayout.GRID
+    }
     var sortMenuOpen by remember { mutableStateOf(false) }
     var viewOptionsOpen by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -277,7 +282,7 @@ fun VideoListScreen(
                         icon = IconType.DrawableIcon(
                             if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList
                         ),
-                        label = "View: ${if (isGrid) "Grid" else "List"}",
+                        label = "View: ${when (currentLayout) { VideoLayout.GRID -> "Grid"; VideoLayout.TETRIS -> "Tetris"; else -> "List" }}",
                         onClick = { viewOptionsOpen = true },
                     )
                     ItemSizeSlider(
@@ -373,6 +378,36 @@ fun VideoListScreen(
                         }
                     }
 
+                    VideoLayout.TETRIS -> TetrisVideoLayout(
+                        items = sorted,
+                        isScrollingFast = isScrolling,
+                        isSelected = { item -> selection.contains(item.uri) },
+                        selectionActive = selection.isActive,
+                        showThumbnails = showThumbnails,
+                        showDurations = showDurations,
+                        onClick = { item ->
+                            if (selection.isActive) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                viewModel.onToggleSelect(item.uri)
+                            } else {
+                                viewModel.markPlayed(item.uri)
+                                coroutineScope.launch {
+                                    val queueUris = viewModel.resolvePlaybackQueueUris(item.uri, sorted)
+                                    PlaybackQueue.set(queueUris)
+                                    onVideoClick(item)
+                                }
+                            }
+                        },
+                        onLongClick = { item ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.onLongPress(item.uri)
+                        },
+                        onExtractAudio = onExtractAudio,
+                        onTrimVideo = onTrimVideo,
+                        onCompressVideo = onCompressVideo,
+                        modifier = Modifier.fillMaxSize().padding(horizontal = WatermelonSpacing.sm),
+                    )
+
                     VideoLayout.GRID -> LazyVerticalGrid(
                         state = gridState,
                         columns = gridColumns,
@@ -465,7 +500,9 @@ fun VideoListScreen(
             title = { Text("View options") },
             text = {
                 Column {
-                    VideoLayout.values().forEach { layout ->
+                    VideoLayout.values()
+                        .filter { it != VideoLayout.TETRIS || tetrisViewEnabled }
+                        .forEach { layout ->
                         TextButton(
                             onClick = { currentLayout = layout },
                             modifier = Modifier.fillMaxWidth(),
