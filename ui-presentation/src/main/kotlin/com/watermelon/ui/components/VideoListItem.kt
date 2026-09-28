@@ -144,7 +144,7 @@ fun VideoListItem(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(WatermelonSpacing.xs)
-                                .size(32.dp)
+                                .size(48.dp)
                         ) {
                             WatermelonGlyph(
                                 icon = WatermelonIcons.MoreVert,
@@ -286,7 +286,7 @@ fun VideoListItem(
                 Box {
                     androidx.compose.material3.IconButton(
                         onClick = { showMenu = true },
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.MoreVert,
