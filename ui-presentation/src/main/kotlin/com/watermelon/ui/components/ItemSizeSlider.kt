@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.watermelon.ui.WatermelonIcons
 
 /**
@@ -40,7 +42,13 @@ fun ItemSizeSlider(
             onValueChange = { onValueChange(it.toInt().coerceIn(0, 4)) },
             valueRange = 0f..4f,
             steps = 3,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .then(
+                    if (valueDescription != null) {
+                        Modifier.semantics { contentDescription = "Item size: $valueDescription" }
+                    } else Modifier
+                )
         )
         Icon(
             painter = androidx.compose.ui.res.painterResource(trailingIcon),
