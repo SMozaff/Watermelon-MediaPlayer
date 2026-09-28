@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.Dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.theme.PlayerColors
@@ -252,14 +253,24 @@ fun TunerFramePreview(
     var bitmap by remember(uri) { mutableStateOf<Bitmap?>(null) }
 
     LaunchedEffect(uri, positionMs) {
+        delay(60L)
         bitmap = withContext(kotlinx.coroutines.Dispatchers.IO) {
             val retriever = MediaMetadataRetriever()
             try {
                 retriever.setDataSource(context, android.net.Uri.parse(uri))
-                retriever.getFrameAtTime(
-                    positionMs.coerceAtLeast(0L) * 1000L,
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
+                if (android.os.Build.VERSION.SDK_INT >= 27) {
+                    retriever.getScaledFrameAtTime(
+                        positionMs.coerceAtLeast(0L) * 1000L,
+                        MediaMetadataRetriever.OPTION_CLOSEST,
+                        440,
+                        248
+                    )
+                } else {
+                    retriever.getFrameAtTime(
+                        positionMs.coerceAtLeast(0L) * 1000L,
+                        MediaMetadataRetriever.OPTION_CLOSEST
+                    )
+                }
             } catch (_: RuntimeException) {
                 null
             } finally {
