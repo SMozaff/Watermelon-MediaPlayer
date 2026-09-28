@@ -159,7 +159,6 @@ fun WatermelonTunerSeekBar(
                         if (next != scrubPositionMs) {
                             scrubPositionMs = next
                             onPreviewPositionChanged(scrubPositionMs)
-                            onSeek(scrubPositionMs)
                             onDetent()
                         }
                     }
@@ -281,8 +280,8 @@ fun TunerFramePreview(
 
     androidx.compose.foundation.layout.Box(
         modifier = modifier
-            .width(220.dp)
-            .height(124.dp)
+            .width(200.dp)
+            .height(112.dp)
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
             .background(androidx.compose.ui.graphics.Color.Black),
         contentAlignment = androidx.compose.ui.Alignment.BottomCenter,
