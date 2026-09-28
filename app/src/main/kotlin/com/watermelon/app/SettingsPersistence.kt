@@ -22,6 +22,7 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
     pureDark = pureDark,
     forcedRtl = prefs.getBoolean("forced_rtl", false),
     gridDefault = prefs.getBoolean("grid_default", false),
+    tetrisViewEnabled = prefs.getBoolean("tetris_view_enabled", false),
     showThumbnails = prefs.getBoolean("show_thumbnails", true),
     showDurations = prefs.getBoolean("show_durations", true),
     showFileSize = prefs.getBoolean("show_file_size", false),
@@ -75,6 +76,7 @@ fun saveSettingsState(prefs: SharedPreferences, state: SettingsState) {
     prefs.edit()
         .putBoolean("forced_rtl", state.forcedRtl)
         .putBoolean("grid_default", state.gridDefault)
+        .putBoolean("tetris_view_enabled", state.tetrisViewEnabled)
         .putBoolean("show_thumbnails", state.showThumbnails)
         .putBoolean("show_durations", state.showDurations)
         .putBoolean("show_file_size", state.showFileSize)
