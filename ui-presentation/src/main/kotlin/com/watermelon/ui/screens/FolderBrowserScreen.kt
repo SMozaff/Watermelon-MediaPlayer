@@ -322,18 +322,7 @@ fun FolderBrowserScreen(
                             )
                         }
                     }
-                    HorizontalDivider()
-                    com.watermelon.ui.components.ItemSize.values().forEach { size ->
-                        TextButton(
-                            onClick = { currentItemSize = size },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                text = if (size == currentItemSize) "✓ ${size.label}" else size.label,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
+
                 }
             },
             confirmButton = {
