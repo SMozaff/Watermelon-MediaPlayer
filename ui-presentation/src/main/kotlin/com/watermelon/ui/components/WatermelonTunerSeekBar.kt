@@ -40,10 +40,10 @@ import kotlin.math.roundToLong
  *
  * @param positionMs current playback position
  * @param durationMs total duration
- * @param onSeek invoked with the target position while scrubbing / on drag end
+ * @param onSeek invoked once with the final target position when the drag ends
  * @param onScrubChange true when scrubbing starts, false when it ends
- * @param onPreviewPositionChanged gives the host an immediate tape-counter value while the
- *   player catches up to each detent seek.
+ * @param onPreviewPositionChanged gives the host the local target while tuning, without
+ *   forcing the player to seek on every detent.
  * @param onDetent crossed once per physical tick; the host should use this for light haptics.
  * @param secondsPerTick how many seconds each tick crossing the pointer represents (1-20,
  *   adjustable in Settings)
@@ -141,7 +141,6 @@ fun WatermelonTunerSeekBar(
                         if (next != scrubPositionMs) {
                             scrubPositionMs = next
                             onPreviewPositionChanged(scrubPositionMs)
-                            onSeek(scrubPositionMs)
                             onDetent()
                         }
                     }
