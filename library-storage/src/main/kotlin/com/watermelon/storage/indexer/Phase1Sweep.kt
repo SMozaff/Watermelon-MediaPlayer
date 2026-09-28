@@ -83,7 +83,6 @@ class Phase1Sweep(private val contentResolver: ContentResolver) {
                     else rawPath.substringBeforeLast('/').substringAfterLast('/').let {
                         if (it.isEmpty()) rawPath else it
                     }
-                val volumeName = if (volumeCol >= 0) cursor.getString(volumeCol) ?: "" else ""
                 out += SweepRow(
                     uri = uri,
                     displayName = cursor.getString(nameCol) ?: "",
