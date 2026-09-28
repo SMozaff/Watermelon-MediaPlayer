@@ -133,6 +133,10 @@ class Phase2Extractor(
         }
     }
 
+    }
+
+    }
+
     private companion object {
         const val BATCH_SIZE = 900
     }
