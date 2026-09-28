@@ -166,7 +166,9 @@ fun FolderBrowserScreen(
                 onValueChange = { currentItemSize = com.watermelon.ui.components.ItemSize.entries[it] },
                 leadingIcon = WatermelonIcons.Folder,
                 trailingIcon = WatermelonIcons.FolderOpen,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = WatermelonSpacing.xs),
             )
         }
 
