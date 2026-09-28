@@ -41,7 +41,7 @@ import com.watermelon.ui.theme.WatermelonTypography
  *  size, date added) and LARGE (big, simple row: name + duration only). Deliberately only
  *  2 values, unlike folders/playlists' [ItemSize] below, which keeps 3 (SMALL/MEDIUM/LARGE)
  *  — the two screens' sizing scales are independent by design. */
-enum class VideoItemSize(val label: String) { SMALL("S"), LARGE("L") }
+enum class VideoItemSize(val label: String) { TINY(""), SMALL(""), MEDIUM(""), LARGE(""), XLARGE("") }
 
 /** Folders/playlists' own size axis (used by FolderListItem/FolderBrowserScreen) — kept at
  *  3 values, unlike the video list's [VideoItemSize] above. Small rows there also show
@@ -83,8 +83,11 @@ fun VideoListItem(
     // 3-dot button that triggers it, so Compose anchors it correctly.
     var showMenu by remember { mutableStateOf(false) }
     val thumbH: Dp = when (itemSize) {
-        VideoItemSize.SMALL -> if (isGrid) 72.dp else 48.dp
-        VideoItemSize.LARGE -> if (isGrid) 180.dp else 96.dp
+        VideoItemSize.TINY -> if (isGrid) 56.dp else 40.dp
+        VideoItemSize.SMALL -> if (isGrid) 76.dp else 52.dp
+        VideoItemSize.MEDIUM -> if (isGrid) 108.dp else 68.dp
+        VideoItemSize.LARGE -> if (isGrid) 148.dp else 88.dp
+        VideoItemSize.XLARGE -> if (isGrid) 196.dp else 112.dp
     }
     val textStyle = when (itemSize) {
         VideoItemSize.SMALL -> WatermelonTypography.typography.bodyMedium
