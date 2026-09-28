@@ -1,11 +1,18 @@
 package com.watermelon.ui.components
 
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -18,6 +25,7 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.Dp
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.theme.PlayerColors
 import kotlin.math.roundToLong
@@ -231,4 +239,69 @@ private fun DrawScope.drawTunerDial(
         size = Size(pointerW, pointerH),
         cornerRadius = CornerRadius(pointerW / 2f, pointerW / 2f)
     )
+}
+
+
+@Composable
+fun TunerFramePreview(
+    uri: String,
+    positionMs: Long,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    var bitmap by remember(uri) { mutableStateOf<Bitmap?>(null) }
+
+    LaunchedEffect(uri, positionMs) {
+        bitmap = withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val retriever = MediaMetadataRetriever()
+            try {
+                retriever.setDataSource(context, android.net.Uri.parse(uri))
+                retriever.getFrameAtTime(
+                    positionMs.coerceAtLeast(0L) * 1000L,
+                    MediaMetadataRetriever.OPTION_CLOSEST
+                )
+            } catch (_: RuntimeException) {
+                null
+            } finally {
+                runCatching { retriever.release() }
+            }
+        }
+    }
+
+    androidx.compose.foundation.layout.Box(
+        modifier = modifier
+            .width(220.dp)
+            .height(124.dp)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
+            .background(androidx.compose.ui.graphics.Color.Black),
+        contentAlignment = androidx.compose.ui.Alignment.BottomCenter,
+    ) {
+        bitmap?.let {
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = "Video preview at " + formatTunerTime(positionMs),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            )
+        }
+        androidx.compose.material3.Text(
+            text = formatTunerTime(positionMs),
+            color = androidx.compose.ui.graphics.Color.White,
+            modifier = Modifier
+                .padding(bottom = 6.dp)
+                .background(
+                    androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.72f),
+                    androidx.compose.foundation.shape.RoundedCornerShape(5.dp)
+                )
+                .padding(horizontal = 7.dp, vertical = 3.dp)
+        )
+    }
+}
+
+private fun formatTunerTime(ms: Long): String {
+    val total = (ms / 1000L).coerceAtLeast(0L)
+    val h = total / 3600L
+    val m = (total % 3600L) / 60L
+    val sec = total % 60L
+    return if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
 }
