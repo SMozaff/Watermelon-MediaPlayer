@@ -99,4 +99,5 @@ fun TetrisVideoLayout(
             }
         }
     }
+    }
 }
