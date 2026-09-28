@@ -25,6 +25,7 @@ fun ItemSizeSlider(
     onValueChange: (Int) -> Unit,
     @DrawableRes leadingIcon: Int = WatermelonIcons.VideoLibrary,
     @DrawableRes trailingIcon: Int = WatermelonIcons.VideoLibrary,
+    valueDescription: String? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
