@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.WatermelonGlyph
 
 /**
@@ -21,8 +22,8 @@ import com.watermelon.ui.WatermelonGlyph
 fun ItemSizeSlider(
     value: Int,
     onValueChange: (Int) -> Unit,
-    @DrawableRes leadingIcon: Int,
-    @DrawableRes trailingIcon: Int,
+    @DrawableRes leadingIcon: Int = WatermelonIcons.VideoLibrary,
+    @DrawableRes trailingIcon: Int = WatermelonIcons.VideoLibrary,
     modifier: Modifier = Modifier
 ) {
     Row(
