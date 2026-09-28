@@ -3,6 +3,7 @@ package com.watermelon.storage.indexer
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import com.watermelon.storage.db.WatermelonDatabase
 import kotlinx.coroutines.CoroutineDispatcher
@@ -35,8 +36,25 @@ class Phase2Extractor(
         val db  = database.writableDatabase
         val now = System.currentTimeMillis()
 
-        val ids = uris.mapNotNull { runCatching { ContentUris.parseId(Uri.parse(it)) }.getOrNull() }
-        if (ids.isEmpty()) return@withContext
+        data class VolumeIds(val volumeUri: Uri, val ids: List<Long>)
+
+        val volumeIds = uris
+            .mapNotNull { raw ->
+                runCatching {
+                    val uri = Uri.parse(raw)
+                    val id = ContentUris.parseId(uri)
+                    val volumeUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        MediaStore.Video.Media.getContentUri(uri.pathSegments.getOrNull(1) ?: MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    } else {
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    }
+                    volumeUri to id
+                }.getOrNull()
+            }
+            .groupBy({ it.first }, { it.second })
+            .map { (volumeUri, ids) -> VolumeIds(volumeUri, ids.distinct()) }
+
+        if (volumeIds.isEmpty()) return@withContext
 
         val projection = arrayOf(
             MediaStore.Video.Media._ID,
@@ -53,12 +71,13 @@ class Phase2Extractor(
 
         // Batch the `_ID IN (...)` filter so a large library doesn't exceed SQLite's
         // per-statement bound-parameter limit (999 on older SQLite builds).
-        ids.chunked(BATCH_SIZE).forEach { batch ->
+        volumeIds.forEach { (volumeUri, ids) ->
+            ids.chunked(BATCH_SIZE).forEach { batch ->
             val selection = "${MediaStore.Video.Media._ID} IN (${batch.joinToString(",") { "?" }})"
             val selectionArgs = batch.map { it.toString() }.toTypedArray()
 
             context.contentResolver.query(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                volumeUri,
                 projection, selection, selectionArgs, null
             )?.use { cursor ->
                 val idxId          = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
@@ -74,9 +93,7 @@ class Phase2Extractor(
 
                 while (cursor.moveToNext()) {
                     val id          = cursor.getLong(idxId)
-                    val uriString   = ContentUris.withAppendedId(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id
-                    ).toString()
+                    val uriString = ContentUris.withAppendedId(volumeUri, id).toString()
                     val displayName = cursor.getString(idxName) ?: ""
                     val size        = cursor.getLong(idxSize)
                     val bucket      = cursor.getString(idxBucket) ?: ""
