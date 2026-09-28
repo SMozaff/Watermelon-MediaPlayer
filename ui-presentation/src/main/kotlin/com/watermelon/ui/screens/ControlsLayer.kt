@@ -44,6 +44,7 @@ import com.watermelon.ui.components.LevelIndicator
 import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.components.WatermelonSeekBar
+import com.watermelon.ui.components.TunerFramePreview
 import com.watermelon.ui.components.WatermelonTunerSeekBar
 import com.watermelon.ui.screens.PlayerControlPanel.FileActionsSheet
 import com.watermelon.ui.screens.PlayerControlPanel.PlayerActionsSheet
