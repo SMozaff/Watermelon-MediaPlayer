@@ -313,7 +313,7 @@ fun VideoListItem(
  * root scope (that was the original bug: see VideoListItem's file-level fix note).
  */
 @Composable
-private fun VideoItemContextMenu(
+internal fun VideoItemContextMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
     item: MediaItem,
