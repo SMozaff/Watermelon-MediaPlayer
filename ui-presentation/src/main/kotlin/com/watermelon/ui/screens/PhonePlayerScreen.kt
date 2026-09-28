@@ -376,7 +376,7 @@ fun PhonePlayerScreen(
     DisposableEffect(Unit) {
         onDispose {
             // Don't pause if the user chose background play or PiP — that's the whole point.
-            if (!uiState.isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
+            if (!uiState.isBackgroundEnabled && !uiState.isPiPEnabled && !uiState.isTransitioningTrack) viewModel.onIntent(UserIntent.Pause)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
             // Revert the window brightness to whatever it was before the player opened —
             // uses the value captured once above, not a fresh re-read (A3: re-reading here
