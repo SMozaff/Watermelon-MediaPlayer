@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.material3.Text
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.UserIntent
@@ -141,13 +142,32 @@ fun GestureLayer(
             }
 
             if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
-                TunerFramePreview(
-                    uri = state.uri,
-                    positionMs = state.gesturePreviewPosition,
+                androidx.compose.foundation.layout.Column(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 176.dp)
-                )
+                        .padding(bottom = 176.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TunerFramePreview(
+                        uri = state.uri,
+                        positionMs = state.gesturePreviewPosition,
+                    )
+                    Text(
+                        text = formatGestureTime(state.gesturePreviewPosition) + " / " +
+                            formatGestureTime(durationMs) + "  ·  " +
+                            ((state.gesturePreviewPosition.toFloat() / durationMs.toFloat()) * 100f).toInt().coerceIn(0, 100) + "%",
+                        color = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
     )
+}
+
+private fun formatGestureTime(ms: Long): String {
+    val totalSec = (ms / 1000).coerceAtLeast(0L)
+    val hours = totalSec / 3600
+    val minutes = (totalSec % 3600) / 60
+    val seconds = totalSec % 60
+    return if (hours > 0) "%d:%02d:%02d".format(hours, minutes, seconds) else "%d:%02d".format(minutes, seconds)
 }
