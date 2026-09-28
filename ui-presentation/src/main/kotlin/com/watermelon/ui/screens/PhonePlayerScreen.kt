@@ -9,10 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -171,8 +169,6 @@ fun PhonePlayerScreen(
             ui.showControls()
         }
     }
-    var isBackgroundEnabled by remember { mutableStateOf(false) }
-
     // Layer composables
     VideoSurfaceLayer(
         state = uiState,
@@ -380,7 +376,7 @@ fun PhonePlayerScreen(
     DisposableEffect(Unit) {
         onDispose {
             // Don't pause if the user chose background play or PiP — that's the whole point.
-            if (!isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
+            if (!uiState.isBackgroundEnabled && !uiState.isPiPEnabled) viewModel.onIntent(UserIntent.Pause)
             viewModel.onIntent(UserIntent.SetSpeed(1f))
             // Revert the window brightness to whatever it was before the player opened —
             // uses the value captured once above, not a fresh re-read (A3: re-reading here
