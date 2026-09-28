@@ -255,9 +255,10 @@ fun ControlsLayer(
                 modifier = Modifier
             )
             Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp)) {
-                Text(formatTime(actualState.tunerPreviewPosition), color = PlayerColors.current.textPrimary)
+                val tunerDisplayPosition = if (actualState.isScrubbingSeekBar) actualState.tunerPreviewPosition else position
+                Text(formatTime(tunerDisplayPosition), color = PlayerColors.current.textPrimary)
                 Spacer(Modifier.weight(1f))
-                Text("-${formatTime((durationMs - actualState.tunerPreviewPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
+                Text("-${formatTime((durationMs - tunerDisplayPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
             }
         } else {
             Row(Modifier.fillMaxWidth()) {
