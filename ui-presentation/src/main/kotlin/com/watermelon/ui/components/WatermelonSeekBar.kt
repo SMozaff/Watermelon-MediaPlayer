@@ -43,7 +43,8 @@ fun WatermelonSeekBar(
     modifier: Modifier = Modifier,
     trackHeight: Dp = 4.dp,
     thumbRadius: Dp = 7.dp,
-    onScrubChange: (Boolean) -> Unit = {}
+    onScrubChange: (Boolean) -> Unit = {},
+    onPreviewPositionChanged: (Long) -> Unit = {}
 ) {
     var scrubbing by remember { mutableStateOf(false) }
     var scrubFraction by remember { mutableStateOf(0f) }
@@ -91,6 +92,7 @@ fun WatermelonSeekBar(
                     onDragStart = { offset ->
                         scrubbing = true; onScrubChange(true)
                         scrubFraction = (offset.x / size.width).coerceIn(0f, 1f)
+                        onPreviewPositionChanged((scrubFraction * durationMs).roundToLong())
                     },
                     onDragEnd = {
                         onSeek((scrubFraction * durationMs).roundToLong())
@@ -99,6 +101,7 @@ fun WatermelonSeekBar(
                     onDragCancel = { scrubbing = false; onScrubChange(false) }
                 ) { change, _ ->
                     scrubFraction = (change.position.x / size.width).coerceIn(0f, 1f)
+                    onPreviewPositionChanged((scrubFraction * durationMs).roundToLong())
                 }
             }
     ) {
