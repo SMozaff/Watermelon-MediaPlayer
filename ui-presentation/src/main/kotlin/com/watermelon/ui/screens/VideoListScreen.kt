@@ -477,18 +477,7 @@ fun VideoListScreen(
                             )
                         }
                     }
-                    HorizontalDivider()
-                    VideoItemSize.values().forEach { size ->
-                        TextButton(
-                            onClick = { currentItemSize = size },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                text = if (size == currentItemSize) "✓ ${size.label}" else size.label,
-                                color = WatermelonColors.DarkOnSurface,
-                            )
-                        }
-                    }
+
                 }
             },
             confirmButton = {
