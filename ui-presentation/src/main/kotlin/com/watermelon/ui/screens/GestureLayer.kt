@@ -140,7 +140,6 @@ fun GestureLayer(
                     state.lastInteraction = now
                 }
             }
-        }
 
             if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
                 androidx.compose.foundation.layout.Column(
@@ -162,6 +161,8 @@ fun GestureLayer(
                     )
                 }
             }
+    )
+        }
     )
 }
 
