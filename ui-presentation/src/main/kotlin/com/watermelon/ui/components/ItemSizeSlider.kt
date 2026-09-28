@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.WatermelonIcons
-import com.watermelon.ui.WatermelonGlyph
 
 /**
  * Compact five-step size control for library/folder browsing.
