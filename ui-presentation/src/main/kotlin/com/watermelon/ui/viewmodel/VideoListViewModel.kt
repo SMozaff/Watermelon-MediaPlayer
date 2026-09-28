@@ -210,7 +210,7 @@ class VideoListViewModel(
         val uris = rawUris.mapNotNull { raw ->
             runCatching { Uri.parse(raw) }
                 .getOrNull()
-                ?.takeIf { it.scheme == ContentResolver.SCHEME_CONTENT }
+                ?.takeIf { it.scheme == Uri.SCHEME_CONTENT }
         }
         if (uris.size != rawUris.size) {
             _deleteError.value = "Some selected files have invalid media URIs."
