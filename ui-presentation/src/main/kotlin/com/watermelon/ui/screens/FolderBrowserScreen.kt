@@ -158,13 +158,13 @@ fun FolderBrowserScreen(
                 ),
                 label = "View: ${if (isGrid) "Grid" else "List"}",
                 onClick = { viewOptionsOpen = true },
-                    ItemSizeSlider(
-                        value = currentItemSize.ordinal,
-                        onValueChange = { currentItemSize = com.watermelon.ui.components.ItemSize.entries[it] },
-                        leadingIcon = WatermelonIcons.Folder,
-                        trailingIcon = WatermelonIcons.FolderOpen,
-                        modifier = Modifier.weight(1f),
-                    )
+            )
+            ItemSizeSlider(
+                value = currentItemSize.ordinal,
+                onValueChange = { currentItemSize = com.watermelon.ui.components.ItemSize.entries[it] },
+                leadingIcon = WatermelonIcons.Folder,
+                trailingIcon = WatermelonIcons.FolderOpen,
+                modifier = Modifier.weight(1f),
             )
         }
 
