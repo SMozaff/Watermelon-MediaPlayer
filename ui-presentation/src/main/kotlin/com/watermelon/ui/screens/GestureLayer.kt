@@ -86,7 +86,11 @@ fun GestureLayer(
                             val zoom = event.calculateZoom()
                             val pan = event.calculatePan()
                             if (zoom != 1f) state.scale = (state.scale * zoom).coerceIn(1f, 4f)
-                            state.panOffset = if (state.scale > 1f) Offset(state.panOffset.x + pan.x, state.panOffset.y + pan.y) else Offset.Zero
+                            state.panOffset = if (state.scale > 1f) {
+                                Offset(state.panOffset.x + pan.x, state.panOffset.y + pan.y)
+                            } else {
+                                Offset.Zero
+                            }
                             event.changes.forEach { it.consume() }
                         } else if (pointerCount == 1 && !isMultiTouch) {
                             val change = pressed.first()
@@ -99,7 +103,8 @@ fun GestureLayer(
                                 true -> {
                                     state.isGestureSeeking = true
                                     state.seekFrac = (state.seekFrac + drag.x / size.width.toFloat() * 0.3f).coerceIn(0f, 1f)
-                                    state.gesturePreviewPosition = (state.seekFrac * durationMs).toLong().coerceIn(0L, durationMs.coerceAtLeast(0L))
+                                    state.gesturePreviewPosition = (state.seekFrac * durationMs).toLong()
+                                        .coerceIn(0L, durationMs.coerceAtLeast(0L))
                                     viewModel.onIntent(UserIntent.Seek(state.gesturePreviewPosition))
                                     change.consume()
                                 }
@@ -108,19 +113,22 @@ fun GestureLayer(
                                         state.volumeFraction = (state.volumeFraction - drag.y / size.height * 1.5f).coerceIn(0f, 1f)
                                         val newVol = (state.volumeFraction * maxVolume).toInt().coerceIn(0, maxVolume)
                                         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
-                                        state.currentVolume = newVol; state.showVolumeIndicator = true
+                                        state.currentVolume = newVol
+                                        state.showVolumeIndicator = true
                                     } else {
                                         val newBright = (state.currentBrightness - drag.y / size.height).coerceIn(0.01f, 1f)
                                         state.currentBrightness = newBright
                                         activity?.window?.let { win ->
-                                            val a = win.attributes; a.screenBrightness = newBright; win.attributes = a
+                                            val a = win.attributes
+                                            a.screenBrightness = newBright
+                                            win.attributes = a
                                         }
                                         onBrightnessChange?.invoke(newBright)
                                         state.showBrightnessIndicator = true
                                     }
                                     change.consume()
                                 }
-                                null -> {}
+                                null -> Unit
                             }
                         }
                     } while (event.changes.any { it.pressed })
@@ -140,30 +148,29 @@ fun GestureLayer(
                     state.lastInteraction = now
                 }
             }
-
-            if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
-                androidx.compose.foundation.layout.Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 176.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    TunerFramePreview(
-                        uri = state.uri,
-                        positionMs = state.gesturePreviewPosition,
-                    )
-                    Text(
-                        text = formatGestureTime(state.gesturePreviewPosition) + " / " +
-                            formatGestureTime(durationMs) + "  ·  " +
-                            ((state.gesturePreviewPosition.toFloat() / durationMs.toFloat()) * 100f).toInt().coerceIn(0, 100) + "%",
-                        color = androidx.compose.ui.graphics.Color.White,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+    ) {
+        if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
+            androidx.compose.foundation.layout.Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 176.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TunerFramePreview(
+                    uri = state.uri,
+                    positionMs = state.gesturePreviewPosition,
+                )
+                Text(
+                    text = formatGestureTime(state.gesturePreviewPosition) + " / " +
+                        formatGestureTime(durationMs) + "  ·  " +
+                        ((state.gesturePreviewPosition.toFloat() / durationMs.toFloat()) * 100f)
+                            .toInt().coerceIn(0, 100) + "%",
+                    color = androidx.compose.ui.graphics.Color.White,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
-    )
         }
-    )
+    }
 }
 
 private fun formatGestureTime(ms: Long): String {
