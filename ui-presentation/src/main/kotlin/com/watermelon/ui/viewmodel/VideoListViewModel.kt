@@ -189,56 +189,106 @@ class VideoListViewModel(
     }
 
     /**
-     * Deletes the selected videos. On API 30+ scoped storage you cannot delete media you
-     * don't own with a plain ContentResolver.delete — it throws RecoverableSecurityException
-     * or silently no-ops. Instead we build a MediaStore delete request (IntentSender) that
-     * the Activity launches to get the one-tap system consent dialog.
+     * Builds the platform delete request for the selected media.
      *
-     * Returns an IntentSender to launch (API 30+), or null if it deleted directly (older
-     * APIs / owned media). After a successful launched delete, the Activity should call
-     * [onDeleteConfirmed].
+     * IMPORTANT: the stored MediaStore URI is authoritative. Never rebuild it from only
+     * the numeric _ID because _ID is only unique within a MediaStore volume. Keeping the
+     * original volume-qualified URI is what makes deletion work for SD/USB and other
+     * external volumes as well as primary storage.
+     *
+     * On API 30+ this returns the system consent IntentSender. On older APIs deletion is
+     * performed directly on a background dispatcher.
      */
     fun buildDeleteRequest(contentResolver: ContentResolver): android.content.IntentSender? {
+        _deleteError.value = null
         val rawUris = _selection.value.selectedUris
-        if (rawUris.isEmpty()) return null
-
-        // Rebuild each URI from its numeric ID against the canonical Video collection.
-        // Passing stored URI strings directly to createDeleteRequest can throw
-        // "Invalid Uri" if the string form isn't the exact volume-qualified content URI
-        // MediaStore expects. ContentUris.withAppendedId guarantees a valid one.
-        val uris = rawUris.mapNotNull { raw ->
-            runCatching {
-                val parsed = Uri.parse(raw)
-                val id = android.content.ContentUris.parseId(parsed)
-                android.content.ContentUris.withAppendedId(
-                    android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id
-                )
-            }.getOrNull()
+        if (rawUris.isEmpty()) {
+            _deleteError.value = "No files are selected."
+            return null
         }
-        if (uris.isEmpty()) {
-            com.watermelon.common.util.FileLogger.e("Delete", "no valid URIs to delete from ${rawUris.size} selected")
+
+        val uris = rawUris.mapNotNull { raw ->
+            runCatching { Uri.parse(raw) }
+                .getOrNull()
+                ?.takeIf { it.scheme == ContentResolver.SCHEME_CONTENT }
+        }
+        if (uris.size != rawUris.size) {
+            _deleteError.value = "Some selected files have invalid media URIs."
             return null
         }
 
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            com.watermelon.common.util.FileLogger.i("Delete", "createDeleteRequest for ${uris.size} uris")
-            android.provider.MediaStore.createDeleteRequest(contentResolver, uris).intentSender
+            runCatching {
+                com.watermelon.common.util.FileLogger.i(
+                    "Delete",
+                    "createDeleteRequest for ${uris.size} exact MediaStore uris"
+                )
+                android.provider.MediaStore.createDeleteRequest(contentResolver, uris).intentSender
+            }.onFailure { error ->
+                com.watermelon.common.util.FileLogger.e(
+                    "Delete",
+                    "createDeleteRequest failed: ${error.message ?: error::class.java.simpleName}"
+                )
+                _deleteError.value = "Watermelon could not prepare the selected files for deletion."
+            }.getOrNull()
         } else {
-            com.watermelon.common.util.FileLogger.i("Delete", "direct delete for ${uris.size} uris (pre-30)")
             viewModelScope.launch(Dispatchers.IO) {
-                uris.forEach { runCatching { contentResolver.delete(it, null, null) } }
-                clearSelection()
-                mediaRepository.refreshIndex()
+                var failed = 0
+                uris.forEach { uri ->
+                    runCatching { contentResolver.delete(uri, null, null) }
+                        .onSuccess { deletedRows -> if (deletedRows <= 0) failed++ }
+                        .onFailure { failed++ }
+                }
+
+                if (failed == 0) {
+                    clearSelection()
+                    runCatching { mediaRepository.refreshIndex() }
+                        .onFailure { error ->
+                            com.watermelon.common.util.FileLogger.e(
+                                "Delete",
+                                "index refresh after delete failed: ${error.message ?: error::class.java.simpleName}"
+                            )
+                        }
+                } else {
+                    _deleteError.value =
+                        if (failed == uris.size) {
+                            "Watermelon could not delete the selected files."
+                        } else {
+                            "Some files could not be deleted."
+                        }
+                    runCatching { mediaRepository.refreshIndex() }
+                }
             }
             null
         }
     }
 
-    /** Called by the Activity after a launched delete request succeeds. */
+    /** Called by the Activity after the system delete-consent request succeeds. */
     fun onDeleteConfirmed() {
-        com.watermelon.common.util.FileLogger.i("Delete", "delete confirmed — clearing selection + refreshing")
+        com.watermelon.common.util.FileLogger.i(
+            "Delete",
+            "delete confirmed — clearing selection + refreshing"
+        )
+        _deleteError.value = null
         clearSelection()
-        viewModelScope.launch { mediaRepository.refreshIndex() }
+        viewModelScope.launch {
+            runCatching { mediaRepository.refreshIndex() }
+                .onFailure { error ->
+                    com.watermelon.common.util.FileLogger.e(
+                        "Delete",
+                        "index refresh after confirmed delete failed: ${error.message ?: error::class.java.simpleName}"
+                    )
+                }
+        }
+    }
+
+    /** Called when the user cancels the system delete-consent dialog. */
+    fun onDeleteCancelled() {
+        _deleteError.value = null
+    }
+
+    fun clearDeleteError() {
+        _deleteError.value = null
     }
 
     fun addSelectedToFavourites() {
