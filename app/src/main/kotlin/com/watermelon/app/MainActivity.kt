@@ -431,6 +431,28 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                        if (activeMediaJobs.isNotEmpty()) {
+                            com.watermelon.ui.components.MediaJobsBar(
+                                activeJobs = activeMediaJobs,
+                                onOpenJobs = { showJobsSheet = true },
+                            )
+                        }
+                        if (permissionsGranted) {
+                            WatermelonNavHost(
+                                navController = navController,
+                                pureDarkTheme = pureDarkTheme,
+                                onPureDarkThemeChange = { enabled ->
+                                    pureDarkTheme = enabled
+                                    prefs.edit().putBoolean("pure_dark", enabled).apply()
+                                },
+                                onForcedRtlChange = { enabled -> forcedRtl = enabled },
+                                onPlayerUriChanged = { uri -> miniPlayerUri = uri },
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            PermissionPrompt(onRequest = { permissionLauncher.launch(requiredPermissions) })
+                        }
+                    }
                         val miniUri = miniPlayerUri
                         val controller = mediaController
                         val pbController = playbackController
@@ -520,28 +542,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        if (activeMediaJobs.isNotEmpty()) {
-                            com.watermelon.ui.components.MediaJobsBar(
-                                activeJobs = activeMediaJobs,
-                                onOpenJobs = { showJobsSheet = true },
-                            )
-                        }
-                        if (permissionsGranted) {
-                            WatermelonNavHost(
-                                navController = navController,
-                                pureDarkTheme = pureDarkTheme,
-                                onPureDarkThemeChange = { enabled ->
-                                    pureDarkTheme = enabled
-                                    prefs.edit().putBoolean("pure_dark", enabled).apply()
-                                },
-                                onForcedRtlChange = { enabled -> forcedRtl = enabled },
-                                onPlayerUriChanged = { uri -> miniPlayerUri = uri },
-                                modifier = Modifier.weight(1f)
-                            )
-                        } else {
-                            PermissionPrompt(onRequest = { permissionLauncher.launch(requiredPermissions) })
-                        }
-                    }
+
                 }
                 if (showJobsSheet) {
                     com.watermelon.ui.components.MediaJobsSheet(
