@@ -222,7 +222,10 @@ fun ControlsLayer(
             onPrevious = {
                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                 if (position > 3_000L) viewModel.onIntent(UserIntent.Seek(0L))
-                else PlaybackQueue.previousOf(uri)?.let { actualState.onSkipToTrack?.invoke(it) }
+                else PlaybackQueue.previousOf(uri)?.let {
+                    actualState.isTransitioningTrack = true
+                    actualState.onSkipToTrack?.invoke(it)
+                }
                     ?: viewModel.onIntent(UserIntent.Seek(0L))
                 actualState.lastInteraction = System.nanoTime(); ui.showControls()
             },
@@ -233,7 +236,10 @@ fun ControlsLayer(
             },
             onNext = {
                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                PlaybackQueue.nextOf(uri)?.let { actualState.onSkipToTrack?.invoke(it) }
+                PlaybackQueue.nextOf(uri)?.let {
+                    actualState.isTransitioningTrack = true
+                    actualState.onSkipToTrack?.invoke(it)
+                }
                 actualState.lastInteraction = System.nanoTime(); ui.showControls()
             },
             modifier = Modifier.padding(bottom = WatermelonSpacing.md)
