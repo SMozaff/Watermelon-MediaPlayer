@@ -268,8 +268,18 @@ fun ControlsLayer(
                 Text("-${formatTime((durationMs - tunerDisplayPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
             }
         } else {
+            if (actualState.isScrubbingSeekBar && uri.isNotBlank()) {
+                TunerFramePreview(
+                    uri = uri,
+                    positionMs = actualState.seekBarPreviewPosition,
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                )
+            }
+            val seekDisplayPosition =
+                if (actualState.isScrubbingSeekBar) actualState.seekBarPreviewPosition else position
             Row(Modifier.fillMaxWidth()) {
-                Text(formatTime(position), color = PlayerColors.current.textPrimary)
+                Text(formatTime(seekDisplayPosition), color = PlayerColors.current.textPrimary)
                 Spacer(Modifier.weight(1f))
                 Text(formatTime(durationMs), color = PlayerColors.current.textPrimary)
             }
@@ -280,8 +290,12 @@ fun ControlsLayer(
                 onScrubChange = { scrubbing ->
                     actualState.lastInteraction = System.nanoTime()
                     actualState.isScrubbingSeekBar = scrubbing
+                    if (scrubbing) {
+                        actualState.seekBarPreviewPosition = position
+                    }
                     ui.showControls()
                 },
+                onPreviewPositionChanged = { actualState.seekBarPreviewPosition = it },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
             )
         }
