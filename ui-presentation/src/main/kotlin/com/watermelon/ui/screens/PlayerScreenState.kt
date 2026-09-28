@@ -27,6 +27,9 @@ class PlayerScreenState {
     var onlineSubtitlesUiState: OnlineSubtitlesUiState by mutableStateOf(OnlineSubtitlesUiState.Idle)
     var isPiPEnabled by mutableStateOf(false)
     var isBackgroundEnabled by mutableStateOf(false)
+    // True while navigation is replacing this player with the next/previous track.
+    // Prevents this screen's disposal from pausing the newly selected track.
+    var isTransitioningTrack by mutableStateOf(false)
 
     // Transient indicators
     var screenshotMessage by mutableStateOf<String?>(null)
