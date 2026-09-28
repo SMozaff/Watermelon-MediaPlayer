@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import com.watermelon.ui.components.ItemSizeSlider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -275,6 +276,13 @@ fun VideoListScreen(
                         ),
                         label = "View: ${if (isGrid) "Grid" else "List"}",
                         onClick = { viewOptionsOpen = true },
+                    ItemSizeSlider(
+                        value = currentItemSize.ordinal,
+                        onValueChange = { currentItemSize = VideoItemSize.entries[it] },
+                        leadingIcon = WatermelonIcons.VideoLibrary,
+                        trailingIcon = WatermelonIcons.VideoLibrary,
+                        modifier = Modifier.weight(1f),
+                    )
                     )
                 }
             }
