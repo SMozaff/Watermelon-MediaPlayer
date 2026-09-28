@@ -91,6 +91,15 @@ fun VideoListItem(
         VideoItemSize.LARGE -> WatermelonTypography.typography.bodyLarge
     }
 
+    // Match the thumbnail frame to the video's actual display aspect ratio. This keeps
+    // portrait phone videos portrait instead of placing them inside a forced 16:9 box.
+    // Clamp extreme/malformed ratios so one unusual file cannot distort the list row.
+    val thumbnailAspectRatio = if (item.width > 0 && item.height > 0) {
+        (item.width.toFloat() / item.height.toFloat()).coerceIn(0.5625f, 1.7778f)
+    } else {
+        16f / 9f
+    }
+
     val selectedBorder = if (isSelected) {
         Modifier
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), WatermelonShapes.control)
@@ -197,7 +206,7 @@ fun VideoListItem(
                     showThumbnails = showThumbnails,
                     isScrollingFast = isScrollingFast,
                     modifier = Modifier
-                        .width(thumbH * 16f / 9f)
+                        .width(thumbH * thumbnailAspectRatio)
                         .height(thumbH)
                         .clip(WatermelonShapes.small)
                 )
