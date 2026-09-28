@@ -276,13 +276,13 @@ fun VideoListScreen(
                         ),
                         label = "View: ${if (isGrid) "Grid" else "List"}",
                         onClick = { viewOptionsOpen = true },
+                    )
                     ItemSizeSlider(
                         value = currentItemSize.ordinal,
                         onValueChange = { currentItemSize = VideoItemSize.entries[it] },
                         leadingIcon = WatermelonIcons.VideoLibrary,
                         trailingIcon = WatermelonIcons.VideoLibrary,
                         modifier = Modifier.weight(1f),
-                    )
                     )
                 }
             }
