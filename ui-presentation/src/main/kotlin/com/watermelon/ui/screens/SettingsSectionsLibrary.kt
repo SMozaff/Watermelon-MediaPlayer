@@ -32,6 +32,11 @@ internal fun BrowsingSection(
         ) { onStateChange(state.copy(gridDefault = it)) }
 
         ToggleRow(
+            label = "Tetris view",
+            checked = state.tetrisViewEnabled
+        ) { onStateChange(state.copy(tetrisViewEnabled = it)) }
+
+        ToggleRow(
             label = "Show thumbnails",
             checked = state.showThumbnails
         ) { onStateChange(state.copy(showThumbnails = it)) }
