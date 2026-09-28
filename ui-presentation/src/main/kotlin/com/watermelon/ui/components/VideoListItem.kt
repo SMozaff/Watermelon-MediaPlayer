@@ -47,7 +47,7 @@ enum class VideoItemSize(val label: String) { TINY(""), SMALL(""), MEDIUM(""), L
  *  3 values, unlike the video list's [VideoItemSize] above. Small rows there also show
  *  extra metadata (item count, duration, last modified — see FolderListItem's
  *  smallMetaText). */
-enum class ItemSize(val label: String) { SMALL("S"), MEDIUM("M"), LARGE("L") }
+enum class ItemSize(val label: String) { TINY(""), SMALL(""), MEDIUM(""), LARGE(""), XLARGE("") }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -90,8 +90,11 @@ fun VideoListItem(
         VideoItemSize.XLARGE -> if (isGrid) 196.dp else 112.dp
     }
     val textStyle = when (itemSize) {
+        VideoItemSize.TINY -> WatermelonTypography.typography.labelSmall
         VideoItemSize.SMALL -> WatermelonTypography.typography.bodyMedium
+        VideoItemSize.MEDIUM -> WatermelonTypography.typography.bodyMedium
         VideoItemSize.LARGE -> WatermelonTypography.typography.bodyLarge
+        VideoItemSize.XLARGE -> WatermelonTypography.typography.titleMedium
     }
 
     // Match the thumbnail frame to the video's actual display aspect ratio. This keeps
