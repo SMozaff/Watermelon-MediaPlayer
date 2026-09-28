@@ -4,6 +4,7 @@ import android.app.Activity
 import android.media.AudioManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
@@ -15,7 +16,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.UserIntent
+import com.watermelon.ui.components.TunerFramePreview
 import com.watermelon.ui.player.VhsEffectController
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -57,6 +60,8 @@ fun GestureLayer(
                     var isHorizontal: Boolean? = null
                     var isMultiTouch = false
                     state.seekFrac = if (durationMs > 0) position.toFloat() / durationMs else 0f
+                    state.isGestureSeeking = false
+                    state.gesturePreviewPosition = position.coerceIn(0L, durationMs.coerceAtLeast(0L))
 
                     do {
                         val event = awaitPointerEvent()
@@ -91,8 +96,10 @@ fun GestureLayer(
                             }
                             when (isHorizontal) {
                                 true -> {
+                                    state.isGestureSeeking = true
                                     state.seekFrac = (state.seekFrac + drag.x / size.width.toFloat() * 0.3f).coerceIn(0f, 1f)
-                                    viewModel.onIntent(UserIntent.Seek((state.seekFrac * durationMs).toLong()))
+                                    state.gesturePreviewPosition = (state.seekFrac * durationMs).toLong().coerceIn(0L, durationMs.coerceAtLeast(0L))
+                                    viewModel.onIntent(UserIntent.Seek(state.gesturePreviewPosition))
                                     change.consume()
                                 }
                                 false -> {
@@ -118,6 +125,7 @@ fun GestureLayer(
                     } while (event.changes.any { it.pressed })
 
                     state.isPointerDown = false
+                    state.isGestureSeeking = false
                     val isTap = !state.isGestureMoving && !isMultiTouch && !state.isHolding
                     val now = System.nanoTime()
                     if (isTap && now - state.lastGestureTapNanos < 300_000_000L) {
@@ -130,6 +138,16 @@ fun GestureLayer(
                     }
                     state.lastInteraction = now
                 }
+            }
+
+            if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
+                TunerFramePreview(
+                    uri = state.uri,
+                    positionMs = state.gesturePreviewPosition,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 176.dp)
+                )
             }
     )
 }
