@@ -21,10 +21,7 @@ import kotlinx.coroutines.withContext
  * Two-query upsert preserves [firstSeenAt] and [lastPlayedAt] across re-extractions.
  *
  * [extract] is scoped to the given [uris] (the URIs Phase 1 just swept) via a `_ID IN (...)`
- * filter, batched to stay under SQLite's per-statement bound-parameter limit — it previously
- * ignored [uris] entirely and queried the whole MediaStore video collection unconditionally,
- * which meant every refresh scanned every video on the device rather than just what Phase 1
- * had actually found.
+ * filter, batched to stay under SQLite's per-statement bound-parameter limit.
  */
 class Phase2Extractor(
     private val context: Context,
@@ -33,7 +30,8 @@ class Phase2Extractor(
 ) {
     suspend fun extract(uris: List<String>) = withContext(dispatcher) {
         if (uris.isEmpty()) return@withContext
-        val db  = database.writableDatabase
+
+        val db = database.writableDatabase
         val now = System.currentTimeMillis()
 
         data class VolumeIds(val volumeUri: Uri, val ids: List<Long>)
@@ -44,15 +42,16 @@ class Phase2Extractor(
                     val uri = Uri.parse(raw)
                     val id = ContentUris.parseId(uri)
                     val volumeName = uri.pathSegments.firstOrNull()
-                    val volumeUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !volumeName.isNullOrBlank()) {
-                        if (volumeName == "external") {
-                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    val volumeUri =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !volumeName.isNullOrBlank()) {
+                            if (volumeName == "external") {
+                                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                            } else {
+                                MediaStore.Video.Media.getContentUri(volumeName)
+                            }
                         } else {
-                            MediaStore.Video.Media.getContentUri(volumeName)
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
                         }
-                    } else {
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                    }
                     volumeUri to id
                 }.getOrNull()
             }
@@ -78,63 +77,93 @@ class Phase2Extractor(
         // per-statement bound-parameter limit (999 on older SQLite builds).
         volumeIds.forEach { (volumeUri, ids) ->
             ids.chunked(BATCH_SIZE).forEach { batch ->
-                val selection = "${MediaStore.Video.Media._ID} IN (${batch.joinToString(",") { "?" }})"
-            val selectionArgs = batch.map { it.toString() }.toTypedArray()
+                val selection =
+                    "${MediaStore.Video.Media._ID} IN (${batch.joinToString(",") { "?" }})"
+                val selectionArgs = batch.map { it.toString() }.toTypedArray()
 
-            context.contentResolver.query(
-                volumeUri,
-                projection, selection, selectionArgs, null
-            )?.use { cursor ->
-                val idxId          = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-                val idxName        = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
-                val idxSize        = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
-                val idxBucket      = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
-                val idxDuration    = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
-                val idxWidth       = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)
-                val idxHeight      = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
-                val idxMime        = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE)
-                val idxDateAdded   = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
-                val idxDateModified = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
+                context.contentResolver.query(
+                    volumeUri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null
+                )?.use { cursor ->
+                    val idxId = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                    val idxName = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
+                    val idxSize = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
+                    val idxBucket =
+                        cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+                    val idxDuration =
+                        cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
+                    val idxWidth = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)
+                    val idxHeight = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
+                    val idxMime = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE)
+                    val idxDateAdded =
+                        cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
+                    val idxDateModified =
+                        cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
 
-                while (cursor.moveToNext()) {
-                    val id          = cursor.getLong(idxId)
-                    val uriString = ContentUris.withAppendedId(volumeUri, id).toString()
-                    val displayName = cursor.getString(idxName) ?: ""
-                    val size        = cursor.getLong(idxSize)
-                    val bucket      = cursor.getString(idxBucket) ?: ""
-                    val duration    = cursor.getLong(idxDuration)
-                    val width       = cursor.getInt(idxWidth)
-                    val height      = cursor.getInt(idxHeight)
-                    val mime        = cursor.getString(idxMime) ?: ""
-                    val dateAdded   = cursor.getLong(idxDateAdded) * 1000L  // seconds -> ms
-                    val dateModified = cursor.getLong(idxDateModified) * 1000L  // seconds -> ms
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idxId)
+                        val uriString = ContentUris.withAppendedId(volumeUri, id).toString()
+                        val displayName = cursor.getString(idxName) ?: ""
+                        val size = cursor.getLong(idxSize)
+                        val bucket = cursor.getString(idxBucket) ?: ""
+                        val duration = cursor.getLong(idxDuration)
+                        val width = cursor.getInt(idxWidth)
+                        val height = cursor.getInt(idxHeight)
+                        val mime = cursor.getString(idxMime) ?: ""
+                        val dateAdded = cursor.getLong(idxDateAdded) * 1000L
+                        val dateModified = cursor.getLong(idxDateModified) * 1000L
 
-                    // 1. INSERT OR IGNORE — sets firstSeenAt only for new rows.
-                    db.execSQL(
-                        """INSERT OR IGNORE INTO MediaItems
-                           (mediaId,fileSize,displayName,parentFolder,
-                            durationMs,width,height,mimeType,firstSeenAt,dateAdded,dateModified)
-                           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-                        arrayOf<Any?>(uriString, size, displayName, bucket,
-                                duration, width, height, mime, now, dateAdded, dateModified)
-                    )
+                        // 1. INSERT OR IGNORE — sets firstSeenAt only for new rows.
+                        db.execSQL(
+                            """
+                            INSERT OR IGNORE INTO MediaItems
+                               (mediaId,fileSize,displayName,parentFolder,
+                                durationMs,width,height,mimeType,firstSeenAt,dateAdded,dateModified)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                            """.trimIndent(),
+                            arrayOf<Any?>(
+                                uriString,
+                                size,
+                                displayName,
+                                bucket,
+                                duration,
+                                width,
+                                height,
+                                mime,
+                                now,
+                                dateAdded,
+                                dateModified
+                            )
+                        )
 
-                    // 2. UPDATE — refreshes metadata; never touches firstSeenAt or lastPlayedAt.
-                    db.execSQL(
-                        """UPDATE MediaItems SET
-                           fileSize=?,displayName=?,parentFolder=?,
-                           durationMs=?,width=?,height=?,mimeType=?,dateAdded=?,dateModified=?
-                           WHERE mediaId=?""",
-                        arrayOf<Any?>(size, displayName, bucket,
-                                duration, width, height, mime, dateAdded, dateModified, uriString)
-                    )
+                        // 2. UPDATE — refreshes metadata; never touches firstSeenAt or lastPlayedAt.
+                        db.execSQL(
+                            """
+                            UPDATE MediaItems SET
+                               fileSize=?,displayName=?,parentFolder=?,
+                               durationMs=?,width=?,height=?,mimeType=?,dateAdded=?,dateModified=?
+                               WHERE mediaId=?
+                            """.trimIndent(),
+                            arrayOf<Any?>(
+                                size,
+                                displayName,
+                                bucket,
+                                duration,
+                                width,
+                                height,
+                                mime,
+                                dateAdded,
+                                dateModified,
+                                uriString
+                            )
+                        )
+                    }
                 }
             }
         }
-    }
-
-    }
-
     }
 
     private companion object {
