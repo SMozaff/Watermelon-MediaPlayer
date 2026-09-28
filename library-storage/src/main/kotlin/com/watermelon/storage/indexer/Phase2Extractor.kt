@@ -43,8 +43,13 @@ class Phase2Extractor(
                 runCatching {
                     val uri = Uri.parse(raw)
                     val id = ContentUris.parseId(uri)
-                    val volumeUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        MediaStore.Video.Media.getContentUri(uri.pathSegments.getOrNull(1) ?: MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    val volumeName = uri.pathSegments.firstOrNull()
+                    val volumeUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !volumeName.isNullOrBlank()) {
+                        if (volumeName == "external") {
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                        } else {
+                            MediaStore.Video.Media.getContentUri(volumeName)
+                        }
                     } else {
                         MediaStore.Video.Media.EXTERNAL_CONTENT_URI
                     }
@@ -73,7 +78,7 @@ class Phase2Extractor(
         // per-statement bound-parameter limit (999 on older SQLite builds).
         volumeIds.forEach { (volumeUri, ids) ->
             ids.chunked(BATCH_SIZE).forEach { batch ->
-            val selection = "${MediaStore.Video.Media._ID} IN (${batch.joinToString(",") { "?" }})"
+                val selection = "${MediaStore.Video.Media._ID} IN (${batch.joinToString(",") { "?" }})"
             val selectionArgs = batch.map { it.toString() }.toTypedArray()
 
             context.contentResolver.query(
