@@ -41,6 +41,9 @@ class VideoListViewModel(
 
     private val _isShuffled   = MutableStateFlow(false)
     private val _selection    = MutableStateFlow(SelectionState())
+    private val _deleteError = MutableStateFlow<String?>(null)
+
+    val deleteError: StateFlow<String?> = _deleteError.asStateFlow()
 
     val isShuffled: StateFlow<Boolean>       = _isShuffled.asStateFlow()
     val selection: StateFlow<SelectionState> = _selection.asStateFlow()
