@@ -55,22 +55,28 @@ fun FolderListItem(
 ) {
     // Size-dependent values — gaps are large so the difference is obvious.
     val iconDp: Dp = when (itemSize) {
-        ItemSize.SMALL  -> if (isGrid) 36.dp else 28.dp
+        ItemSize.TINY   -> if (isGrid) 30.dp else 24.dp
+        ItemSize.SMALL  -> if (isGrid) 40.dp else 32.dp
         ItemSize.MEDIUM -> if (isGrid) 56.dp else 44.dp
-        ItemSize.LARGE  -> if (isGrid) 80.dp else 64.dp
+        ItemSize.LARGE  -> if (isGrid) 72.dp else 56.dp
+        ItemSize.XLARGE -> if (isGrid) 92.dp else 72.dp
     }
     // Base spacing grid steps (Team 0 tokens); LARGE nudges up half a step beyond `lg`
     // since the size scale is deliberately dramatic (see class doc) and the grid tops
     // out at `lg` for a "standard" step.
     val hPad: Dp = when (itemSize) {
+        ItemSize.TINY   -> WatermelonSpacing.xs
         ItemSize.SMALL  -> WatermelonSpacing.sm
         ItemSize.MEDIUM -> WatermelonSpacing.md
         ItemSize.LARGE  -> WatermelonSpacing.lg
+        ItemSize.XLARGE -> WatermelonSpacing.lg
     }
     val vPad: Dp = when (itemSize) {
+        ItemSize.TINY   -> WatermelonSpacing.xs
         ItemSize.SMALL  -> WatermelonSpacing.xs + WatermelonSpacing.xs / 2
         ItemSize.MEDIUM -> WatermelonSpacing.sm + WatermelonSpacing.xs
         ItemSize.LARGE  -> WatermelonSpacing.lg - WatermelonSpacing.xs / 2
+        ItemSize.XLARGE -> WatermelonSpacing.lg
     }
 
     val metaText = buildList {
@@ -82,7 +88,7 @@ fun FolderListItem(
             add(formatFileSize(folder.totalSizeBytes))
         }
     }.joinToString(" · ")
-    val smallMetaText = if (itemSize == ItemSize.SMALL && folder.lastModifiedAt > 0L) {
+    val smallMetaText = if (itemSize == ItemSize.TINY || itemSize == ItemSize.SMALL && folder.lastModifiedAt > 0L) {
         "$metaText · ${formatLastModified(folder.lastModifiedAt)}"
     } else {
         metaText
