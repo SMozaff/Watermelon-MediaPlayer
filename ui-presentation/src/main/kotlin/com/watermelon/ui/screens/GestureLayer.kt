@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.awaitPointerEvent
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.runtime.Composable
@@ -19,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.UserIntent
-import com.watermelon.ui.components.TunerFramePreview
 import com.watermelon.ui.player.VhsEffectController
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -149,26 +149,17 @@ fun GestureLayer(
                 }
             }
     ) {
-        if (state.isGestureSeeking && durationMs > 0 && state.uri.isNotBlank()) {
-            androidx.compose.foundation.layout.Column(
+        if (state.isGestureSeeking && durationMs > 0) {
+            Text(
+                text = formatGestureTime(state.gesturePreviewPosition) + " / " +
+                    formatGestureTime(durationMs) + "  ·  " +
+                    ((state.gesturePreviewPosition.toFloat() / durationMs.toFloat()) * 100f)
+                        .toInt().coerceIn(0, 100) + "%",
+                color = androidx.compose.ui.graphics.Color.White,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 176.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TunerFramePreview(
-                    uri = state.uri,
-                    positionMs = state.gesturePreviewPosition,
-                )
-                Text(
-                    text = formatGestureTime(state.gesturePreviewPosition) + " / " +
-                        formatGestureTime(durationMs) + "  ·  " +
-                        ((state.gesturePreviewPosition.toFloat() / durationMs.toFloat()) * 100f)
-                            .toInt().coerceIn(0, 100) + "%",
-                    color = androidx.compose.ui.graphics.Color.White,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
+                    .padding(bottom = 176.dp)
+            )
         }
     }
 }
