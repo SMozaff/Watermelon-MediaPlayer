@@ -124,9 +124,11 @@ fun FolderBrowserScreen(
 
     val isGrid = currentLayout == FolderLayout.GRID
     val gridColumns = when (currentItemSize) {
+        com.watermelon.ui.components.ItemSize.TINY -> GridCells.Fixed(4)
         com.watermelon.ui.components.ItemSize.SMALL -> GridCells.Fixed(3)
         com.watermelon.ui.components.ItemSize.MEDIUM -> GridCells.Fixed(2)
         com.watermelon.ui.components.ItemSize.LARGE -> GridCells.Fixed(2)
+        com.watermelon.ui.components.ItemSize.XLARGE -> GridCells.Fixed(1)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
