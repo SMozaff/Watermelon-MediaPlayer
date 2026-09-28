@@ -219,8 +219,11 @@ fun VideoListScreen(
     }
 
     val gridColumns = when (currentItemSize) {
+        VideoItemSize.TINY -> GridCells.Fixed(4)
         VideoItemSize.SMALL -> GridCells.Fixed(3)
+        VideoItemSize.MEDIUM -> GridCells.Fixed(2)
         VideoItemSize.LARGE -> GridCells.Fixed(2)
+        VideoItemSize.XLARGE -> GridCells.Fixed(1)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
