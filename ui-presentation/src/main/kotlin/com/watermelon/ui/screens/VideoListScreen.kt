@@ -203,9 +203,18 @@ fun VideoListScreen(
         derivedStateOf { listState.isScrollInProgress || gridState.isScrollInProgress }
     }
 
+    // Do not reset the browse position when this destination is recreated after
+    // returning from the player. The Lazy*State is saveable, so its position should be
+    // restored by Navigation Compose. Only an actual browse-option change should move
+    // the user back to the beginning.
+    var hasAppliedBrowseOptions by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(currentSort, ascending, currentLayout, currentItemSize) {
-        runCatching { listState.scrollToItem(0) }
-        runCatching { gridState.scrollToItem(0) }
+        if (hasAppliedBrowseOptions) {
+            runCatching { listState.scrollToItem(0) }
+            runCatching { gridState.scrollToItem(0) }
+        } else {
+            hasAppliedBrowseOptions = true
+        }
     }
 
     val gridColumns = when (currentItemSize) {
