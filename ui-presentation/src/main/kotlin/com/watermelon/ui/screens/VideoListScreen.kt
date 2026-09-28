@@ -116,6 +116,7 @@ fun VideoListScreen(
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
     val selection by viewModel.selection.collectAsStateWithLifecycle()
+    val deleteError by viewModel.deleteError.collectAsStateWithLifecycle()
 
     // Recently Added is a computed chronological feed. Users may select another sort later,
     // but its first render must preserve the repository's newest-first order.
@@ -150,6 +151,7 @@ fun VideoListScreen(
                 android.widget.Toast.LENGTH_SHORT,
             ).show()
         } else {
+            viewModel.onDeleteCancelled()
             android.widget.Toast.makeText(
                 context,
                 "Deletion cancelled",
@@ -162,6 +164,17 @@ fun VideoListScreen(
             onRefresh()
             kotlinx.coroutines.delay(2000)
             isRefreshing = false
+        }
+    }
+
+    LaunchedEffect(deleteError) {
+        deleteError?.let { message ->
+            android.widget.Toast.makeText(
+                context,
+                message,
+                android.widget.Toast.LENGTH_LONG,
+            ).show()
+            viewModel.clearDeleteError()
         }
     }
 
@@ -475,12 +488,12 @@ fun VideoListScreen(
             confirmButton = {
                 TextButton(onClick = {
                     val sender = viewModel.buildDeleteRequest(context.contentResolver)
+                    showDeleteDialog = false
                     if (sender != null) {
                         deleteLauncher.launch(
                             androidx.activity.result.IntentSenderRequest.Builder(sender).build()
                         )
                     }
-                    showDeleteDialog = false
                 }) {
                     Text("Delete", color = WatermelonColors.Error)
                 }
