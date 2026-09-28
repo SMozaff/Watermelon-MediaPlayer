@@ -238,6 +238,13 @@ fun ControlsLayer(
             modifier = Modifier.padding(bottom = WatermelonSpacing.md)
         )
         if (tunerSeekBarEnabled) {
+            if (actualState.isScrubbingSeekBar && uri.isNotBlank()) {
+                TunerFramePreview(
+                    uri = uri,
+                    positionMs = actualState.tunerPreviewPosition,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             WatermelonTunerSeekBar(
                 positionMs = position,
                 durationMs = durationMs,
