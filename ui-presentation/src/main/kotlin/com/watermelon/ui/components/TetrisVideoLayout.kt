@@ -1,6 +1,7 @@
 package com.watermelon.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -10,12 +11,12 @@ import com.watermelon.common.model.MediaItem
 
 private data class TetrisRow(val items: List<MediaItem>, val aspectSum: Float)
 
-private fun buildTetrisRows(items: List<MediaItem>, targetRowHeightDp: Float = 154f): List<TetrisRow> {
+private fun buildTetrisRows(items: List<MediaItem>, targetWidthDp: Float, targetRowHeightDp: Float = 150f): List<TetrisRow> {
     if (items.isEmpty()) return emptyList()
     val rows = mutableListOf<TetrisRow>()
     val current = mutableListOf<MediaItem>()
     var aspectSum = 0f
-    val targetWidth = 1000f
+    val targetWidth = targetWidthDp.coerceAtLeast(1f)
     val gap = 10f
     fun ratio(item: MediaItem): Float =
         if (item.width > 0 && item.height > 0) {
@@ -52,11 +53,13 @@ fun TetrisVideoLayout(
     onCompressVideo: ((MediaItem) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    androidx.compose.foundation.lazy.LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        buildTetrisRows(items).forEachIndexed { rowIndex, row ->
+    BoxWithConstraints(modifier = modifier) {
+        val rows = buildTetrisRows(items, maxWidth.value)
+        androidx.compose.foundation.lazy.LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            rows.forEachIndexed { rowIndex, row ->
             item(key = "tetris-$rowIndex-${row.items.firstOrNull()?.uri.orEmpty()}") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
