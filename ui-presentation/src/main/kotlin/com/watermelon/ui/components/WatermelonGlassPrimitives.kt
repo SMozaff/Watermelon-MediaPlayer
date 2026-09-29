@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,7 @@ fun WatermelonGlassSurface(
         contentColor = MaterialTheme.colorScheme.onSurface,
         border = if (border) BorderStroke(1.dp, borderColor) else null,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
+        shadowElevation = if (elevated) 10.dp else 4.dp,
         content = { Column(content = content) }
     )
 }
@@ -92,6 +93,7 @@ fun WatermelonGlassButton(
 
     Row(
         modifier = modifier
+            .shadow(6.dp, WatermelonShapes.control)
             .clip(WatermelonShapes.control)
             .background(fill)
             .border(1.dp, borderColor, WatermelonShapes.control)
@@ -123,6 +125,7 @@ fun WatermelonGlassIconButton(
 
     Box(
         modifier = modifier
+            .shadow(6.dp, WatermelonShapes.control)
             .clip(WatermelonShapes.control)
             .background(
                 if (selected) WatermelonColors.Accent.copy(alpha = 0.18f)
