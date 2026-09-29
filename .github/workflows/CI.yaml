@@ -210,6 +210,11 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          # Keep the emulator below the GitHub-hosted runner memory ceiling. The previous
+          # profile booted successfully but then failed while disabling animations with
+          # "adb: error: fork failed: Out of memory", before Gradle instrumentation started.
+          ram-size: 1536M
+          heap-size: 384M
           # Force software rendering on GitHub-hosted Linux runners. The UI regression
           # suite intermittently hits emulator gfxstream color-buffer failures with the
           # default renderer ("bad color buffer handle").
