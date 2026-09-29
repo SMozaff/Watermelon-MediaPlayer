@@ -26,6 +26,9 @@ import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
+import com.watermelon.ui.components.WatermelonGlassCard
+import com.watermelon.ui.components.WatermelonGlassButton
+import com.watermelon.ui.theme.WatermelonGlass
 
 /**
  * Design System Showcase screen displaying the Watermelon MediaPlayer color palette.
@@ -51,6 +54,14 @@ fun DesignSystemScreen(
             color = WatermelonColors.DarkOnBackground,
             fontWeight = FontWeight.SemiBold
         )
+
+        Text(
+            text = "Watermelon Glass",
+            style = WatermelonTypography.typography.titleLarge,
+            color = WatermelonColors.DarkOnBackground
+        )
+
+        GlassSurfaceShowcase()
 
         // Color Palette Section
         Text(
@@ -145,6 +156,31 @@ fun DesignSystemScreen(
         Spacer(modifier = Modifier.height(WatermelonSpacing.sm))
 
         ShapesShowcase()
+    }
+}
+
+@Composable
+private fun GlassSurfaceShowcase() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+        ) {
+            WatermelonGlassCard(modifier = Modifier.weight(1f), elevated = false) {
+                Text(text = "Glass Surface", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface, modifier = Modifier.padding(WatermelonSpacing.md))
+                Text(text = "Subtle · ${WatermelonGlass.Blur.Subtle.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
+            }
+            WatermelonGlassCard(modifier = Modifier.weight(1f), elevated = true) {
+                Text(text = "Elevated Glass", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface, modifier = Modifier.padding(WatermelonSpacing.md))
+                Text(text = "Floating · ${WatermelonGlass.Blur.Medium.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
+            }
+        }
+        WatermelonGlassButton(onClick = {}, selected = true) {
+            Text(text = "Active Watermelon state", color = WatermelonColors.Accent, modifier = Modifier.padding(horizontal = WatermelonSpacing.xs))
+        }
     }
 }
 
