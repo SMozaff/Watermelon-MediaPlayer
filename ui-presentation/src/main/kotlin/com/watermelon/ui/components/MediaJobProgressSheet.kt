@@ -163,7 +163,7 @@ fun MediaJobProgressSheet(
                             onClick = onDismiss,
                             shape = WatermelonShapes.control,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                containerColor = WatermelonGlass.surface,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             modifier = Modifier.fillMaxWidth()
