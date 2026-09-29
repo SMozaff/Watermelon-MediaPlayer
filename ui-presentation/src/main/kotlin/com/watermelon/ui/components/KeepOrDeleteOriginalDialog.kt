@@ -1,6 +1,7 @@
 package com.watermelon.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.watermelon.ui.theme.PlayerColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -62,7 +64,8 @@ fun KeepOrDeleteOriginalDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .background(MaterialTheme.colorScheme.surface, WatermelonShapes.sheet)
+                 .background(WatermelonGlass.surfaceElevated, WatermelonShapes.sheet)
+                .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -121,7 +124,7 @@ fun KeepOrDeleteOriginalDialog(
                             onClick = onKeepOriginal,
                             shape = WatermelonShapes.control,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                containerColor = WatermelonGlass.surface,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             modifier = Modifier.weight(1f)
