@@ -42,6 +42,7 @@ import com.watermelon.ui.components.WatermelonGlassCard
 import com.watermelon.ui.components.WatermelonGlassIconButton
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.PlaylistViewModel
@@ -112,10 +113,14 @@ fun PlaylistsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                WatermelonGlassCard(
                     modifier = Modifier.padding(WatermelonSpacing.lg),
+                    elevated = true
                 ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(WatermelonSpacing.xl),
+                    ) {
                     Text(
                         "Create playlists for the videos you want to watch again.",
                         style = WatermelonTypography.typography.bodyLarge,
@@ -127,11 +132,12 @@ fun PlaylistsScreen(
                         color = WatermelonColors.DarkOnSurfaceVariant,
                         modifier = Modifier.padding(top = WatermelonSpacing.sm),
                     )
-                    WatermelonGlassButton(
-                        onClick = { showCreateDialog = true },
-                        modifier = Modifier.padding(top = WatermelonSpacing.lg)
-                    ) {
-                        Text("Create playlist", color = WatermelonColors.Accent)
+                        WatermelonGlassButton(
+                            onClick = { showCreateDialog = true },
+                            modifier = Modifier.padding(top = WatermelonSpacing.lg)
+                        ) {
+                            Text("Create playlist", color = WatermelonColors.Accent)
+                        }
                     }
                 }
             }
@@ -221,6 +227,8 @@ fun PlaylistsScreen(
         LaunchedEffect(Unit) { nameFocusRequester.requestFocus() }
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
+            containerColor = WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("New playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
                 TextField(
@@ -256,6 +264,8 @@ fun PlaylistsScreen(
         var name by remember(target.id) { mutableStateOf(target.name) }
         AlertDialog(
             onDismissRequest = { renameTarget = null },
+            containerColor = com.watermelon.ui.theme.WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("Rename playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
                 TextField(
@@ -287,6 +297,8 @@ fun PlaylistsScreen(
     deleteTarget?.let { target ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
+            containerColor = com.watermelon.ui.theme.WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("Delete \"${target.name}\"?", color = WatermelonColors.DarkOnSurface) },
             text = {
                 Text(
