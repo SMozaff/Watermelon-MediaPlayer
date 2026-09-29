@@ -9,16 +9,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -40,6 +37,9 @@ import com.watermelon.common.model.PlaylistType
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.WatermelonGlassButton
+import com.watermelon.ui.components.WatermelonGlassCard
+import com.watermelon.ui.components.WatermelonGlassIconButton
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -87,12 +87,11 @@ fun PlaylistsScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         WatermelonHeader(title = "Playlists")
 
-        Row(
+        WatermelonGlassButton(
+            onClick = { showCreateDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showCreateDialog = true }
-                .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm)
         ) {
             WatermelonGlyph(
                 icon = WatermelonIcons.PlaylistAdd,
@@ -100,14 +99,13 @@ fun PlaylistsScreen(
                 tint = WatermelonColors.Accent,
                 modifier = Modifier.size(20.dp)
             )
-            androidx.compose.foundation.layout.Spacer(Modifier.size(WatermelonSpacing.sm))
+            Spacer(Modifier.size(WatermelonSpacing.sm))
             Text(
                 "New playlist",
                 style = WatermelonTypography.typography.bodyLarge,
                 color = WatermelonColors.Accent
             )
         }
-        HorizontalDivider(color = WatermelonColors.DarkSurfaceVariant)
 
         if (playlists.isEmpty()) {
             Box(
@@ -129,10 +127,12 @@ fun PlaylistsScreen(
                         color = WatermelonColors.DarkOnSurfaceVariant,
                         modifier = Modifier.padding(top = WatermelonSpacing.sm),
                     )
-                    Button(
+                    WatermelonGlassButton(
                         onClick = { showCreateDialog = true },
-                        modifier = Modifier.padding(top = WatermelonSpacing.lg),
-                    ) { Text("Create playlist") }
+                        modifier = Modifier.padding(top = WatermelonSpacing.lg)
+                    ) {
+                        Text("Create playlist", color = WatermelonColors.Accent)
+                    }
                 }
             }
         } else {
@@ -140,44 +140,55 @@ fun PlaylistsScreen(
                 items(playlists, key = { it.id }) { playlist ->
                     val isUserPlaylist = playlist.type == PlaylistType.USER
 
-                    Box {
-                        Row(
+                    WatermelonGlassCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.xs),
+                        elevated = isUserPlaylist
+                    ) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .combinedClickable(
                                     onClick = { onPlaylistClick(playlist) },
                                     onLongClick = { if (isUserPlaylist) menuTarget = playlist }
                                 )
-                                .padding(horizontal = WatermelonSpacing.md, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = WatermelonSpacing.md, vertical = WatermelonSpacing.sm)
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = playlist.name,
-                                    style = WatermelonTypography.typography.bodyLarge,
-                                    color = WatermelonColors.DarkOnSurface
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                WatermelonGlyph(
+                                    icon = when (playlist.type) {
+                                        PlaylistType.FAVOURITES -> WatermelonIcons.Star
+                                        PlaylistType.CONTINUE_WATCHING -> WatermelonIcons.PlayArrow
+                                        PlaylistType.RECENTLY_ADDED -> WatermelonIcons.History
+                                        PlaylistType.USER -> WatermelonIcons.Playlist
+                                    },
+                                    contentDescription = null,
+                                    tint = WatermelonColors.Accent,
+                                    modifier = Modifier.size(24.dp)
                                 )
-                                Text(
-                                    text = "${playlist.itemCount} video${if (playlist.itemCount == 1) "" else "s"}",
-                                    style = WatermelonTypography.typography.bodySmall,
-                                    color = WatermelonColors.DarkOnSurfaceVariant
-                                )
-                            }
-                            // System playlists: no overflow menu at all (nothing to
-                            // rename/delete). User playlists: overflow menu as an explicit
-                            // tap target, in addition to long-press, since long-press alone
-                            // is easy to miss as a discoverable affordance.
-                            if (isUserPlaylist) {
-                                IconButton(onClick = { menuTarget = playlist }) {
-                                    WatermelonGlyph(
+                                Spacer(Modifier.size(WatermelonSpacing.md))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = playlist.name,
+                                        style = WatermelonTypography.typography.bodyLarge,
+                                        color = WatermelonColors.DarkOnSurface
+                                    )
+                                    Text(
+                                        text = "${playlist.itemCount} video${if (playlist.itemCount == 1) "" else "s"}",
+                                        style = WatermelonTypography.typography.bodyMedium,
+                                        color = WatermelonColors.DarkOnSurfaceVariant
+                                    )
+                                }
+                                if (isUserPlaylist) {
+                                    WatermelonGlassIconButton(
+                                        onClick = { menuTarget = playlist },
                                         icon = WatermelonIcons.MoreVert,
-                                        contentDescription = "Playlist options",
-                                        tint = WatermelonColors.DarkOnSurfaceVariant
+                                        contentDescription = "Playlist options"
                                     )
                                 }
                             }
                         }
-
                         DropdownMenu(
                             expanded = menuTarget?.id == playlist.id,
                             onDismissRequest = { menuTarget = null }
@@ -198,7 +209,7 @@ fun PlaylistsScreen(
                             )
                         }
                     }
-                    HorizontalDivider(color = WatermelonColors.DarkSurfaceVariant)
+
                 }
             }
         }
