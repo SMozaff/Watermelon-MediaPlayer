@@ -1,6 +1,7 @@
 package com.watermelon.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonTypography
 
 /**
@@ -70,7 +72,8 @@ object StatusBadge {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = modifier
                 .clip(WatermelonShapes.small)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
+                .background(WatermelonGlass.surface)
+                .border(1.dp, WatermelonGlass.border, WatermelonShapes.small)
                 .padding(horizontal = WatermelonSpacing.xs, vertical = WatermelonSpacing.xs / 2)
         )
     }
