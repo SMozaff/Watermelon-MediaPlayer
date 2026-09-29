@@ -66,7 +66,7 @@ fun TetrisVideoItem(
         Box(
             modifier = Modifier.fillMaxWidth().aspectRatio(ratio)
                 .clip(WatermelonShapes.small)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(WatermelonGlass.surface),
         ) {
             if (showThumbnails) {
                 VelocityGuardImage(
