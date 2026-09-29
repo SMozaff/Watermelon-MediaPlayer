@@ -54,7 +54,7 @@ fun WatermelonGlassSurface(
         border = if (border) BorderStroke(1.dp, borderColor) else null,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
-        content = content
+        content = { Column(content = content) }
     )
 }
 
