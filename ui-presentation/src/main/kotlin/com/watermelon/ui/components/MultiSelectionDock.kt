@@ -24,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
-import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -53,11 +53,11 @@ fun MultiSelectionDock(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(WatermelonColors.DarkSurface)
+                .background(WatermelonGlass.surfaceElevated, RoundedCornerShape(18.dp))
                 .border(
                     width = 1.dp,
-                    color = WatermelonColors.DarkOutline,
-                    shape = WatermelonShapes.sharp,
+                    color = WatermelonGlass.border,
+                    shape = RoundedCornerShape(18.dp),
                 )
                 .padding(WatermelonSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs),
