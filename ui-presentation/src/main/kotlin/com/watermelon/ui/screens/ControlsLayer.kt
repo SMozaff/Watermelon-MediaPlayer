@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -156,6 +157,7 @@ fun ControlsLayer(
     Row(
         modifier = Modifier.fillMaxWidth().align(Alignment.TopStart)
             .padding(horizontal = 8.dp, vertical = 4.dp)
+            .shadow(14.dp, WatermelonShapes.sheet)
             .clip(WatermelonShapes.sheet)
             .background(WatermelonGlass.surface)
             .border(1.dp, WatermelonGlass.border, WatermelonShapes.sheet),
@@ -224,6 +226,7 @@ fun ControlsLayer(
     Column(
         modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp)
+            .shadow(18.dp, WatermelonShapes.sheet)
             .clip(WatermelonShapes.sheet)
             .background(WatermelonGlass.surfaceElevated.copy(alpha = 0.92f))
             .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet),
