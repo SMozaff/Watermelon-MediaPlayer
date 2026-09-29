@@ -60,6 +60,8 @@ import com.watermelon.ui.components.StatusBadge
 import com.watermelon.ui.components.VideoListItem
 import com.watermelon.ui.components.VelocityGuardImage
 import com.watermelon.ui.components.WatermelonHeader
+import com.watermelon.ui.components.WatermelonGlassButton
+import com.watermelon.ui.components.WatermelonGlassCard
 import com.watermelon.ui.components.WatermelonLoadingAnimation
 import com.watermelon.ui.components.VideoItemSize
 import com.watermelon.ui.theme.WatermelonColors
@@ -303,30 +305,70 @@ fun VideoListScreen(
             if (libraryState !is LibraryUiState.Content) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     when (val state = libraryState) {
-                        LibraryUiState.Loading -> Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+                        LibraryUiState.Loading -> WatermelonGlassCard(
+                            modifier = Modifier.padding(WatermelonSpacing.lg),
+                            elevated = true
                         ) {
-                            WatermelonLoadingAnimation(modifier = Modifier.size(160.dp))
-                            Text("Scanning your videos", style = WatermelonTypography.typography.bodyLarge, color = WatermelonColors.DarkOnSurface)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                                modifier = Modifier.padding(WatermelonSpacing.xl)
+                            ) {
+                                WatermelonLoadingAnimation(modifier = Modifier.size(160.dp))
+                                Text(
+                                    "Scanning your videos",
+                                    style = WatermelonTypography.typography.bodyLarge,
+                                    color = WatermelonColors.DarkOnSurface
+                                )
+                            }
                         }
-                        LibraryUiState.Empty -> Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                            modifier = Modifier.padding(WatermelonSpacing.lg)
+                        LibraryUiState.Empty -> WatermelonGlassCard(
+                            modifier = Modifier.padding(WatermelonSpacing.lg),
+                            elevated = true
                         ) {
-                            Text("No videos found", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface)
-                            Text("Refresh the library or check which folders Watermelon can see.", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant)
-                            Button(onClick = onRefresh) { Text("Refresh library") }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                                modifier = Modifier.padding(WatermelonSpacing.xl)
+                            ) {
+                                Text(
+                                    "No videos found",
+                                    style = WatermelonTypography.typography.titleMedium,
+                                    color = WatermelonColors.DarkOnSurface
+                                )
+                                Text(
+                                    "Refresh the library or check which folders Watermelon can see.",
+                                    style = WatermelonTypography.typography.bodyMedium,
+                                    color = WatermelonColors.DarkOnSurfaceVariant
+                                )
+                                WatermelonGlassButton(onClick = onRefresh, selected = true) {
+                                    Text("Refresh library", color = WatermelonColors.Accent)
+                                }
+                            }
                         }
-                        is LibraryUiState.Error -> Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                            modifier = Modifier.padding(WatermelonSpacing.lg)
+                        is LibraryUiState.Error -> WatermelonGlassCard(
+                            modifier = Modifier.padding(WatermelonSpacing.lg),
+                            elevated = true
                         ) {
-                            Text("Library unavailable", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface)
-                            Text(state.message, style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant)
-                            Button(onClick = onRefresh) { Text("Try again") }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                                modifier = Modifier.padding(WatermelonSpacing.xl)
+                            ) {
+                                Text(
+                                    "Library unavailable",
+                                    style = WatermelonTypography.typography.titleMedium,
+                                    color = WatermelonColors.DarkOnSurface
+                                )
+                                Text(
+                                    state.message,
+                                    style = WatermelonTypography.typography.bodyMedium,
+                                    color = WatermelonColors.DarkOnSurfaceVariant
+                                )
+                                WatermelonGlassButton(onClick = onRefresh, selected = true) {
+                                    Text("Try again", color = WatermelonColors.Accent)
+                                }
+                            }
                         }
                         LibraryUiState.Content -> Unit
                     }

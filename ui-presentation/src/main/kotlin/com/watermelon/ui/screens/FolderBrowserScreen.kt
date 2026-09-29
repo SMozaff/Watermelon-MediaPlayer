@@ -49,7 +49,10 @@ import com.watermelon.ui.components.IconType
 import com.watermelon.ui.components.LabeledIconButton
 import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.components.FolderLoadingAnimation
+import com.watermelon.ui.components.WatermelonGlassButton
+import com.watermelon.ui.components.WatermelonGlassCard
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.BrowserRow
@@ -174,37 +177,87 @@ fun FolderBrowserScreen(
 
         HorizontalDivider(
             thickness = WatermelonSpacing.hairline,
-            color = MaterialTheme.colorScheme.outlineVariant
+            color = WatermelonGlass.border
         )
 
         if (libraryState !is LibraryUiState.Content) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 when (val state = libraryState) {
-                    LibraryUiState.Loading -> Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
+                    LibraryUiState.Loading -> WatermelonGlassCard(
+                        modifier = Modifier.padding(WatermelonSpacing.lg),
+                        elevated = true
                     ) {
-                        FolderLoadingAnimation(Modifier.size(112.dp))
-                        Text("Scanning your media library", style = WatermelonTypography.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-                        Text("Folders will appear as indexing finishes", style = WatermelonTypography.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.xl)
+                        ) {
+                            FolderLoadingAnimation(Modifier.size(112.dp))
+                            Text(
+                                "Scanning your media library",
+                                style = WatermelonTypography.typography.bodyLarge,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                "Folders will appear as indexing finishes",
+                                style = WatermelonTypography.typography.bodySmall,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
+                        }
                     }
-                    LibraryUiState.Empty -> Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                        modifier = Modifier.padding(WatermelonSpacing.lg)
+                    LibraryUiState.Empty -> WatermelonGlassCard(
+                        modifier = Modifier.padding(WatermelonSpacing.lg),
+                        elevated = true
                     ) {
-                        Text("No media folders found", style = WatermelonTypography.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text("Watermelon could not find eligible videos in your visible folders.", style = WatermelonTypography.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Button(onClick = viewModel::refresh) { Text("Refresh library") }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.xl)
+                        ) {
+                            Text(
+                                "No media folders found",
+                                style = WatermelonTypography.typography.titleMedium,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                "Watermelon could not find eligible videos in your visible folders.",
+                                style = WatermelonTypography.typography.bodyMedium,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
+                            WatermelonGlassButton(
+                                onClick = viewModel::refresh,
+                                selected = true
+                            ) {
+                                Text("Refresh library", color = WatermelonColors.Accent)
+                            }
+                        }
                     }
-                    is LibraryUiState.Error -> Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                        modifier = Modifier.padding(WatermelonSpacing.lg)
+                    is LibraryUiState.Error -> WatermelonGlassCard(
+                        modifier = Modifier.padding(WatermelonSpacing.lg),
+                        elevated = true
                     ) {
-                        Text("Library unavailable", style = WatermelonTypography.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text(state.message, style = WatermelonTypography.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Button(onClick = viewModel::refresh) { Text("Try again") }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.xl)
+                        ) {
+                            Text(
+                                "Library unavailable",
+                                style = WatermelonTypography.typography.titleMedium,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                state.message,
+                                style = WatermelonTypography.typography.bodyMedium,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
+                            WatermelonGlassButton(
+                                onClick = viewModel::refresh,
+                                selected = true
+                            ) {
+                                Text("Try again", color = WatermelonColors.Accent)
+                            }
+                        }
                     }
                     LibraryUiState.Content -> Unit
                 }
