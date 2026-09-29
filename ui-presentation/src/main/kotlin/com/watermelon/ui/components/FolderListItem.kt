@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.FolderNode
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonGlass
-import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
