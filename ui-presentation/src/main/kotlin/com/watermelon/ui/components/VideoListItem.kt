@@ -369,7 +369,7 @@ private fun VideoPreview(
         )
     } else {
         Box(
-            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = modifier.background(WatermelonGlass.surface),
             contentAlignment = Alignment.Center
         ) {
             WatermelonGlyph(
