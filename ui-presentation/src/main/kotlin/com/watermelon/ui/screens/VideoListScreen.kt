@@ -65,6 +65,7 @@ import com.watermelon.ui.components.WatermelonGlassCard
 import com.watermelon.ui.components.WatermelonLoadingAnimation
 import com.watermelon.ui.components.VideoItemSize
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -299,7 +300,7 @@ fun VideoListScreen(
 
             HorizontalDivider(
                 thickness = WatermelonSpacing.hairline,
-                color = WatermelonColors.DarkOutline
+                color = WatermelonGlass.border
             )
 
             if (libraryState !is LibraryUiState.Content) {
@@ -501,6 +502,8 @@ fun VideoListScreen(
     if (sortMenuOpen) {
         AlertDialog(
             onDismissRequest = { sortMenuOpen = false },
+            containerColor = WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("Sort videos") },
             text = {
                 Column {
@@ -539,6 +542,8 @@ fun VideoListScreen(
     if (viewOptionsOpen) {
         AlertDialog(
             onDismissRequest = { viewOptionsOpen = false },
+            containerColor = WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("View options") },
             text = {
                 Column {
@@ -571,6 +576,8 @@ fun VideoListScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
+            containerColor = WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("Delete ${selection.count} video(s)?", color = WatermelonColors.DarkOnSurface) },
             text = { Text("This will permanently delete the selected files from your device.", color = WatermelonColors.DarkOnSurfaceVariant) },
             confirmButton = {
@@ -600,6 +607,8 @@ fun VideoListScreen(
 
         AlertDialog(
             onDismissRequest = { showPlaylistPicker = false },
+            containerColor = WatermelonGlass.surfaceElevated,
+            tonalElevation = 0.dp,
             title = { Text("Add to playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
                 Column {
