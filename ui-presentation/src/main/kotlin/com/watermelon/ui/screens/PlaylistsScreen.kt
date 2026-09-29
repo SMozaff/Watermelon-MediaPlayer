@@ -264,7 +264,7 @@ fun PlaylistsScreen(
         var name by remember(target.id) { mutableStateOf(target.name) }
         AlertDialog(
             onDismissRequest = { renameTarget = null },
-            containerColor = com.watermelon.ui.theme.WatermelonGlass.surfaceElevated,
+            containerColor = WatermelonGlass.surfaceElevated,
             tonalElevation = 0.dp,
             title = { Text("Rename playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
