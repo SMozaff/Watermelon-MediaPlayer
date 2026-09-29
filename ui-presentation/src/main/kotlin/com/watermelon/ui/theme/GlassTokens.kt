@@ -12,13 +12,13 @@ import androidx.compose.ui.unit.dp
  */
 object WatermelonGlass {
     val background = Color(0xFF0D0D0D)
-    val surface = Color.White.copy(alpha = 0.08f)
-    val surfaceElevated = Color.White.copy(alpha = 0.12f)
-    val border = Color.White.copy(alpha = 0.16f)
-    val highlight = Color.White.copy(alpha = 0.24f)
-    val scrim = Color.Black.copy(alpha = 0.42f)
+    val surface = Color(0xFF101010).copy(alpha = 0.56f)
+    val surfaceElevated = Color(0xFF101010).copy(alpha = 0.72f)
+    val border = Color.White.copy(alpha = 0.18f)
+    val highlight = Color.White.copy(alpha = 0.30f)
+    val scrim = Color.Black.copy(alpha = 0.58f)
     val glow = WatermelonColors.Palette.WatermelonRed.copy(alpha = 0.30f)
-    val disabled = Color.White.copy(alpha = 0.05f)
+    val disabled = Color.White.copy(alpha = 0.08f)
 
     enum class Blur(val radius: Dp) {
         None(0.dp),
