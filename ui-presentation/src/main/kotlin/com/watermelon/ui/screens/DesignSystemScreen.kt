@@ -52,6 +52,14 @@ fun DesignSystemScreen(
             fontWeight = FontWeight.SemiBold
         )
 
+        Text(
+            text = "Watermelon Glass",
+            style = WatermelonTypography.typography.titleLarge,
+            color = WatermelonColors.DarkOnBackground
+        )
+
+        GlassSurfaceShowcase()
+
         // Color Palette Section
         Text(
             text = "Color Palette",
