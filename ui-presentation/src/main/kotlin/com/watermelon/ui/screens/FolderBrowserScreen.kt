@@ -193,8 +193,16 @@ fun FolderBrowserScreen(
                             modifier = Modifier.padding(WatermelonSpacing.xl)
                         ) {
                             FolderLoadingAnimation(Modifier.size(112.dp))
-                            Text("Scanning your media library", style = WatermelonTypography.typography.bodyLarge, color = WatermelonColors.DarkOnSurface)
-                            Text("Folders will appear as indexing finishes", style = WatermelonTypography.typography.bodySmall, color = WatermelonColors.DarkOnSurfaceVariant)
+                            Text(
+                                "Scanning your media library",
+                                style = WatermelonTypography.typography.bodyLarge,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                "Folders will appear as indexing finishes",
+                                style = WatermelonTypography.typography.bodySmall,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
                         }
                     }
                     LibraryUiState.Empty -> WatermelonGlassCard(
@@ -202,26 +210,54 @@ fun FolderBrowserScreen(
                         elevated = true
                     ) {
                         Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                        modifier = Modifier.padding(WatermelonSpacing.lg)
-                    ) {
-                        Text("No media folders found", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface)
-                        Text("Watermelon could not find eligible videos in your visible folders.", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant)
-                        WatermelonGlassButton(onClick = viewModel::refresh, selected = true) { Text("Refresh library", color = WatermelonColors.Accent) }
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.xl)
+                        ) {
+                            Text(
+                                "No media folders found",
+                                style = WatermelonTypography.typography.titleMedium,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                "Watermelon could not find eligible videos in your visible folders.",
+                                style = WatermelonTypography.typography.bodyMedium,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
+                            WatermelonGlassButton(
+                                onClick = viewModel::refresh,
+                                selected = true
+                            ) {
+                                Text("Refresh library", color = WatermelonColors.Accent)
+                            }
+                        }
                     }
                     is LibraryUiState.Error -> WatermelonGlassCard(
                         modifier = Modifier.padding(WatermelonSpacing.lg),
                         elevated = true
                     ) {
                         Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
-                        modifier = Modifier.padding(WatermelonSpacing.lg)
-                    ) {
-                        Text("Library unavailable", style = WatermelonTypography.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text(state.message, style = WatermelonTypography.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        WatermelonGlassButton(onClick = viewModel::refresh, selected = true) { Text("Try again", color = WatermelonColors.Accent) }
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md),
+                            modifier = Modifier.padding(WatermelonSpacing.xl)
+                        ) {
+                            Text(
+                                "Library unavailable",
+                                style = WatermelonTypography.typography.titleMedium,
+                                color = WatermelonColors.DarkOnSurface
+                            )
+                            Text(
+                                state.message,
+                                style = WatermelonTypography.typography.bodyMedium,
+                                color = WatermelonColors.DarkOnSurfaceVariant
+                            )
+                            WatermelonGlassButton(
+                                onClick = viewModel::refresh,
+                                selected = true
+                            ) {
+                                Text("Try again", color = WatermelonColors.Accent)
+                            }
+                        }
                     }
                     LibraryUiState.Content -> Unit
                 }
