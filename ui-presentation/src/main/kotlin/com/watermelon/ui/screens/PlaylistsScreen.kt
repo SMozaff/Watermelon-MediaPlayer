@@ -159,8 +159,8 @@ fun PlaylistsScreen(
                                 WatermelonGlyph(
                                     icon = when (playlist.type) {
                                         PlaylistType.FAVOURITES -> WatermelonIcons.Star
-                                        PlaylistType.CONTINUE_WATCHING -> WatermelonIcons.PlayArrow
-                                        PlaylistType.RECENTLY_ADDED -> WatermelonIcons.History
+                                        PlaylistType.CONTINUE_WATCHING -> WatermelonIcons.VideoLibrary
+                                        PlaylistType.RECENTLY_ADDED -> WatermelonIcons.VideoLibrary
                                         PlaylistType.USER -> WatermelonIcons.Playlist
                                     },
                                     contentDescription = null,
