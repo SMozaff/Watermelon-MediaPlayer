@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.border
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -21,6 +22,7 @@ import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
 import com.watermelon.ui.theme.PlayerColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -57,7 +59,8 @@ fun MediaJobProgressSheet(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .background(MaterialTheme.colorScheme.surface, WatermelonShapes.sheet)
+                 .background(WatermelonGlass.surfaceElevated, WatermelonShapes.sheet)
+                .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -88,7 +91,7 @@ fun MediaJobProgressSheet(
                             onClick = onCancel,
                             shape = WatermelonShapes.control,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                containerColor = WatermelonGlass.surface,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             modifier = Modifier.fillMaxWidth()
