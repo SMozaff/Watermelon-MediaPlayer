@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +40,7 @@ import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 import com.watermelon.ui.components.MediaJobProgressSheet
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.CompressViewModel
@@ -303,7 +306,8 @@ private fun PresetCard(
     androidx.compose.foundation.layout.Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant, WatermelonShapes.card)
+             .background(if (isSelected) WatermelonGlass.surfaceElevated else WatermelonGlass.surface, WatermelonShapes.card)
+            .border(1.dp, if (isSelected) WatermelonGlass.highlight else WatermelonGlass.border, WatermelonShapes.card)
             .clickable(onClick = onClick)
             .padding(WatermelonSpacing.md)
     ) {

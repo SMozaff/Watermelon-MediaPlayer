@@ -45,6 +45,7 @@ import com.watermelon.ui.R
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.components.WatermelonGlassSurface
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -165,7 +166,7 @@ internal fun ToggleRow(
                 checkedThumbColor = WatermelonColors.Palette.PaperWhite,
                 checkedTrackColor = WatermelonColors.Accent,
                 uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                uncheckedTrackColor = WatermelonGlass.surface
             )
         )
     }
@@ -244,7 +245,11 @@ internal fun DropdownNavRow(
                 )
             }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = WatermelonGlass.surfaceElevated
+        ) {
             options.forEach { option ->
                 DropdownMenuItem(
                     text = {
@@ -325,7 +330,9 @@ internal fun StepperRow(
             modifier = Modifier.weight(1f)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onMinus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+            TextButton(onClick = onMinus, modifier = Modifier .clip(RoundedCornerShape(10.dp))
+                .background(WatermelonGlass.surface)
+                .border(1.dp, WatermelonGlass.border, RoundedCornerShape(10.dp))) {
                 Text(
                     text = "-",
                     fontSize = 20.sp,
