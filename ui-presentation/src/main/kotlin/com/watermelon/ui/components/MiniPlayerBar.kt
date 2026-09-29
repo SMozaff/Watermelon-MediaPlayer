@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,6 +35,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 
 private val MiniPlayerHeight = 64.dp
@@ -74,8 +77,13 @@ fun MiniPlayerBar(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+                    .background(WatermelonGlass.surfaceElevated)
+                    .border(
+                        1.dp,
+                        WatermelonGlass.border,
+                        RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp)
+                    )
                     .semantics { contentDescription = "Open full player for $title" }
                     .clickable(onClick = onRestore),
             ) {
@@ -149,8 +157,8 @@ fun MiniPlayerBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(2.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+                    color = WatermelonColors.Accent,
+                    trackColor = WatermelonGlass.highlight,
                 )
             }
         }
