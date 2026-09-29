@@ -345,7 +345,7 @@ internal fun StepperRow(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.sm)
             )
-            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(WatermelonGlass.surface)) {
                 Text(
                     text = "+",
                     fontSize = 20.sp,
