@@ -33,7 +33,6 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.theme.WatermelonGlass
-import com.watermelon.ui.theme.WatermelonColors
 
 /**
  * Sleep timer configuration dialog. User chooses one of three modes:
