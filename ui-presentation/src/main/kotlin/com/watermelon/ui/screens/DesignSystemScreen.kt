@@ -171,11 +171,11 @@ private fun GlassSurfaceShowcase() {
         ) {
             WatermelonGlassCard(modifier = Modifier.weight(1f), elevated = false) {
                 Text(text = "Glass Surface", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface, modifier = Modifier.padding(WatermelonSpacing.md))
-                Text(text = "Subtle · ${WatermelonGlass.Blur.Subtle.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodySmall, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
+                Text(text = "Subtle · ${WatermelonGlass.Blur.Subtle.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
             }
             WatermelonGlassCard(modifier = Modifier.weight(1f), elevated = true) {
                 Text(text = "Elevated Glass", style = WatermelonTypography.typography.titleMedium, color = WatermelonColors.DarkOnSurface, modifier = Modifier.padding(WatermelonSpacing.md))
-                Text(text = "Floating · ${WatermelonGlass.Blur.Medium.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodySmall, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
+                Text(text = "Floating · ${WatermelonGlass.Blur.Medium.radius.value.toInt()}dp blur token", style = WatermelonTypography.typography.bodyMedium, color = WatermelonColors.DarkOnSurfaceVariant, modifier = Modifier.padding(horizontal = WatermelonSpacing.md))
             }
         }
         WatermelonGlassButton(onClick = {}, selected = true) {
