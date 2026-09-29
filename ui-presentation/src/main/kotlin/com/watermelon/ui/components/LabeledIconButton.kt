@@ -1,9 +1,10 @@
 package com.watermelon.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +23,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
@@ -68,12 +71,17 @@ fun LabeledIconButton(
             Column(
                 modifier = modifier
                     .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
+                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else WatermelonGlass.surface)
+                    .border(
+                        1.dp,
+                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.border,
+                        RoundedCornerShape(WatermelonShapes.Radius.small)
+                    )
                     .clickable(
                         enabled = enabled,
                         role = Role.Button,
                         onClick = onClick
                     )
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                     .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2)
@@ -98,12 +106,17 @@ fun LabeledIconButton(
             Column(
                 modifier = modifier
                     .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
+                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else WatermelonGlass.surface)
+                    .border(
+                        1.dp,
+                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.border,
+                        RoundedCornerShape(WatermelonShapes.Radius.small)
+                    )
                     .clickable(
                         enabled = enabled,
                         role = Role.Button,
                         onClick = onClick
                     )
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                     .padding(horizontal = WatermelonSpacing.sm, vertical = WatermelonSpacing.xs),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs / 2)

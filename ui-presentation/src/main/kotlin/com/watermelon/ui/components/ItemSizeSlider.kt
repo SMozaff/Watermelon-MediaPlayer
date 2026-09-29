@@ -2,6 +2,10 @@ package com.watermelon.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -14,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonShapes
 
 /**
  * Compact five-step size control for library/folder browsing.
@@ -29,7 +35,11 @@ fun ItemSizeSlider(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clip(WatermelonShapes.control)
+            .background(WatermelonGlass.surface)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.control)
+            .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

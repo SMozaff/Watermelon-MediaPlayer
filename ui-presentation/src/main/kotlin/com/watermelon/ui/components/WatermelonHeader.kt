@@ -1,6 +1,5 @@
 package com.watermelon.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,13 +14,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonTypography
 
 /**
@@ -38,76 +38,71 @@ fun WatermelonHeader(
     showMenuButton: Boolean = false,
     onMenuClick: () -> Unit = {}
 ) {
-    Row(
+    WatermelonGlassSurface(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = WatermelonSpacing.md),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .height(64.dp),
+        elevated = true,
+        blur = WatermelonGlass.Blur.Medium,
+        shape = WatermelonShapes.sheet
     ) {
-        if (showBackButton) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.size(48.dp)
-            ) {
-                WatermelonGlyph(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = WatermelonSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (showBackButton) {
+                WatermelonGlassIconButton(
+                    onClick = onBackClick,
                     icon = WatermelonIcons.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    modifier = Modifier.size(48.dp)
+                )
+            } else {
+                Box(modifier = Modifier.size(48.dp))
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_watermelon_logo),
+                    contentDescription = "Watermelon MediaPlayer",
+                    tint = androidx.compose.ui.graphics.Color.Unspecified,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(end = WatermelonSpacing.sm)
+                )
+                Text(
+                    text = title,
+                    style = WatermelonTypography.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
-        } else {
-            Box(modifier = Modifier.size(40.dp))
-        }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.weight(1f)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_watermelon_logo),
-                contentDescription = "Watermelon MediaPlayer",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(24.dp)
-                    .padding(end = WatermelonSpacing.sm)
-            )
-            Text(
-                text = title,
-                style = WatermelonTypography.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            if (showSettingsButton) {
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    WatermelonGlyph(
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (showSettingsButton) {
+                    WatermelonGlassIconButton(
+                        onClick = onSettingsClick,
                         icon = WatermelonIcons.Settings,
                         contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurface
+                        modifier = Modifier.size(48.dp)
                     )
                 }
-            }
-            if (showMenuButton) {
-                IconButton(
-                    onClick = onMenuClick,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    WatermelonGlyph(
+                if (showMenuButton) {
+                    WatermelonGlassIconButton(
+                        onClick = onMenuClick,
                         icon = WatermelonIcons.MoreVert,
                         contentDescription = "Menu",
-                        tint = MaterialTheme.colorScheme.onSurface
+                        modifier = Modifier.size(48.dp)
                     )
                 }
             }
