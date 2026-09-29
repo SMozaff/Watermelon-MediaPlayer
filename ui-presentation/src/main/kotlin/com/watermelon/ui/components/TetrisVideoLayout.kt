@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.MediaItem
-import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.components.WatermelonGlassPanel
 
 private data class TetrisRow(val items: List<MediaItem>, val aspectSum: Float)
