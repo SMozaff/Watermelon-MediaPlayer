@@ -33,6 +33,7 @@ import com.watermelon.common.model.MediaItem
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -108,12 +109,12 @@ fun VideoListItem(
 
     val selectedBorder = if (isSelected) {
         Modifier
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), WatermelonShapes.control)
-            .border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
+            .background(WatermelonColors.Accent.copy(alpha = 0.12f), WatermelonShapes.control)
+            .border(2.dp, WatermelonColors.Accent, WatermelonShapes.control)
     } else {
         Modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f), WatermelonShapes.control)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.42f), WatermelonShapes.control)
+            .background(WatermelonGlass.surface, WatermelonShapes.control)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.control)
     }
 
     val clickModifier = Modifier
@@ -166,7 +167,8 @@ fun VideoListItem(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .size(48.dp)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.58f), androidx.compose.foundation.shape.CircleShape)
+                            .background(WatermelonGlass.surfaceElevated, androidx.compose.foundation.shape.CircleShape)
+                            .border(1.dp, WatermelonGlass.border, androidx.compose.foundation.shape.CircleShape)
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.Play,
