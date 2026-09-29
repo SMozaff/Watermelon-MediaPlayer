@@ -21,6 +21,7 @@ import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
 import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.theme.WatermelonGlass
 
 /** Jobs that are still performing work and must remain visible outside their initiating screen. */
 fun List<MediaJob>.activeMediaJobs(): List<MediaJob> = filter {
@@ -91,7 +92,12 @@ fun MediaJobsSheet(
 ) {
     val activeJobs = jobs.activeMediaJobs()
     val recentJobs = jobs.filterNot { it in activeJobs }.takeLast(4).reversed()
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.surfaceElevated,
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         Text(
             text = "Media jobs",
             style = MaterialTheme.typography.headlineSmall,
