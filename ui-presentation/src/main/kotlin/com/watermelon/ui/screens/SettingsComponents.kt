@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.watermelon.ui.R
 import com.watermelon.ui.components.WatermelonGlyph
+import com.watermelon.ui.components.WatermelonGlassSurface
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
@@ -79,13 +80,12 @@ internal fun SettingsGroup(
     content: @Composable () -> Unit
 ) {
     var expanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
-    val shape = RoundedCornerShape(18.dp)
-    Surface(
-        shape = shape,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), shape)
+    WatermelonGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        elevated = expanded,
+        blur = if (expanded) com.watermelon.ui.theme.WatermelonGlass.Blur.Medium
+        else com.watermelon.ui.theme.WatermelonGlass.Blur.Subtle,
+        shape = com.watermelon.ui.theme.WatermelonShapes.card
     ) {
         Column {
             Row(
@@ -121,7 +121,7 @@ internal fun SettingsGroup(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+                    HorizontalDivider(color = com.watermelon.ui.theme.WatermelonGlass.border)
                     Column(
                         modifier = Modifier.padding(
                             horizontal = WatermelonSpacing.md,
@@ -133,7 +133,6 @@ internal fun SettingsGroup(
         }
     }
 }
-
 @Composable
 internal fun ToggleRow(
     label: String,
