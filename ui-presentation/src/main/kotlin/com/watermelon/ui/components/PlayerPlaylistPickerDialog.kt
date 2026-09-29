@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.Playlist
 import com.watermelon.common.model.PlaylistType
+import com.watermelon.ui.theme.WatermelonGlass
 
 /**
  * The player-side destination chooser for the explicit "Add to playlist" action. Favourites is
@@ -36,6 +37,8 @@ fun PlayerPlaylistPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.surfaceElevated,
+        tonalElevation = 0.dp,
         title = { Text("Add to playlist") },
         text = {
             Column {
@@ -73,7 +76,10 @@ fun PlayerPlaylistPickerDialog(
                 }
 
                 if (userPlaylists.isNotEmpty()) {
-                    HorizontalDivider(modifier = Modifier.fillMaxWidth())
+                    HorizontalDivider(
+                        color = WatermelonGlass.border,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     userPlaylists.forEach { playlist ->
                         TextButton(
                             onClick = { onSelect(playlist) },

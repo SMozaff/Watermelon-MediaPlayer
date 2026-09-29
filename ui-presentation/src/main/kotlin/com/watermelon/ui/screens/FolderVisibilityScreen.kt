@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.theme.WatermelonColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -70,7 +71,7 @@ fun FolderVisibilityScreen(
         }
 
         HorizontalDivider(
-            color = WatermelonColors.DarkOutline,
+            color = WatermelonGlass.border,
             thickness = WatermelonSpacing.hairline
         )
 
@@ -128,7 +129,7 @@ fun FolderVisibilityScreen(
                     )
                 }
                 HorizontalDivider(
-                    color = WatermelonColors.DarkOutline,
+                    color = WatermelonGlass.border,
                     thickness = WatermelonSpacing.hairline,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.md)
                 )
