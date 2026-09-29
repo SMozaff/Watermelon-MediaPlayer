@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.watermelon.common.model.SubtitleTrack
 import com.watermelon.common.repository.OnlineSubtitleSearchResult
 import com.watermelon.ui.theme.PlayerColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
@@ -49,7 +50,12 @@ fun OnlineSubtitlesSheet(
     onDownload: (SubtitleTrack) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.surfaceElevated,
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         SheetTitle("Find online subtitles")
         
         when (val state = uiState) {

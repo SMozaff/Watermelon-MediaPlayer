@@ -12,6 +12,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.watermelon.ui.theme.WatermelonGlass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +42,12 @@ fun PlayerActionsSheet(
     onFileActions: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.surfaceElevated,
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         SheetTitle("Player actions")
         SheetAction(
             label = "Quick tools",

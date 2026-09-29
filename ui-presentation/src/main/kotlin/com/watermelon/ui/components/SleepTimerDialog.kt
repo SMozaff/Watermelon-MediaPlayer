@@ -32,6 +32,7 @@ import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
+import com.watermelon.ui.theme.WatermelonGlass
 
 /**
  * Sleep timer configuration dialog. User chooses one of three modes:
@@ -68,7 +69,8 @@ fun SleepTimerDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .background(MaterialTheme.colorScheme.surface, WatermelonShapes.sheet)
+                .background(WatermelonGlass.surfaceElevated, WatermelonShapes.sheet)
+                .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -158,11 +160,12 @@ fun SleepTimerDialog(
                                     },
                                     shape = WatermelonShapes.control,
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        containerColor = WatermelonGlass.surface,
                                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
+                                        .background(WatermelonGlass.surface, WatermelonShapes.control)
                                         .then(
                                             if (isSelected)
                                                 Modifier.border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
@@ -253,7 +256,7 @@ private fun ModeButton(label: String, isSelected: Boolean, onClick: () -> Unit) 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant, WatermelonShapes.control)
+            .background(WatermelonGlass.surface, WatermelonShapes.control)
             .then(
                 if (isSelected)
                     Modifier.border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)

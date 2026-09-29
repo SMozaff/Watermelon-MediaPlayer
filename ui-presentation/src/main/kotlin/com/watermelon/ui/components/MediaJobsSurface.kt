@@ -16,11 +16,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
 import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.theme.WatermelonGlass
 
 /** Jobs that are still performing work and must remain visible outside their initiating screen. */
 fun List<MediaJob>.activeMediaJobs(): List<MediaJob> = filter {
@@ -91,7 +93,12 @@ fun MediaJobsSheet(
 ) {
     val activeJobs = jobs.activeMediaJobs()
     val recentJobs = jobs.filterNot { it in activeJobs }.takeLast(4).reversed()
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.surfaceElevated,
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         Text(
             text = "Media jobs",
             style = MaterialTheme.typography.headlineSmall,
