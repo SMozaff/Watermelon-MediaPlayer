@@ -2,6 +2,8 @@ package com.watermelon.ui.components
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.FolderNode
 import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
@@ -98,12 +101,16 @@ fun FolderListItem(
     val clickMod = if (interactionSource != null) {
         modifier
             .clip(WatermelonShapes.card)
+            .background(WatermelonGlass.surface)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.card)
             .clickable(interactionSource = interactionSource, indication = LocalIndication.current) {
                 onClick(folder)
             }
     } else {
         modifier
             .clip(WatermelonShapes.card)
+            .background(WatermelonGlass.surface)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.card)
             .clickable { onClick(folder) }
     }
 

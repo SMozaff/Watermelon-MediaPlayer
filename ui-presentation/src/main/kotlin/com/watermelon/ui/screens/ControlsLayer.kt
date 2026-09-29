@@ -3,6 +3,9 @@ package com.watermelon.ui.screens
 import android.app.Activity
 import android.media.AudioManager
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +56,8 @@ import com.watermelon.ui.screens.OnlineSubtitlesSheet
 import com.watermelon.ui.screens.OnlineSubtitlesUiState
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
+import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.utils.ScreenshotManager
 import com.watermelon.ui.utils.ScreenshotResult
 import kotlinx.coroutines.launch
@@ -149,7 +154,11 @@ fun ControlsLayer(
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth().align(Alignment.TopStart).padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().align(Alignment.TopStart)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(WatermelonShapes.sheet)
+            .background(WatermelonGlass.surface)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.sheet),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
@@ -213,7 +222,11 @@ fun ControlsLayer(
     val hasNextTrack = remember(uri) { PlaybackQueue.nextOf(uri) != null }
 
     Column(
-        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clip(WatermelonShapes.sheet)
+            .background(WatermelonGlass.surfaceElevated.copy(alpha = 0.92f))
+            .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PlayerTransportControls(
@@ -529,7 +542,8 @@ private fun PlayerTransportControls(
             onClick = onPlayPause,
             modifier = Modifier
                 .width(64.dp).height(64.dp)
-                .background(PlayerColors.current.accent, androidx.compose.foundation.shape.CircleShape)
+                .background(PlayerColors.current.accent, CircleShape)
+                .border(1.dp, WatermelonGlass.highlight, CircleShape)
         ) {
             WatermelonGlyph(
                 if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,

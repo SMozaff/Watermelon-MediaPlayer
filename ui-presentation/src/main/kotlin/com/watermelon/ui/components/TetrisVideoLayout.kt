@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.MediaItem
+import com.watermelon.ui.components.WatermelonGlassPanel
 
 private data class TetrisRow(val items: List<MediaItem>, val aspectSum: Float)
 
@@ -54,7 +55,8 @@ fun TetrisVideoLayout(
     onCompressVideo: ((MediaItem) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier = modifier) {
+    WatermelonGlassPanel(modifier = modifier, elevated = false) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val rows = buildTetrisRows(items, maxWidth.value)
         androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -98,6 +100,7 @@ fun TetrisVideoLayout(
                 }
             }
         }
+    }
     }
     }
 }

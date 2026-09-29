@@ -28,6 +28,7 @@ import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonTypography
+import com.watermelon.ui.theme.WatermelonGlass
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,11 +52,11 @@ fun TetrisVideoItem(
     } else 16f / 9f
 
     val borderModifier = if (isSelected) {
-        Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f), WatermelonShapes.small)
-            .border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.small)
+        Modifier.background(WatermelonColors.Accent.copy(alpha = 0.16f), WatermelonShapes.small)
+            .border(2.dp, WatermelonColors.Accent, WatermelonShapes.small)
     } else {
-        Modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f), WatermelonShapes.small)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.38f), WatermelonShapes.small)
+        Modifier.background(WatermelonGlass.surface, WatermelonShapes.small)
+            .border(1.dp, WatermelonGlass.border, WatermelonShapes.small)
     }
 
     Column(
@@ -91,7 +92,7 @@ fun TetrisVideoItem(
                     style = WatermelonTypography.timecode,
                     color = WatermelonColors.Palette.PaperWhite,
                     modifier = Modifier.align(Alignment.BottomEnd)
-                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.72f), RoundedCornerShape(6.dp)),
+                        .background(WatermelonGlass.scrim.copy(alpha = 0.72f), RoundedCornerShape(6.dp)),
                 )
             }
 
