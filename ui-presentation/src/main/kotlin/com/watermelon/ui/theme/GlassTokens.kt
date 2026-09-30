@@ -31,6 +31,7 @@ object WatermelonGlass {
     val glow = WatermelonColors.Palette.WatermelonRed.copy(alpha = 0.30f)
     val disabled = Color.White.copy(alpha = 0.08f)
 
+    @Composable
     private fun isDarkTheme(): Boolean =
         MaterialTheme.colorScheme.background == WatermelonColors.DarkBackground
 
