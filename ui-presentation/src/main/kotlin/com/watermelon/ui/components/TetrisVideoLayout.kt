@@ -43,6 +43,7 @@ private fun buildTetrisRows(items: List<MediaItem>, targetWidthDp: Float, target
 @Composable
 fun TetrisVideoLayout(
     items: List<MediaItem>,
+    itemSize: VideoItemSize,
     isScrollingFast: Boolean,
     isSelected: (MediaItem) -> Boolean,
     selectionActive: Boolean,
@@ -55,9 +56,16 @@ fun TetrisVideoLayout(
     onCompressVideo: ((MediaItem) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val rowHeightDp = when (itemSize) {
+        VideoItemSize.TINY -> 92f
+        VideoItemSize.SMALL -> 116f
+        VideoItemSize.MEDIUM -> 146f
+        VideoItemSize.LARGE -> 182f
+        VideoItemSize.XLARGE -> 224f
+    }
     WatermelonGlassPanel(modifier = modifier, elevated = false) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val rows = buildTetrisRows(items, maxWidth.value)
+        val rows = buildTetrisRows(items, maxWidth.value, rowHeightDp)
         androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
