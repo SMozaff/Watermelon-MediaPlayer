@@ -37,7 +37,7 @@ fun PlayerPlaylistPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = WatermelonGlass.surfaceElevated,
+        containerColor = WatermelonGlass.modalSurface(),
         tonalElevation = 0.dp,
         title = { Text("Add to playlist") },
         text = {
