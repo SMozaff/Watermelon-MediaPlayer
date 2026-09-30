@@ -22,7 +22,7 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
     pureDark = pureDark,
     forcedRtl = prefs.getBoolean("forced_rtl", false),
     gridDefault = prefs.getBoolean("grid_default", false),
-    tetrisViewEnabled = prefs.getBoolean("tetris_view_enabled", false),
+    tetrisViewEnabled = prefs.getBoolean("tetris_view_enabled", true),
     showThumbnails = prefs.getBoolean("show_thumbnails", true),
     showDurations = prefs.getBoolean("show_durations", true),
     showFileSize = prefs.getBoolean("show_file_size", false),
