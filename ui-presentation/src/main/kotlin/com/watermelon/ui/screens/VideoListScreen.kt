@@ -134,7 +134,7 @@ fun VideoListScreen(
         mutableStateOf(VideoItemSize.SMALL)
     }
     var currentLayout by rememberSaveable(defaultGrid, stateSaver = LayoutSaver) {
-        mutableStateOf(if (defaultGrid) VideoLayout.GRID else VideoLayout.LIST)
+        mutableStateOf(VideoLayout.TETRIS)
     }
     val isGrid = currentLayout == VideoLayout.GRID
     LaunchedEffect(tetrisViewEnabled) {
@@ -423,6 +423,7 @@ fun VideoListScreen(
 
                     VideoLayout.TETRIS -> TetrisVideoLayout(
                         items = sorted,
+                        itemSize = currentItemSize,
                         isScrollingFast = isScrolling,
                         isSelected = { item -> selection.contains(item.uri) },
                         selectionActive = selection.isActive,

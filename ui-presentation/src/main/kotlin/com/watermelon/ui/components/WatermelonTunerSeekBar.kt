@@ -78,11 +78,11 @@ fun WatermelonTunerSeekBar(
     // While scrubbing, position is tracked as an absolute ms offset from the drag start —
     // advanced in whole-tick steps as drag distance crosses each tick's pixel spacing.
     var scrubPositionMs by remember { mutableStateOf(0L) }
-    // Raw, unconsumed drag distance since the last tick was crossed. Whenever this exceeds
-    // one tick's pixel width, we step scrubPositionMs by one tick's worth of seconds and
-    // subtract that width back out — same idea as a mouse wheel accumulating sub-notch
-    // motion until it clicks over.
-    var pendingDragPx by remember { mutableStateOf(0f) }
+    // Keep the gesture anchored to the position where the drag started. Deriving the
+    // target from the total drag distance avoids accumulating state updates one detent at
+    // a time, which could re-base a long gesture and send the target back toward zero.
+    var dragStartPositionMs by remember { mutableStateOf(0L) }
+    var totalDragPx by remember { mutableStateOf(0f) }
 
     // If this composable is removed from the tree mid-drag — e.g. the user toggles the
     // tuner seek bar off in Settings while actively scrubbing, or navigates away — neither
@@ -125,9 +125,10 @@ fun WatermelonTunerSeekBar(
                     onDragStart = {
                         scrubbing = true
                         onScrubChange(true)
+                        dragStartPositionMs = livePositionMs
+                        totalDragPx = 0f
                         scrubPositionMs = livePositionMs
                         onPreviewPositionChanged(scrubPositionMs)
-                        pendingDragPx = 0f
                     },
                     onDragEnd = {
                         onSeek(scrubPositionMs)
@@ -140,29 +141,19 @@ fun WatermelonTunerSeekBar(
                     }
                 ) { change, dragAmount ->
                     change.consume()
-                    pendingDragPx += dragAmount
-                    // Step forward/backward by whole ticks as accumulated drag distance
-                    // crosses each tick's pixel width — dragging right advances (tuning
-                    // forward), left rewinds. Looping (not just one if-check) means a fast
-                    // flick that crosses several ticks' worth of pixels in one callback
-                    // still advances by the correct number of steps, not just one.
-                    while (pendingDragPx >= tickSpacingPx) {
-                        pendingDragPx -= tickSpacingPx
-                        val next = (scrubPositionMs + stepMs).coerceAtMost(durationMs.coerceAtLeast(0L))
-                        if (next != scrubPositionMs) {
-                            scrubPositionMs = next
-                            onPreviewPositionChanged(scrubPositionMs)
-                            onDetent()
-                        }
-                    }
-                    while (pendingDragPx <= -tickSpacingPx) {
-                        pendingDragPx += tickSpacingPx
-                        val next = (scrubPositionMs - stepMs).coerceAtLeast(0L)
-                        if (next != scrubPositionMs) {
-                            scrubPositionMs = next
-                            onPreviewPositionChanged(scrubPositionMs)
-                            onDetent()
-                        }
+                    totalDragPx += dragAmount
+                    // Derive the target directly from the drag origin. This makes long
+                    // tuning gestures stable even while Compose recomposes the preview.
+                    val detents = kotlin.math.floor(totalDragPx / tickSpacingPx).toLong()
+                    val next = (dragStartPositionMs + detents * stepMs)
+                        .coerceIn(0L, durationMs.coerceAtLeast(0L))
+                    if (next != scrubPositionMs) {
+                        val previousDetents = kotlin.math.floor(
+                            (scrubPositionMs - dragStartPositionMs).toDouble() / stepMs.toDouble()
+                        ).toLong()
+                        scrubPositionMs = next
+                        onPreviewPositionChanged(scrubPositionMs)
+                        if (detents != previousDetents) onDetent()
                     }
                 }
             }

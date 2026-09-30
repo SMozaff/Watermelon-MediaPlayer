@@ -15,7 +15,7 @@ data class SettingsState(
     val pureDark: Boolean = true,
     val forcedRtl: Boolean = false,
     val gridDefault: Boolean = false,
-    val tetrisViewEnabled: Boolean = false,
+    val tetrisViewEnabled: Boolean = true,
     val showThumbnails: Boolean = true,
     val showDurations: Boolean = true,
     val showFileSize: Boolean = false,
