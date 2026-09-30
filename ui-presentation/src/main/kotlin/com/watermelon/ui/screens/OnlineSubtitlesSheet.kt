@@ -52,7 +52,7 @@ fun OnlineSubtitlesSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = WatermelonGlass.surfaceElevated,
+        containerColor = WatermelonGlass.modalSurface(),
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
