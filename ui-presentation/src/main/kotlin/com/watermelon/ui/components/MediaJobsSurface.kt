@@ -95,7 +95,7 @@ fun MediaJobsSheet(
     val recentJobs = jobs.filterNot { it in activeJobs }.takeLast(4).reversed()
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = WatermelonGlass.surfaceElevated,
+        containerColor = WatermelonGlass.modalSurface(),
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
