@@ -99,7 +99,12 @@ fun QuickToolsSheet(
     onAutoSync: () -> Unit = {},
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.modalSurface(),
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         SheetTitle("Quick tools")
 
         SheetSectionLabel("Playback speed")
@@ -288,7 +293,12 @@ fun FileActionsSheet(
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = WatermelonGlass.modalSurface(),
+        scrimColor = WatermelonGlass.scrim,
+        tonalElevation = 0.dp,
+    ) {
         SheetTitle("File actions")
         SheetAction("Share", "Send this video to another app", onShare)
         SheetAction(
