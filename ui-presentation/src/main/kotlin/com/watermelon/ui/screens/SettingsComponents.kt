@@ -248,7 +248,7 @@ internal fun DropdownNavRow(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = WatermelonGlass.surfaceElevated
+            containerColor = WatermelonGlass.popupSurface()
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

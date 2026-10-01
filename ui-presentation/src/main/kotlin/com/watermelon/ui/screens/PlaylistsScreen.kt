@@ -227,7 +227,7 @@ fun PlaylistsScreen(
         LaunchedEffect(Unit) { nameFocusRequester.requestFocus() }
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
-            containerColor = WatermelonGlass.surfaceElevated,
+            containerColor = WatermelonGlass.modalSurface(),
             tonalElevation = 0.dp,
             title = { Text("New playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
@@ -264,7 +264,7 @@ fun PlaylistsScreen(
         var name by remember(target.id) { mutableStateOf(target.name) }
         AlertDialog(
             onDismissRequest = { renameTarget = null },
-            containerColor = WatermelonGlass.surfaceElevated,
+            containerColor = WatermelonGlass.modalSurface(),
             tonalElevation = 0.dp,
             title = { Text("Rename playlist", color = WatermelonColors.DarkOnSurface) },
             text = {

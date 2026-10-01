@@ -32,9 +32,10 @@ import com.watermelon.ui.WatermelonIcons
 /**
  * Shared Watermelon Glass surface.
  *
- * Blur is represented as a semantic token at this stage. A true backdrop blur implementation
- * is platform/API dependent, so the primitive always retains a translucent fallback surface.
- */
+ * The [blur] argument remains part of the public API for design-system compatibility, but it is
+ * intentionally not applied as a fake backdrop blur. Compose's blur modifier blurs the primitive
+ * itself rather than arbitrary content behind it. Readability therefore comes from the semantic
+ * surface role and border hierarchy below.
 @Composable
 fun WatermelonGlassSurface(
     modifier: Modifier = Modifier,
@@ -44,8 +45,8 @@ fun WatermelonGlassSurface(
     border: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val fill = if (elevated) WatermelonGlass.surfaceElevated else WatermelonGlass.surface
-    val borderColor = if (elevated) WatermelonGlass.highlight else WatermelonGlass.border
+    val fill = if (elevated) WatermelonGlass.controlSurface() else WatermelonGlass.cardSurface()
+    val borderColor = if (elevated) WatermelonGlass.highlightColor() else WatermelonGlass.borderColor()
 
     Surface(
         modifier = modifier,
@@ -54,7 +55,7 @@ fun WatermelonGlassSurface(
         contentColor = MaterialTheme.colorScheme.onSurface,
         border = if (border) BorderStroke(1.dp, borderColor) else null,
         tonalElevation = 0.dp,
-        shadowElevation = if (elevated) 10.dp else 4.dp,
+        shadowElevation = if (elevated) 8.dp else 3.dp,
         content = { Column(content = content) }
     )
 }
@@ -82,18 +83,18 @@ fun WatermelonGlassButton(
     content: @Composable RowScope.() -> Unit
 ) {
     val fill = when {
-        !enabled -> WatermelonGlass.disabled
+        !enabled -> WatermelonGlass.disabledSurface()
         selected -> WatermelonColors.Accent.copy(alpha = 0.22f)
-        else -> WatermelonGlass.surface
+        else -> WatermelonGlass.controlSurface()
     }
     val borderColor = when {
         selected -> WatermelonColors.Accent.copy(alpha = 0.70f)
-        else -> WatermelonGlass.border
+        else -> WatermelonGlass.borderColor()
     }
 
     Row(
         modifier = modifier
-            .shadow(6.dp, WatermelonShapes.control)
+            .shadow(4.dp, WatermelonShapes.control)
             .clip(WatermelonShapes.control)
             .background(fill)
             .border(1.dp, borderColor, WatermelonShapes.control)
@@ -129,11 +130,11 @@ fun WatermelonGlassIconButton(
             .clip(WatermelonShapes.control)
             .background(
                 if (selected) WatermelonColors.Accent.copy(alpha = 0.18f)
-                else WatermelonGlass.surface
+                else WatermelonGlass.controlSurface()
             )
             .border(
                 1.dp,
-                if (selected) WatermelonColors.Accent.copy(alpha = 0.65f) else WatermelonGlass.border,
+                if (selected) WatermelonColors.Accent.copy(alpha = 0.65f) else WatermelonGlass.borderColor(),
                 WatermelonShapes.control
             ),
         contentAlignment = Alignment.Center
