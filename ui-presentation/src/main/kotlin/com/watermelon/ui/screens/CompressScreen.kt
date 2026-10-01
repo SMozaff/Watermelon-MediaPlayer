@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -168,7 +169,15 @@ fun CompressScreen(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = WatermelonGlass.controlSurface(),
+                unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                focusedBorderColor = WatermelonGlass.highlightColor(),
+                unfocusedBorderColor = WatermelonGlass.borderColor(),
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
         )
 
         Button(
@@ -310,8 +319,8 @@ private fun PresetCard(
     androidx.compose.foundation.layout.Column(
         modifier = Modifier
             .fillMaxWidth()
-             .background(if (isSelected) WatermelonGlass.surfaceElevated else WatermelonGlass.surface, WatermelonShapes.card)
-            .border(1.dp, if (isSelected) WatermelonGlass.highlight else WatermelonGlass.border, WatermelonShapes.card)
+             .background(if (isSelected) WatermelonGlass.controlSurface() else WatermelonGlass.cardSurface(), WatermelonShapes.card)
+            .border(1.dp, if (isSelected) WatermelonGlass.highlightColor() else WatermelonGlass.borderColor(), WatermelonShapes.card)
             .clickable(onClick = onClick)
             .padding(WatermelonSpacing.md)
     ) {
