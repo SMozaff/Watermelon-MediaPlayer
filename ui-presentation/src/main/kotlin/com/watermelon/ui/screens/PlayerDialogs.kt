@@ -32,7 +32,7 @@ fun PlayerDialogs(
 ) {
     if (state.showTunerSeekTip) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = {
                 context.getSharedPreferences("player_ui", Context.MODE_PRIVATE)
@@ -62,7 +62,7 @@ fun PlayerDialogs(
 
     if (state.showMediaInfo) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { state.showMediaInfo = false },
             title = { Text("Now playing") },
