@@ -37,8 +37,8 @@ fun ItemSizeSlider(
     Row(
         modifier = modifier
             .clip(WatermelonShapes.control)
-            .background(WatermelonGlass.surface)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.control)
+            .background(WatermelonGlass.controlSurface())
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.control)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
