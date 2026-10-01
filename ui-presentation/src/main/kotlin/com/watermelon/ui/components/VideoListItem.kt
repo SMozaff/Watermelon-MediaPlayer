@@ -331,9 +331,9 @@ internal fun VideoItemContextMenu(
         androidx.compose.material3.DropdownMenu(
             expanded = true,
             onDismissRequest = onDismiss,
-            containerColor = WatermelonGlass.popupSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Popup),
             shape = WatermelonShapes.card,
-            border = BorderStroke(1.dp, WatermelonGlass.borderColor())
+            border = BorderStroke(1.dp, WatermelonGlass.borderFor(WatermelonGlass.Role.Popup))
         ) {
             onExtractAudio?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
