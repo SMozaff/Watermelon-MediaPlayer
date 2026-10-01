@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import com.watermelon.common.model.SleepTimerMode
 import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.theme.PlayerColors
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 
 @Composable
@@ -30,6 +31,8 @@ fun PlayerDialogs(
 ) {
     if (state.showTunerSeekTip) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = {
                 context.getSharedPreferences("player_ui", Context.MODE_PRIVATE)
                     .edit()
