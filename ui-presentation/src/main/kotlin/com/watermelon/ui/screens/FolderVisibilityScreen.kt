@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -125,7 +126,14 @@ fun FolderVisibilityScreen(
                     }
                     Switch(
                         checked = isVisible,
-                        onCheckedChange = null
+                        onCheckedChange = null,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = WatermelonColors.Palette.PaperWhite,
+                            checkedTrackColor = WatermelonColors.Accent,
+                            uncheckedThumbColor = WatermelonColors.DarkOnSurfaceVariant,
+                            uncheckedTrackColor = WatermelonGlass.controlSurface(),
+                            uncheckedBorderColor = WatermelonGlass.borderColor()
+                        )
                     )
                 }
                 HorizontalDivider(

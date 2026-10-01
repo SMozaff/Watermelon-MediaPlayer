@@ -159,8 +159,8 @@ fun ControlsLayer(
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .shadow(14.dp, WatermelonShapes.sheet)
             .clip(WatermelonShapes.sheet)
-            .background(WatermelonGlass.surface)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.sheet),
+            .background(WatermelonGlass.controlSurface())
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.sheet),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
@@ -228,8 +228,8 @@ fun ControlsLayer(
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .shadow(18.dp, WatermelonShapes.sheet)
             .clip(WatermelonShapes.sheet)
-            .background(WatermelonGlass.surfaceElevated.copy(alpha = 0.92f))
-            .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet),
+            .background(WatermelonGlass.controlSurface())
+            .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.sheet),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PlayerTransportControls(
@@ -546,7 +546,7 @@ private fun PlayerTransportControls(
             modifier = Modifier
                 .width(64.dp).height(64.dp)
                 .background(PlayerColors.current.accent, CircleShape)
-                .border(1.dp, WatermelonGlass.highlight, CircleShape)
+                .border(1.dp, WatermelonGlass.highlightColor(), CircleShape)
         ) {
             WatermelonGlyph(
                 if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,

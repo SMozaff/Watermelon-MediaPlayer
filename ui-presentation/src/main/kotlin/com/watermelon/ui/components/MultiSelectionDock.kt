@@ -53,10 +53,10 @@ fun MultiSelectionDock(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(WatermelonGlass.surfaceElevated, RoundedCornerShape(18.dp))
+                .background(WatermelonGlass.controlSurface(), RoundedCornerShape(18.dp))
                 .border(
                     width = 1.dp,
-                    color = WatermelonGlass.border,
+                    color = WatermelonGlass.borderColor(),
                     shape = RoundedCornerShape(18.dp),
                 )
                 .padding(WatermelonSpacing.md),

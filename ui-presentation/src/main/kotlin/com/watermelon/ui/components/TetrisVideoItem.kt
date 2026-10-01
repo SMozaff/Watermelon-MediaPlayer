@@ -55,8 +55,8 @@ fun TetrisVideoItem(
         Modifier.background(WatermelonColors.Accent.copy(alpha = 0.16f), WatermelonShapes.small)
             .border(2.dp, WatermelonColors.Accent, WatermelonShapes.small)
     } else {
-        Modifier.background(WatermelonGlass.surface, WatermelonShapes.small)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.small)
+        Modifier.background(WatermelonGlass.cardSurface(), WatermelonShapes.small)
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.small)
     }
 
     Column(
@@ -66,7 +66,7 @@ fun TetrisVideoItem(
         Box(
             modifier = Modifier.fillMaxWidth().aspectRatio(ratio)
                 .clip(WatermelonShapes.small)
-                .background(WatermelonGlass.surface),
+                .background(WatermelonGlass.cardSurface()),
         ) {
             if (showThumbnails) {
                 VelocityGuardImage(

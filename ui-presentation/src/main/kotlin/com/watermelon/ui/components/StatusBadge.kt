@@ -72,8 +72,8 @@ object StatusBadge {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = modifier
                 .clip(WatermelonShapes.small)
-                .background(WatermelonGlass.surface)
-                .border(1.dp, WatermelonGlass.border, WatermelonShapes.small)
+                .background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.small)
                 .padding(horizontal = WatermelonSpacing.xs, vertical = WatermelonSpacing.xs / 2)
         )
     }

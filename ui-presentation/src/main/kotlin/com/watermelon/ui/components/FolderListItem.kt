@@ -101,16 +101,16 @@ fun FolderListItem(
     val clickMod = if (interactionSource != null) {
         modifier
             .clip(WatermelonShapes.card)
-            .background(WatermelonGlass.surface)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.card)
+            .background(WatermelonGlass.cardSurface())
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.card)
             .clickable(interactionSource = interactionSource, indication = LocalIndication.current) {
                 onClick(folder)
             }
     } else {
         modifier
             .clip(WatermelonShapes.card)
-            .background(WatermelonGlass.surface)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.card)
+            .background(WatermelonGlass.cardSurface())
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.card)
             .clickable { onClick(folder) }
     }
 
