@@ -332,7 +332,7 @@ internal fun VideoItemContextMenu(
             expanded = true,
             onDismissRequest = onDismiss,
             containerColor = WatermelonGlass.popupSurface(),
-            shape = WatermelonShapes.menu,
+            shape = WatermelonShapes.card,
             border = BorderStroke(1.dp, WatermelonGlass.borderColor())
         ) {
             onExtractAudio?.let { action ->
