@@ -233,6 +233,7 @@ fun PlaylistsScreen(
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             title = { Text("New playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
