@@ -71,10 +71,10 @@ fun LabeledIconButton(
             Column(
                 modifier = modifier
                     .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
-                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else WatermelonGlass.surface)
+                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else if (enabled) WatermelonGlass.controlSurface() else WatermelonGlass.disabledSurface())
                     .border(
                         1.dp,
-                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.border,
+                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.borderColor(),
                         RoundedCornerShape(WatermelonShapes.Radius.small)
                     )
                     .clickable(
@@ -106,10 +106,10 @@ fun LabeledIconButton(
             Column(
                 modifier = modifier
                     .clip(RoundedCornerShape(WatermelonShapes.Radius.small))
-                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else WatermelonGlass.surface)
+                    .background(if (active) WatermelonColors.Accent.copy(alpha = 0.16f) else if (enabled) WatermelonGlass.controlSurface() else WatermelonGlass.disabledSurface())
                     .border(
                         1.dp,
-                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.border,
+                        if (active) WatermelonColors.Accent.copy(alpha = 0.55f) else WatermelonGlass.borderColor(),
                         RoundedCornerShape(WatermelonShapes.Radius.small)
                     )
                     .clickable(
