@@ -78,10 +78,10 @@ fun MiniPlayerBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
-                    .background(WatermelonGlass.surfaceElevated)
+                    .background(WatermelonGlass.controlSurface())
                     .border(
                         1.dp,
-                        WatermelonGlass.border,
+                        WatermelonGlass.borderColor(),
                         RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp)
                     )
                     .semantics { contentDescription = "Open full player for $title" }
