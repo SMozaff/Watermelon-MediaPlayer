@@ -64,7 +64,7 @@ fun KeepOrDeleteOriginalDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                 .background(WatermelonGlass.modalSurface(), WatermelonShapes.sheet)
+                 .background(WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal), WatermelonShapes.sheet)
                 .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
