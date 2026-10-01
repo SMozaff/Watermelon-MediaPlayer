@@ -252,7 +252,7 @@ fun CompressScreen(
 
     if (showDiscardChangesDialog) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
             title = { Text("Discard compression changes?") },
@@ -271,7 +271,7 @@ fun CompressScreen(
 
     if (showBackgroundExitDialog) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
             title = { Text("Compression will continue") },
