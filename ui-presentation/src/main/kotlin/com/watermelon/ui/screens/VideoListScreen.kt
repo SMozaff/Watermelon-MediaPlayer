@@ -543,7 +543,7 @@ fun VideoListScreen(
     if (viewOptionsOpen) {
         AlertDialog(
             onDismissRequest = { viewOptionsOpen = false },
-            containerColor = WatermelonGlass.popupSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             title = { Text("View options") },
             text = {
@@ -577,7 +577,7 @@ fun VideoListScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            containerColor = WatermelonGlass.popupSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             title = { Text("Delete ${selection.count} video(s)?", color = WatermelonColors.DarkOnSurface) },
             text = { Text("This will permanently delete the selected files from your device.", color = WatermelonColors.DarkOnSurfaceVariant) },
@@ -608,7 +608,7 @@ fun VideoListScreen(
 
         AlertDialog(
             onDismissRequest = { showPlaylistPicker = false },
-            containerColor = WatermelonGlass.popupSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             title = { Text("Add to playlist", color = WatermelonColors.DarkOnSurface) },
             text = {
