@@ -325,6 +325,8 @@ fun FolderBrowserScreen(
 
     if (sortMenuOpen) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { sortMenuOpen = false },
             title = { Text("Sort folders") },
             text = {
