@@ -66,7 +66,7 @@ fun WatermelonGlassSurface(
 fun WatermelonGlassCard(
     modifier: Modifier = Modifier,
     elevated: Boolean = false,
-    role: WatermelonGlass.Role = WatermelonGlass.Role.Card,
+    role: WatermelonGlass.Role = if (elevated) WatermelonGlass.Role.Control else WatermelonGlass.Role.Card,
     blur: WatermelonGlass.Blur = WatermelonGlass.Blur.Subtle,
     content: @Composable ColumnScope.() -> Unit
 ) = WatermelonGlassSurface(
