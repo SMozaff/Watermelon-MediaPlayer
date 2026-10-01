@@ -42,8 +42,8 @@ fun Mp3BitrateDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                 .background(WatermelonGlass.surfaceElevated, WatermelonShapes.sheet)
-                .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet)
+                 .background(WatermelonGlass.modalSurface(), WatermelonShapes.sheet)
+                .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -66,8 +66,8 @@ fun Mp3BitrateDialog(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                             .background(WatermelonGlass.surface, WatermelonShapes.card)
-                            .border(1.dp, WatermelonGlass.border, WatermelonShapes.card)
+                             .background(WatermelonGlass.cardSurface(), WatermelonShapes.card)
+                            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.card)
                             .clickable { onSelect(preset) }
                             .padding(WatermelonSpacing.md)
                     ) {

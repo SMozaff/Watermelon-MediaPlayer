@@ -1,5 +1,6 @@
 package com.watermelon.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -197,7 +198,9 @@ fun PlaylistsScreen(
                         }
                         DropdownMenu(
                             expanded = menuTarget?.id == playlist.id,
-                            onDismissRequest = { menuTarget = null }
+                            onDismissRequest = { menuTarget = null },
+                            containerColor = WatermelonGlass.popupSurface(),
+                            border = BorderStroke(1.dp, WatermelonGlass.borderColor())
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Rename") },

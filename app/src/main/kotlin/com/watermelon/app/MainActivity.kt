@@ -78,6 +78,7 @@ import com.watermelon.storage.repository.MediaRepositoryImpl
 import com.watermelon.storage.repository.PlaylistRepositoryImpl
 import com.watermelon.subtitle.repository.SubtitleRepositoryImpl
 import com.watermelon.ui.components.WatermelonBottomNavigation
+import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.components.BottomNavItem
 import com.watermelon.ui.components.activeMediaJobs
 import com.watermelon.ui.screens.DesignSystemScreen
@@ -1664,6 +1665,8 @@ class MainActivity : ComponentActivity() {
         val deleteTarget = pendingPlayerDelete
         if (showPlayerDeleteDialog && deleteTarget != null) {
             androidx.compose.material3.AlertDialog(
+                containerColor = WatermelonGlass.modalSurface(),
+                tonalElevation = 0.dp,
                 onDismissRequest = {
                     showPlayerDeleteDialog = false
                     pendingPlayerDelete = null

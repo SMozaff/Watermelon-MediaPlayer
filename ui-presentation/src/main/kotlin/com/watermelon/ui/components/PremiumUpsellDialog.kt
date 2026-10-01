@@ -37,8 +37,8 @@ fun PremiumUpsellDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                 .background(WatermelonGlass.surfaceElevated, WatermelonShapes.sheet)
-                .border(1.dp, WatermelonGlass.highlight, WatermelonShapes.sheet)
+                 .background(WatermelonGlass.modalSurface(), WatermelonShapes.sheet)
+                .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.sheet)
                 .padding(WatermelonSpacing.lg),
             contentAlignment = Alignment.Center
         ) {

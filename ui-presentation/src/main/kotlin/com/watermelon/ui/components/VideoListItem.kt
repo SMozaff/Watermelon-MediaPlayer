@@ -2,6 +2,7 @@ package com.watermelon.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -329,7 +330,10 @@ internal fun VideoItemContextMenu(
     if (expanded) {
         androidx.compose.material3.DropdownMenu(
             expanded = true,
-            onDismissRequest = onDismiss
+            onDismissRequest = onDismiss,
+            containerColor = WatermelonGlass.popupSurface(),
+            shape = WatermelonShapes.card,
+            border = BorderStroke(1.dp, WatermelonGlass.borderColor())
         ) {
             onExtractAudio?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
