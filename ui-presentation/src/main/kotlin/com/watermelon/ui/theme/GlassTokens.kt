@@ -70,6 +70,51 @@ object WatermelonGlass {
         if (isDarkTheme()) Color.White.copy(alpha = 0.08f)
         else Color.Black.copy(alpha = 0.06f)
 
+    /**
+     * Semantic Glass roles. New surfaces should choose a role instead of reaching for
+     * legacy surface tokens directly.
+     */
+    enum class Role {
+        Background,
+        Card,
+        Control,
+        Popup,
+        Modal,
+        ThumbnailOverlay,
+        Selected,
+        Disabled
+    }
+
+    @Composable
+    fun surfaceFor(role: Role): Color = when (role) {
+        Role.Background -> background
+        Role.Card -> cardSurface()
+        Role.Control -> controlSurface()
+        Role.Popup -> popupSurface()
+        Role.Modal -> modalSurface()
+        Role.ThumbnailOverlay -> if (isDarkTheme()) Color(0xFF101010).copy(alpha = 0.84f)
+            else Color.White.copy(alpha = 0.92f)
+        Role.Selected -> WatermelonColors.Accent.copy(alpha = if (isDarkTheme()) 0.22f else 0.14f)
+        Role.Disabled -> disabledSurface()
+    }
+
+    @Composable
+    fun borderFor(role: Role): Color = when (role) {
+        Role.Selected -> WatermelonColors.Accent.copy(alpha = 0.70f)
+        Role.Disabled -> borderColor().copy(alpha = 0.50f)
+        Role.Popup, Role.Modal -> highlightColor()
+        else -> borderColor()
+    }
+
+    fun shadowElevationFor(role: Role): Dp = when (role) {
+        Role.Background, Role.Disabled -> 0.dp
+        Role.Card -> 3.dp
+        Role.Control, Role.ThumbnailOverlay -> 4.dp
+        Role.Popup -> 8.dp
+        Role.Modal -> 10.dp
+        Role.Selected -> 4.dp
+    }
+
     enum class Blur(val radius: Dp) {
         None(0.dp),
         Subtle(8.dp),
