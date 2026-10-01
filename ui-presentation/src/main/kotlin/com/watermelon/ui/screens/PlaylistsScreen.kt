@@ -197,7 +197,9 @@ fun PlaylistsScreen(
                         }
                         DropdownMenu(
                             expanded = menuTarget?.id == playlist.id,
-                            onDismissRequest = { menuTarget = null }
+                            onDismissRequest = { menuTarget = null },
+                            containerColor = WatermelonGlass.popupSurface(),
+                            border = BorderStroke(1.dp, WatermelonGlass.borderColor())
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Rename") },
