@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -166,7 +167,8 @@ internal fun ToggleRow(
                 checkedThumbColor = WatermelonColors.Palette.PaperWhite,
                 checkedTrackColor = WatermelonColors.Accent,
                 uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                uncheckedTrackColor = WatermelonGlass.surface
+                uncheckedTrackColor = WatermelonGlass.controlSurface(),
+                uncheckedBorderColor = WatermelonGlass.borderColor()
             )
         )
     }
@@ -192,7 +194,15 @@ internal fun TextFieldRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = WatermelonSpacing.xs),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = WatermelonGlass.controlSurface(),
+                unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                focusedBorderColor = WatermelonGlass.highlightColor(),
+                unfocusedBorderColor = WatermelonGlass.borderColor(),
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
         )
         if (supportingText != null) {
             Text(
@@ -248,7 +258,9 @@ internal fun DropdownNavRow(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = WatermelonGlass.popupSurface()
+            containerColor = WatermelonGlass.popupSurface(),
+            border = BorderStroke(1.dp, WatermelonGlass.borderColor()),
+            shape = com.watermelon.ui.theme.WatermelonShapes.card
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -331,8 +343,8 @@ internal fun StepperRow(
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = onMinus, modifier = Modifier .clip(RoundedCornerShape(10.dp))
-                .background(WatermelonGlass.surface)
-                .border(1.dp, WatermelonGlass.border, RoundedCornerShape(10.dp))) {
+                .background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(10.dp))) {
                 Text(
                     text = "-",
                     fontSize = 20.sp,
@@ -345,7 +357,8 @@ internal fun StepperRow(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.sm)
             )
-            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(WatermelonGlass.surface)) {
+            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(10.dp))) {
                 Text(
                     text = "+",
                     fontSize = 20.sp,

@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +49,15 @@ fun PlayerPlaylistPickerDialog(
                         onValueChange = { newPlaylistName = it },
                         placeholder = { Text("Playlist name") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = WatermelonGlass.controlSurface(),
+                            unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                            focusedIndicatorColor = WatermelonGlass.highlightColor(),
+                            unfocusedIndicatorColor = WatermelonGlass.borderColor(),
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                     Row(modifier = Modifier.fillMaxWidth()) {
                         TextButton(onClick = {
