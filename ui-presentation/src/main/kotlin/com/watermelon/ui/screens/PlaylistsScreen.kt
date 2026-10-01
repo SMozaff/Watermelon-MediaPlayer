@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -242,7 +243,15 @@ fun PlaylistsScreen(
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusRequester(nameFocusRequester)
+                        .focusRequester(nameFocusRequester),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = WatermelonGlass.controlSurface(),
+                        unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                        focusedIndicatorColor = WatermelonGlass.highlightColor(),
+                        unfocusedIndicatorColor = WatermelonGlass.borderColor(),
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
             },
             confirmButton = {
