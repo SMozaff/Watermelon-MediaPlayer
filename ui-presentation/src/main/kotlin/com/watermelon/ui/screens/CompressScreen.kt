@@ -262,6 +262,8 @@ fun CompressScreen(
 
     if (showBackgroundExitDialog) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
             title = { Text("Compression will continue") },
             text = {
