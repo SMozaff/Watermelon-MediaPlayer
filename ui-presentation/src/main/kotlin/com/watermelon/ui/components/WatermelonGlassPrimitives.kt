@@ -41,13 +41,14 @@ import com.watermelon.ui.WatermelonIcons
 fun WatermelonGlassSurface(
     modifier: Modifier = Modifier,
     elevated: Boolean = false,
+    role: WatermelonGlass.Role = if (elevated) WatermelonGlass.Role.Control else WatermelonGlass.Role.Card,
     shape: RoundedCornerShape = WatermelonShapes.card,
     blur: WatermelonGlass.Blur = WatermelonGlass.Blur.Subtle,
     border: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val fill = if (elevated) WatermelonGlass.controlSurface() else WatermelonGlass.cardSurface()
-    val borderColor = if (elevated) WatermelonGlass.highlightColor() else WatermelonGlass.borderColor()
+    val fill = WatermelonGlass.surfaceFor(role)
+    val borderColor = WatermelonGlass.borderFor(role)
 
     Surface(
         modifier = modifier,
@@ -56,7 +57,7 @@ fun WatermelonGlassSurface(
         contentColor = MaterialTheme.colorScheme.onSurface,
         border = if (border) BorderStroke(1.dp, borderColor) else null,
         tonalElevation = 0.dp,
-        shadowElevation = if (elevated) 8.dp else 3.dp,
+        shadowElevation = WatermelonGlass.shadowElevationFor(role),
         content = { Column(content = content) }
     )
 }
@@ -65,11 +66,13 @@ fun WatermelonGlassSurface(
 fun WatermelonGlassCard(
     modifier: Modifier = Modifier,
     elevated: Boolean = false,
+    role: WatermelonGlass.Role = if (elevated) WatermelonGlass.Role.Control else WatermelonGlass.Role.Card,
     blur: WatermelonGlass.Blur = WatermelonGlass.Blur.Subtle,
     content: @Composable ColumnScope.() -> Unit
 ) = WatermelonGlassSurface(
     modifier = modifier,
     elevated = elevated,
+    role = role,
     blur = blur,
     shape = WatermelonShapes.card,
     content = content
@@ -157,10 +160,12 @@ fun WatermelonGlassIconButton(
 fun WatermelonGlassPanel(
     modifier: Modifier = Modifier,
     elevated: Boolean = true,
+    role: WatermelonGlass.Role = WatermelonGlass.Role.Modal,
     content: @Composable ColumnScope.() -> Unit
 ) = WatermelonGlassSurface(
     modifier = modifier,
     elevated = elevated,
+    role = role,
     blur = WatermelonGlass.Blur.Medium,
     shape = WatermelonShapes.sheet,
     content = content
