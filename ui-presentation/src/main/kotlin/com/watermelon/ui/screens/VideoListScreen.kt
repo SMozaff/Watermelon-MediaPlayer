@@ -503,7 +503,7 @@ fun VideoListScreen(
     if (sortMenuOpen) {
         AlertDialog(
             onDismissRequest = { sortMenuOpen = false },
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             title = { Text("Sort videos") },
             text = {
