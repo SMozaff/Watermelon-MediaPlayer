@@ -243,6 +243,8 @@ fun CompressScreen(
 
     if (showDiscardChangesDialog) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
             title = { Text("Discard compression changes?") },
             text = { Text("Your selected preset or target size has not been used yet. You can continue editing or discard it and return.") },
