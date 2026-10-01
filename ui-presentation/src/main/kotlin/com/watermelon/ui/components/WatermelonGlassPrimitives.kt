@@ -36,6 +36,7 @@ import com.watermelon.ui.WatermelonIcons
  * intentionally not applied as a fake backdrop blur. Compose's blur modifier blurs the primitive
  * itself rather than arbitrary content behind it. Readability therefore comes from the semantic
  * surface role and border hierarchy below.
+ */
 @Composable
 fun WatermelonGlassSurface(
     modifier: Modifier = Modifier,
