@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -275,7 +276,15 @@ fun PlaylistsScreen(
                     value = name,
                     onValueChange = { name = it },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = WatermelonGlass.controlSurface(),
+                        unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                        focusedIndicatorColor = WatermelonGlass.highlightColor(),
+                        unfocusedIndicatorColor = WatermelonGlass.borderColor(),
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
             },
             confirmButton = {
@@ -300,7 +309,7 @@ fun PlaylistsScreen(
     deleteTarget?.let { target ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            containerColor = com.watermelon.ui.theme.WatermelonGlass.surfaceElevated,
+            containerColor = WatermelonGlass.modalSurface(),
             tonalElevation = 0.dp,
             title = { Text("Delete \"${target.name}\"?", color = WatermelonColors.DarkOnSurface) },
             text = {
