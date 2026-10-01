@@ -124,7 +124,7 @@ fun KeepOrDeleteOriginalDialog(
                             onClick = onKeepOriginal,
                             shape = WatermelonShapes.control,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = WatermelonGlass.surface,
+                                containerColor = WatermelonGlass.controlSurface(),
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             modifier = Modifier.weight(1f)
