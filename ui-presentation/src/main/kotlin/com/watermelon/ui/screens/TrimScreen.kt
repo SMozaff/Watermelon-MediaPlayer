@@ -240,7 +240,7 @@ fun TrimScreen(
 
     if (showDiscardChangesDialog) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
             title = { Text("Discard trim changes?") },
@@ -259,7 +259,7 @@ fun TrimScreen(
 
     if (showBackgroundExitDialog) {
         AlertDialog(
-            containerColor = WatermelonGlass.modalSurface(),
+            containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
             title = { Text("Trim will continue") },
