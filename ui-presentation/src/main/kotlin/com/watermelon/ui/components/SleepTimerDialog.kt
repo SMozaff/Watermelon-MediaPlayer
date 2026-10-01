@@ -160,12 +160,12 @@ fun SleepTimerDialog(
                                     },
                                     shape = WatermelonShapes.control,
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = WatermelonGlass.surface,
+                                        containerColor = WatermelonGlass.controlSurface(),
                                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .background(WatermelonGlass.surface, WatermelonShapes.control)
+                                         .background(WatermelonGlass.controlSurface(), WatermelonShapes.control)
                                         .then(
                                             if (isSelected)
                                                 Modifier.border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
@@ -192,8 +192,12 @@ fun SleepTimerDialog(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = WatermelonShapes.control,
                             colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
+                                focusedContainerColor = WatermelonGlass.controlSurface(),
+                                unfocusedContainerColor = WatermelonGlass.controlSurface(),
+                                focusedIndicatorColor = WatermelonGlass.highlightColor(),
+                                unfocusedIndicatorColor = WatermelonGlass.borderColor(),
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
