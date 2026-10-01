@@ -61,6 +61,8 @@ fun PlayerDialogs(
 
     if (state.showMediaInfo) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { state.showMediaInfo = false },
             title = { Text("Now playing") },
             text = {
