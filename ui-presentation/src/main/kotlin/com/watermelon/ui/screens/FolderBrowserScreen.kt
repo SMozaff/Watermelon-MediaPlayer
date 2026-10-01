@@ -365,6 +365,8 @@ fun FolderBrowserScreen(
 
     if (viewOptionsOpen) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { viewOptionsOpen = false },
             title = { Text("View options") },
             text = {
