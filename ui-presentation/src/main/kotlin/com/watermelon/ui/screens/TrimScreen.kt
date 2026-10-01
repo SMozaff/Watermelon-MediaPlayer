@@ -259,6 +259,8 @@ fun TrimScreen(
 
     if (showBackgroundExitDialog) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
             title = { Text("Trim will continue") },
             text = {
