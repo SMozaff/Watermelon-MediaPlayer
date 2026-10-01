@@ -214,7 +214,7 @@ fun SleepTimerDialog(
                         onClick = onDismiss,
                         shape = WatermelonShapes.control,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = WatermelonGlass.surface,
+                            containerColor = WatermelonGlass.controlSurface(),
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.weight(1f)
@@ -260,7 +260,7 @@ private fun ModeButton(label: String, isSelected: Boolean, onClick: () -> Unit) 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(WatermelonGlass.surface, WatermelonShapes.control)
+            .background(WatermelonGlass.controlSurface(), WatermelonShapes.control)
             .then(
                 if (isSelected)
                     Modifier.border(2.dp, MaterialTheme.colorScheme.primary, WatermelonShapes.control)
