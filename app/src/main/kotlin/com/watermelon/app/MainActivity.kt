@@ -1665,7 +1665,7 @@ class MainActivity : ComponentActivity() {
         val deleteTarget = pendingPlayerDelete
         if (showPlayerDeleteDialog && deleteTarget != null) {
             androidx.compose.material3.AlertDialog(
-                containerColor = WatermelonGlass.modalSurface(),
+                containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
                 tonalElevation = 0.dp,
                 onDismissRequest = {
                     showPlayerDeleteDialog = false
