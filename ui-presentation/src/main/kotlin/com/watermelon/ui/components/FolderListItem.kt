@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,7 +52,7 @@ fun FolderListItem(
     isGrid: Boolean = false,
     showDurations: Boolean = true,
     showFileSize: Boolean = false,
-    @Suppress("UNUSED_PARAMETER") isScrollingFast: Boolean = false,
+    isScrollingFast: Boolean = false,
     // Optional shared interaction source: null (default) preserves prior behavior exactly —
     // clickable() creates and owns its own source internally. Callers that need to read this
     // row's real focus/press state externally (e.g. TvFolderBrowserScreen drawing a focus
@@ -120,7 +123,7 @@ fun FolderListItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
         ) {
-            FolderIcon(size = iconDp, isPlaylist = folder.isPlaylist)
+            FolderThumbnailOrIcon(folder = folder, size = iconDp, isScrollingFast = isScrollingFast)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -191,6 +194,33 @@ fun FolderListItem(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun FolderThumbnailOrIcon(
+    folder: FolderNode,
+    size: Dp,
+    isScrollingFast: Boolean,
+) {
+    val thumbnailUri = folder.thumbnailUri
+    if (!folder.isPlaylist && !thumbnailUri.isNullOrBlank()) {
+        Box(
+            modifier = Modifier
+                .width(size * 1.6f)
+                .height(size)
+                .clip(WatermelonShapes.small)
+                .background(WatermelonGlass.controlSurface()),
+        ) {
+            VelocityGuardImage(
+                uri = thumbnailUri,
+                durationMs = folder.totalDurationMs,
+                isScrollingFast = isScrollingFast,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    } else {
+        FolderIcon(size = size, isPlaylist = folder.isPlaylist)
     }
 }
 
