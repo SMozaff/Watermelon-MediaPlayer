@@ -259,7 +259,7 @@ internal fun DropdownNavRow(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Popup),
-            border = BorderStroke(1.dp, WatermelonGlass.borderColor()),
+            border = BorderStroke(1.dp, WatermelonGlass.borderFor(WatermelonGlass.Role.Popup)),
             shape = com.watermelon.ui.theme.WatermelonShapes.card
         ) {
             options.forEach { option ->
