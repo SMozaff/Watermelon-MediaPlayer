@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalIndication
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -101,7 +102,7 @@ fun LabeledIconButton(
         .clickable(
             enabled = enabled,
             interactionSource = interactionSource,
-            indication = null,
+            indication = LocalIndication.current,
             role = Role.Button,
             onClick = onClick
         )
