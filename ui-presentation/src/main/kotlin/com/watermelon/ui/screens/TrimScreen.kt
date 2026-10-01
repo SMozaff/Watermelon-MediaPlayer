@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.theme.WatermelonGlass
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import com.watermelon.common.model.PlaybackState
@@ -239,6 +240,8 @@ fun TrimScreen(
 
     if (showDiscardChangesDialog) {
         AlertDialog(
+            containerColor = WatermelonGlass.modalSurface(),
+            tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
             title = { Text("Discard trim changes?") },
             text = { Text("Your selected trim range has not been saved. You can continue editing or discard it and return.") },
