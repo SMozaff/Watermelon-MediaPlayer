@@ -3,6 +3,7 @@ package com.watermelon.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -105,11 +106,22 @@ object StatusBadge {
         compact: Boolean,
         modifier: Modifier = Modifier
     ) {
-        WatermelonGlyph(
-            icon = icon,
-            contentDescription = contentDescription,
-            tint = tint,
-            modifier = modifier.size(if (compact) 12.dp else 14.dp)
-        )
+        val size = if (compact) 22.dp else 26.dp
+        val iconSize = if (compact) 12.dp else 14.dp
+        Box(
+            modifier = modifier
+                .size(size)
+                .clip(WatermelonShapes.small)
+                .background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.small),
+            contentAlignment = Alignment.Center
+        ) {
+            WatermelonGlyph(
+                icon = icon,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(iconSize)
+            )
+        }
     }
 }
