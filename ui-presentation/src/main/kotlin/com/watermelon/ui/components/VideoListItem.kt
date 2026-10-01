@@ -114,8 +114,8 @@ fun VideoListItem(
             .border(2.dp, WatermelonColors.Accent, WatermelonShapes.control)
     } else {
         Modifier
-            .background(WatermelonGlass.surface, WatermelonShapes.control)
-            .border(1.dp, WatermelonGlass.border, WatermelonShapes.control)
+            .background(WatermelonGlass.controlSurface(), WatermelonShapes.control)
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.control)
     }
 
     val clickModifier = Modifier
@@ -168,8 +168,8 @@ fun VideoListItem(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .size(48.dp)
-                            .background(WatermelonGlass.surfaceElevated, androidx.compose.foundation.shape.CircleShape)
-                            .border(1.dp, WatermelonGlass.border, androidx.compose.foundation.shape.CircleShape)
+                            .background(WatermelonGlass.controlSurface(), androidx.compose.foundation.shape.CircleShape)
+                            .border(1.dp, WatermelonGlass.borderColor(), androidx.compose.foundation.shape.CircleShape)
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.Play,
@@ -373,7 +373,7 @@ private fun VideoPreview(
         )
     } else {
         Box(
-            modifier = modifier.background(WatermelonGlass.surface),
+            modifier = modifier.background(WatermelonGlass.cardSurface()),
             contentAlignment = Alignment.Center
         ) {
             WatermelonGlyph(
