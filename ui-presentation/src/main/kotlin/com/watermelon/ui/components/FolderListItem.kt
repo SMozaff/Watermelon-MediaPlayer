@@ -39,8 +39,8 @@ import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
- * Folder item for list and grid layouts. Folders use their indexed representative
- * video thumbnail when available, with the folder icon retained as the fallback.
+ * Folder item for list and grid layouts. List mode intentionally uses the folder icon;
+ * representative thumbnails are reserved for the grid media presentation.
  * Shows an initial-letter icon, folder name (⭐ if unplayed files exist), file count,
  * and total playtime. Size differences are deliberately dramatic to be tangible.
  */
@@ -163,7 +163,7 @@ fun FolderListItem(
             modifier = clickMod.fillMaxWidth().padding(hPad, vPad),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            FolderThumbnailOrIcon(folder = folder, size = iconDp, isScrollingFast = isScrollingFast)
+            FolderIcon(size = iconDp, isPlaylist = folder.isPlaylist)
             Spacer(Modifier.width(hPad))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

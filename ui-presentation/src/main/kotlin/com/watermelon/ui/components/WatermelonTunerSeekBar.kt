@@ -39,15 +39,11 @@ import kotlin.math.roundToLong
  * frequency dial on an old AM/FM radio, except the "frequency" being tuned is playback
  * position.
  *
- * Movement is discrete, not a continuous pixel-to-time mapping: each tick that crosses
- * the center pointer moves position by exactly [secondsPerTick] seconds, forward or
- * backward depending on drag direction. This is a deliberate redesign from an earlier
- * version that mapped drag pixels to milliseconds via a fixed ratio — that made long
- * videos practically unreachable, since covering a 2-hour video required dragging tens of
- * thousands of pixels in one continuous gesture with no way to re-base mid-drag. Discrete
- * per-tick stepping means reaching anywhere in any video is a matter of how many ticks you
- * drag through, not how many pixels — consistent regardless of video length, and the same
- * mental model as a real tuner dial or click-wheel (each detent is a fixed step).
+ * Dragging is a real relative seek: horizontal movement is mapped continuously to a
+ * fraction of the video's duration, anchored to the position where the gesture started.
+ * The dial still renders discrete visual ticks and can emit haptic detents, but the seek
+ * target itself is continuous, so the control behaves like a real scrubber rather than a
+ * counter that only changes after crossing fixed pixel thresholds.
  *
  * @param positionMs current playback position
  * @param durationMs total duration
@@ -75,14 +71,11 @@ fun WatermelonTunerSeekBar(
     onDetent: () -> Unit = {}
 ) {
     var scrubbing by remember { mutableStateOf(false) }
-    // While scrubbing, position is tracked as an absolute ms offset from the drag start —
-    // advanced in whole-tick steps as drag distance crosses each tick's pixel spacing.
+    // While scrubbing, position is tracked continuously from the drag origin.
     var scrubPositionMs by remember { mutableStateOf(0L) }
-    // Keep the gesture anchored to the position where the drag started. Deriving the
-    // target from the total drag distance avoids accumulating state updates one detent at
-    // a time, which could re-base a long gesture and send the target back toward zero.
     var dragStartPositionMs by remember { mutableStateOf(0L) }
     var totalDragPx by remember { mutableStateOf(0f) }
+    var previousDetent by remember { mutableStateOf(0L) }
 
     // If this composable is removed from the tree mid-drag — e.g. the user toggles the
     // tuner seek bar off in Settings while actively scrubbing, or navigates away — neither
@@ -99,8 +92,8 @@ fun WatermelonTunerSeekBar(
     val colors = PlayerColors.current
     val stepMs = secondsPerTick.coerceIn(1, 20) * 1000L
 
-    // Fixed pixel spacing per tick — how far you need to drag to cross one tick, i.e. one
-    // step of secondsPerTick. Independent of video length by design (see class doc).
+    // Visual tick spacing. Seeking itself is continuous and uses the actual dial width as
+    // the travel distance for one full-duration sweep.
     val tickSpacingPx = 28f
 
     Canvas(
@@ -120,6 +113,14 @@ fun WatermelonTunerSeekBar(
                     true
                 }
             }
+            .pointerInput(durationMs) {
+                detectTapGestures { offset ->
+                    val fraction = (offset.x / size.width).coerceIn(0f, 1f)
+                    val target = (fraction * durationMs.coerceAtLeast(0L)).roundToLong()
+                    onSeek(target)
+                    onPreviewPositionChanged(target)
+                }
+            }
             .pointerInput(durationMs, stepMs) {
                 detectHorizontalDragGestures(
                     onDragStart = {
@@ -128,6 +129,7 @@ fun WatermelonTunerSeekBar(
                         dragStartPositionMs = livePositionMs
                         totalDragPx = 0f
                         scrubPositionMs = livePositionMs
+                        previousDetent = 0L
                         onPreviewPositionChanged(scrubPositionMs)
                     },
                     onDragEnd = {
@@ -142,18 +144,27 @@ fun WatermelonTunerSeekBar(
                 ) { change, dragAmount ->
                     change.consume()
                     totalDragPx += dragAmount
-                    // Derive the target directly from the drag origin. This makes long
-                    // tuning gestures stable even while Compose recomposes the preview.
-                    val detents = kotlin.math.floor(totalDragPx / tickSpacingPx).toLong()
-                    val next = (dragStartPositionMs + detents * stepMs)
+
+                    // One full dial-width of horizontal travel represents the full video
+                    // duration. The target is derived from the original playback position,
+                    // never from the previous preview value, so recomposition cannot re-base
+                    // or make the gesture jump.
+                    val travelPx = size.width.coerceAtLeast(1f)
+                    val deltaMs = (totalDragPx / travelPx * durationMs.coerceAtLeast(0L)).roundToLong()
+                    val next = (dragStartPositionMs + deltaMs)
                         .coerceIn(0L, durationMs.coerceAtLeast(0L))
+
                     if (next != scrubPositionMs) {
-                        val previousDetents = kotlin.math.floor(
-                            (scrubPositionMs - dragStartPositionMs).toDouble() / stepMs.toDouble()
-                        ).toLong()
                         scrubPositionMs = next
-                        onPreviewPositionChanged(scrubPositionMs)
-                        if (detents != previousDetents) onDetent()
+                        onPreviewPositionChanged(next)
+
+                        // Haptics remain detent-based, but they no longer determine the seek
+                        // resolution. Every secondsPerTick boundary crossed emits one detent.
+                        val detent = if (stepMs > 0L) next / stepMs else 0L
+                        if (detent != previousDetent) {
+                            onDetent()
+                            previousDetent = detent
+                        }
                     }
                 }
             }
