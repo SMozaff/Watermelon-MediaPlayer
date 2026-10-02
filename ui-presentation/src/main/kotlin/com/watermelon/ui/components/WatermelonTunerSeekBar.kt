@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -149,7 +150,7 @@ fun WatermelonTunerSeekBar(
                     // duration. The target is derived from the original playback position,
                     // never from the previous preview value, so recomposition cannot re-base
                     // or make the gesture jump.
-                    val travelPx = size.width.coerceAtLeast(1f)
+                    val travelPx = size.width.coerceAtLeast(1).toFloat()
                     val deltaMs = (totalDragPx / travelPx * durationMs.coerceAtLeast(0L)).roundToLong()
                     val next = (dragStartPositionMs + deltaMs)
                         .coerceIn(0L, durationMs.coerceAtLeast(0L))
