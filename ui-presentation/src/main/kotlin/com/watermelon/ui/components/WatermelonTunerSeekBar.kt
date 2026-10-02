@@ -113,6 +113,14 @@ fun WatermelonTunerSeekBar(
                     true
                 }
             }
+            .pointerInput(durationMs) {
+                detectTapGestures { offset ->
+                    val fraction = (offset.x / size.width).coerceIn(0f, 1f)
+                    val target = (fraction * durationMs.coerceAtLeast(0L)).roundToLong()
+                    onSeek(target)
+                    onPreviewPositionChanged(target)
+                }
+            }
             .pointerInput(durationMs, stepMs) {
                 detectHorizontalDragGestures(
                     onDragStart = {
