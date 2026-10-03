@@ -1,20 +1,25 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.watermelon.ui.R
 
 @Composable
 internal fun AppearanceSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Appearance", summary = "Theme and reading direction") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_appearance_title),
+        summary = stringResource(R.string.settings_appearance_summary)
+    ) {
         ToggleRow(
-            label = "Pure dark theme",
+            label = stringResource(R.string.settings_pure_dark),
             checked = state.pureDark
         ) { onStateChange(state.copy(pureDark = it)) }
 
         ToggleRow(
-            label = "Force RTL overrides",
+            label = stringResource(R.string.settings_force_rtl),
             checked = state.forcedRtl
         ) { onStateChange(state.copy(forcedRtl = it)) }
     }
@@ -25,29 +30,32 @@ internal fun BrowsingSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Library & browsing", summary = "How your media library is displayed") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_library_title),
+        summary = stringResource(R.string.settings_library_summary)
+    ) {
         ToggleRow(
-            label = "Grid layout by default",
+            label = stringResource(R.string.settings_grid_default),
             checked = state.gridDefault
         ) { onStateChange(state.copy(gridDefault = it)) }
 
         ToggleRow(
-            label = "Tetris view",
+            label = stringResource(R.string.settings_tetris_view),
             checked = state.tetrisViewEnabled
         ) { onStateChange(state.copy(tetrisViewEnabled = it)) }
 
         ToggleRow(
-            label = "Show thumbnails",
+            label = stringResource(R.string.settings_show_thumbnails),
             checked = state.showThumbnails
         ) { onStateChange(state.copy(showThumbnails = it)) }
 
         ToggleRow(
-            label = "Show durations",
+            label = stringResource(R.string.settings_show_durations),
             checked = state.showDurations
         ) { onStateChange(state.copy(showDurations = it)) }
 
         ToggleRow(
-            label = "Show file size",
+            label = stringResource(R.string.settings_show_file_size),
             checked = state.showFileSize
         ) { onStateChange(state.copy(showFileSize = it)) }
     }
@@ -58,9 +66,12 @@ internal fun ContinueWatchingSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Continue watching", summary = "Resume and playlist behaviour") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_continue_watching_title),
+        summary = stringResource(R.string.settings_continue_watching_summary)
+    ) {
         ToggleRow(
-            label = "Continue Watching playlist",
+            label = stringResource(R.string.settings_continue_watching_playlist),
             checked = state.continueWatchingEnabled
         ) { onStateChange(state.copy(continueWatchingEnabled = it)) }
     }
@@ -72,11 +83,11 @@ internal fun AutoSyncSection(
     onStateChange: (SettingsState) -> Unit
 ) {
     SettingsGroup(
-        title = "Subtitle Auto Sync",
-        summary = "Automatic subtitle timing correction"
+        title = stringResource(R.string.settings_auto_sync_title),
+        summary = stringResource(R.string.settings_auto_sync_summary)
     ) {
         ToggleRow(
-            label = "Auto Sync action",
+            label = stringResource(R.string.settings_auto_sync_action),
             checked = state.autoSyncEnabled
         ) { onStateChange(state.copy(autoSyncEnabled = it)) }
     }

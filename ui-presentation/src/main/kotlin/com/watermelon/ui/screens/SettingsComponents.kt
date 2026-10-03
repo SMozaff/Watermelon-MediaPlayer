@@ -5,8 +5,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,16 +38,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.watermelon.ui.R
-import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.components.WatermelonGlassSurface
-import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonGlass
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -60,13 +61,13 @@ internal fun SettingsIntro() {
     ) {
         Column(modifier = Modifier.padding(WatermelonSpacing.lg)) {
             Text(
-                text = "Make Watermelon yours",
+                text = stringResource(R.string.settings_intro_title),
                 style = WatermelonTypography.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = WatermelonColors.Palette.PaperWhite
             )
             Text(
-                text = "Tune playback, subtitles, library browsing and exports from one place.",
+                text = stringResource(R.string.settings_intro_summary),
                 style = WatermelonTypography.typography.bodyMedium,
                 color = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.84f),
                 modifier = Modifier.padding(top = WatermelonSpacing.xs)

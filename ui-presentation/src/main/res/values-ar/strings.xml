@@ -2,6 +2,73 @@
 <resources>
     <!-- TODO(i18n): machine-drafted translation, not yet reviewed by a native Arabic
          speaker; verify phrasing/tone before shipping. See values/strings.xml for the
-         English source and the reasoning behind this string. -->
+         English source and the reasoning behind each string. -->
     <string name="settings_privacy_internet_usage">يُستخدم الوصول إلى الإنترنت فقط للبحث عن الترجمات التي تطلبها. لا يتم إرسال أو تتبع أي شيء آخر.</string>
+
+    <!-- Settings shell -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_intro_title">اجعل Watermelon خاصًا بك</string>
+    <string name="settings_intro_summary">اضبط التشغيل والترجمات واستعراض المكتبة والتصدير من مكان واحد.</string>
+
+    <!-- Appearance -->
+    <string name="settings_appearance_title">المظهر</string>
+    <string name="settings_appearance_summary">السمة واتجاه القراءة</string>
+    <string name="settings_pure_dark">سمة داكنة بالكامل</string>
+    <string name="settings_force_rtl">فرض اتجاه من اليمين إلى اليسار</string>
+
+    <!-- Player -->
+    <string name="settings_player_title">المشغّل</string>
+    <string name="settings_player_summary">أزرار التحكم والمؤثرات الكلاسيكية</string>
+    <string name="settings_burst_screenshot">لقطة متتابعة (٩ إطارات)</string>
+    <string name="settings_vhs_effect">مؤثر VHS</string>
+    <string name="settings_vhs_intensity">شدة مؤثر VHS</string>
+    <string name="settings_tuner_seekbar">شريط تمرير على طراز الضّابط</string>
+    <string name="settings_tuner_seek_step">خطوة تمرير الضّابط</string>
+
+    <!-- Subtitles -->
+    <string name="settings_subtitles_title">الترجمات</string>
+    <string name="settings_subtitles_summary">تنسيق النص واتجاه القراءة</string>
+    <string name="settings_subtitles_enable">تفعيل الترجمات</string>
+    <string name="settings_subtitle_text_size">حجم النص</string>
+    <string name="settings_subtitle_text_color">لون النص</string>
+    <string name="settings_subtitle_position">الموضع</string>
+    <string name="settings_subtitle_bold">عريض</string>
+    <string name="settings_subtitle_italic">مائل</string>
+    <string name="settings_subtitle_underline">تسطير</string>
+    <string name="settings_subtitle_direction">الاتجاه</string>
+    <string name="settings_subtitle_second_direction">اتجاه الترجمة الثانية</string>
+
+    <!-- Library &amp; browsing -->
+    <string name="settings_library_title">المكتبة والاستعراض</string>
+    <string name="settings_library_summary">كيف تُعرض مكتبة الوسائط لديك</string>
+    <string name="settings_grid_default">عرض شبكي افتراضيًا</string>
+    <string name="settings_tetris_view">عرض تيتريس</string>
+    <string name="settings_show_thumbnails">إظهار الصور المصغّرة</string>
+    <string name="settings_show_durations">إظهار المدد</string>
+    <string name="settings_show_file_size">إظهار حجم الملف</string>
+
+    <!-- Continue watching -->
+    <string name="settings_continue_watching_title">متابعة المشاهدة</string>
+    <string name="settings_continue_watching_summary">سلوك الاستئناف وقوائم التشغيل</string>
+    <string name="settings_continue_watching_playlist">قائمة تشغيل متابعة المشاهدة</string>
+
+    <!-- Subtitle Auto Sync -->
+    <string name="settings_auto_sync_title">مزامنة الترجمة تلقائيًا</string>
+    <string name="settings_auto_sync_summary">تصحيح توقيت الترجمة تلقائيًا</string>
+    <string name="settings_auto_sync_action">إجراء المزامنة التلقائية</string>
+
+    <!-- System -->
+    <string name="settings_library_access">الوصول إلى المكتبة</string>
+    <string name="settings_library_access_summary">اختر المجلدات المفهرسة التي تظهر في Watermelon</string>
+    <string name="settings_folder_visibility">ظهور المجلدات</string>
+    <string name="settings_privacy">الخصوصية</string>
+    <string name="settings_privacy_summary">الغرض من استخدام الوصول إلى الشبكة</string>
+
+    <!-- Media tools -->
+    <string name="settings_media_tools_title">أدوات الوسائط</string>
+    <string name="settings_media_tools_summary">مكان حفظ الصوت والفيديو المُصدَّرين</string>
+    <string name="settings_mp3_folder">مجلد صوت MP3</string>
+    <string name="settings_compressed_folder">مجلد الفيديو المضغوط</string>
+    <string name="settings_trimmed_folder">مجلد الفيديو المقصوص</string>
+    <string name="settings_custom_folders_note">تحتاج المجلدات المخصصة إلى Android 10 أو أحدث. ستُحفظ الفيديوهات المضغوطة والمقصوصة في موقع Movies الافتراضي على هذا الجهاز.</string>
 </resources>

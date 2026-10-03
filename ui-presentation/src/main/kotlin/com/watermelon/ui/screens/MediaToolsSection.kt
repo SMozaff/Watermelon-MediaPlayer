@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -13,7 +15,10 @@ internal fun MediaToolsSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Media tools", summary = "Where exported audio and video are saved") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_media_tools_title),
+        summary = stringResource(R.string.settings_media_tools_summary)
+    ) {
         // No premium toggle here on purpose. `isPremiumUnlocked` is plumbed all the way from
         // this screen through MainActivity into Trim/Compress, but nothing ever gates on it:
         // no purchase flow exists, `PremiumUpsellDialog` is never shown, and the Trim/Compress
@@ -25,17 +30,17 @@ internal fun MediaToolsSection(
         // decision can be made without a schema change.
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             TextFieldRow(
-                label = "MP3 audio folder",
+                label = stringResource(R.string.settings_mp3_folder),
                 value = state.mp3OutputPath,
                 onValueChange = { onStateChange(state.copy(mp3OutputPath = it)) },
             )
             TextFieldRow(
-                label = "Compressed video folder",
+                label = stringResource(R.string.settings_compressed_folder),
                 value = state.compressedOutputPath,
                 onValueChange = { onStateChange(state.copy(compressedOutputPath = it)) },
             )
             TextFieldRow(
-                label = "Trimmed video folder",
+                label = stringResource(R.string.settings_trimmed_folder),
                 value = state.trimmedOutputPath,
                 onValueChange = { onStateChange(state.copy(trimmedOutputPath = it)) },
             )
@@ -47,8 +52,7 @@ internal fun MediaToolsSection(
             // entirely on those OS versions rather than accepting input we
             // can't honor.
             Text(
-                text = "Custom folders require Android 10 or later. Compressed and " +
-                    "trimmed videos will save to the default Movies location on this device.",
+                text = stringResource(R.string.settings_custom_folders_note),
                 style = WatermelonTypography.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = WatermelonSpacing.sm)

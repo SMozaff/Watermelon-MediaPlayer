@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.watermelon.ui.R
 import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -68,7 +70,7 @@ fun SettingsScreen(
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         WatermelonHeader(
-            title = "Settings",
+            title = stringResource(R.string.settings_title),
             showBackButton = true,
             onBackClick = onBack,
             modifier = Modifier.fillMaxWidth()
