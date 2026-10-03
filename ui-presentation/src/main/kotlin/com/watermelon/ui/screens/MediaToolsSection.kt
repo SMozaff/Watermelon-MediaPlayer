@@ -13,11 +13,16 @@ internal fun MediaToolsSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Media tools", summary = "Export destinations and premium tools") {
-        ToggleRow(
-            label = "Premium unlocked (placeholder -- no purchase flow yet)",
-            checked = state.isPremiumUnlocked
-        ) { onStateChange(state.copy(isPremiumUnlocked = it)) }
+    SettingsGroup(title = "Media tools", summary = "Where exported audio and video are saved") {
+        // No premium toggle here on purpose. `isPremiumUnlocked` is plumbed all the way from
+        // this screen through MainActivity into Trim/Compress, but nothing ever gates on it:
+        // no purchase flow exists, `PremiumUpsellDialog` is never shown, and the Trim/Compress
+        // screens accept `onRequestUpsell` without ever invoking it. The toggle was therefore
+        // a control that changed a persisted flag with no observable effect, labelled with
+        // engineering wording ("placeholder -- no purchase flow yet"). Sprint story WM-406
+        // requires placeholder/premium wording be kept out of consumer-facing paths, so the
+        // toggle is hidden rather than reworded. The state field is retained so a real gating
+        // decision can be made without a schema change.
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             TextFieldRow(
                 label = "MP3 audio folder",

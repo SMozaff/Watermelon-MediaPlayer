@@ -40,6 +40,14 @@ jobs:
       - name: Verify AGP 9 built-in Kotlin configuration
         run: python3 scripts/verify_agp9_builtin_kotlin.py
 
+      # Localization ratchet. Watermelon is RTL-native and ships values-fa / values-ar, but
+      # almost all UI copy is still an English literal inside the composables, which lint
+      # cannot see. This gate counts those literals against a committed baseline and fails
+      # only when the count grows, so the gap is bounded and visible rather than open-ended,
+      # and extracting copy is always rewarded.
+      - name: Verify no new hardcoded user-facing strings
+        run: python3 scripts/verify_no_hardcoded_strings.py
+
   build-and-unit-test:
     name: Debug build + unit tests
     runs-on: ubuntu-latest
