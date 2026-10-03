@@ -47,6 +47,12 @@ object PlayerColors {
         val textSecondary: Color,
         val accent: Color,
         val accentSecondary: Color,
+        /** Ink drawn *on top of* [accent] — the play/pause glyph, active seek fill, focus rings.
+         *  Deep Carbon in both themes: dark ink on Watermelon Red is a stronger normal-text
+         *  contrast pair than Paper White (see [WatermelonColors.OnAccent]). The transport
+         *  play button previously hardcoded raw white here, so the player's primary control
+         *  used a different ink than every other red-filled surface in the app. */
+        val onAccent: Color,
         /** Buffering / warning / transient-caution states — never used for hard errors. */
         val warning: Color
     )
@@ -71,6 +77,7 @@ object PlayerColors {
         textSecondary    = Palette.PaperWhite.copy(alpha = 0.70f),
         accent           = Palette.WatermelonRed,
         accentSecondary  = Palette.SoftTeal,
+        onAccent         = Palette.DeepCarbon,
         warning          = Palette.WarningYellow
     )
 
@@ -94,6 +101,7 @@ object PlayerColors {
         textSecondary    = Palette.SlateGray,
         accent           = Palette.WatermelonRed,
         accentSecondary  = Palette.SoftTeal,
+        onAccent         = Palette.DeepCarbon,
         warning          = Palette.WarningYellow
     )
 
