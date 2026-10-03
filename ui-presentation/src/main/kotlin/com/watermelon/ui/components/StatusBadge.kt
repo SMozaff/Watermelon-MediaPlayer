@@ -3,6 +3,7 @@ package com.watermelon.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -13,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
@@ -105,11 +105,27 @@ object StatusBadge {
         compact: Boolean,
         modifier: Modifier = Modifier
     ) {
-        WatermelonGlyph(
-            icon = icon,
-            contentDescription = contentDescription,
-            tint = tint,
-            modifier = modifier.size(if (compact) 12.dp else 14.dp)
-        )
+        // New/Favorite are chipped exactly like Duration below, so all three badge variants
+        // share one treatment. Previously these two rendered as bare 12/14dp glyphs while
+        // Duration was a bordered chip, so badges on the same thumbnail came from two
+        // different visual systems. This matches the outlined-chip treatment the design
+        // reference shows for REC / VHS / CC / resolution indicators.
+        val size = if (compact) 22.dp else 26.dp
+        val iconSize = if (compact) 12.dp else 14.dp
+        Box(
+            modifier = modifier
+                .size(size)
+                .clip(WatermelonShapes.small)
+                .background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.small),
+            contentAlignment = Alignment.Center
+        ) {
+            WatermelonGlyph(
+                icon = icon,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(iconSize)
+            )
+        }
     }
 }
