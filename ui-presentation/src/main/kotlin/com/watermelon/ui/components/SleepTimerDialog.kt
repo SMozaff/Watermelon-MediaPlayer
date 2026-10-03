@@ -80,7 +80,7 @@ fun SleepTimerDialog(
             ) {
                 Text(
                     "Sleep Timer",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 

@@ -196,12 +196,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "Scanning your media library",
                                 style = WatermelonTypography.typography.bodyLarge,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 "Folders will appear as indexing finishes",
                                 style = WatermelonTypography.typography.bodySmall,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -217,12 +217,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "No media folders found",
                                 style = WatermelonTypography.typography.titleMedium,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 "Watermelon could not find eligible videos in your visible folders.",
                                 style = WatermelonTypography.typography.bodyMedium,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             WatermelonGlassButton(
                                 onClick = viewModel::refresh,
@@ -244,12 +244,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "Library unavailable",
                                 style = WatermelonTypography.typography.titleMedium,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 state.message,
                                 style = WatermelonTypography.typography.bodyMedium,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             WatermelonGlassButton(
                                 onClick = viewModel::refresh,

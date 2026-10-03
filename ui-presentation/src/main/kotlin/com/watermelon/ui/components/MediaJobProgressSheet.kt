@@ -72,7 +72,7 @@ fun MediaJobProgressSheet(
             ) {
                 Text(
                     jobTypeLabel(job.type),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 

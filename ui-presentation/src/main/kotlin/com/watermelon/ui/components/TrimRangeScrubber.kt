@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.PlayerColors
 import kotlin.math.abs
 import kotlin.math.roundToLong
@@ -173,7 +174,7 @@ private fun FilmstripRow(frames: List<Bitmap?>) {
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clip(RoundedCornerShape(8.dp)),
+            .clip(RoundedCornerShape(WatermelonShapes.Radius.chip)),
     ) {
         frames.forEach { bitmap ->
             Box(

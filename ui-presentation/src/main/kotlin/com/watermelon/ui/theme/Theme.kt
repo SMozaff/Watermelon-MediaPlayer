@@ -1,8 +1,6 @@
 package com.watermelon.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -33,35 +31,7 @@ fun WatermelonTheme(
     forceRtl: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
-            background = WatermelonColors.DarkBackground,
-            surface = WatermelonColors.DarkSurface,
-            surfaceVariant = WatermelonColors.DarkSurfaceVariant,
-            onBackground = WatermelonColors.DarkOnBackground,
-            onSurface = WatermelonColors.DarkOnSurface,
-            onSurfaceVariant = WatermelonColors.DarkOnSurfaceVariant,
-            primary = WatermelonColors.Accent,
-            onPrimary = WatermelonColors.OnAccent,
-            secondary = WatermelonColors.AccentVariant,
-            error = WatermelonColors.Error,
-            outline = WatermelonColors.DarkOutline
-        )
-    } else {
-        lightColorScheme(
-            background = WatermelonColors.LightBackground,
-            surface = WatermelonColors.LightSurface,
-            surfaceVariant = WatermelonColors.LightSurfaceVariant,
-            onBackground = WatermelonColors.LightOnBackground,
-            onSurface = WatermelonColors.LightOnSurface,
-            onSurfaceVariant = WatermelonColors.LightOnSurfaceVariant,
-            primary = WatermelonColors.Accent,
-            onPrimary = WatermelonColors.OnAccent,
-            secondary = WatermelonColors.AccentVariant,
-            error = WatermelonColors.Error,
-            outline = WatermelonColors.LightOutline
-        )
-    }
+    val colorScheme = if (darkTheme) WatermelonColors.darkScheme() else WatermelonColors.lightScheme()
 
     val layoutDirection =
         if (forceRtl) LayoutDirection.Rtl else LocalLayoutDirection.current
@@ -73,6 +43,10 @@ fun WatermelonTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = WatermelonTypography.typography,
+            // Not optional. Without this every stock Material3 surface (sheets, dialogs, text
+            // fields, navigation bar) silently falls back to the M3 baseline 28dp radius and
+            // renders pill-round next to this brand's sharp 0-14dp custom components.
+            shapes = WatermelonShapes.shapes,
             content = content
         )
     }

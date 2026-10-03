@@ -53,7 +53,7 @@ fun Mp3BitrateDialog(
             ) {
                 Text(
                     "Extract Audio",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(

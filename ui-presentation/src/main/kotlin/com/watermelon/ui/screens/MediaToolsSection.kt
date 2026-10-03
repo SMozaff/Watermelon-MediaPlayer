@@ -1,10 +1,10 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
@@ -45,7 +45,7 @@ internal fun MediaToolsSection(
                 text = "Custom folders require Android 10 or later. Compressed and " +
                     "trimmed videos will save to the default Movies location on this device.",
                 style = WatermelonTypography.typography.bodySmall,
-                color = WatermelonColors.DarkOnSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = WatermelonSpacing.sm)
             )
         }

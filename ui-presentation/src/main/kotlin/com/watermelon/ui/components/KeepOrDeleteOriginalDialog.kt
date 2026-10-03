@@ -76,7 +76,7 @@ fun KeepOrDeleteOriginalDialog(
             ) {
                 Text(
                     "Keep the original video?",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
