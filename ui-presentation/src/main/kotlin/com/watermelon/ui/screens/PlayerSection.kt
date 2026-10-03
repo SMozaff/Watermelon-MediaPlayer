@@ -1,15 +1,20 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.watermelon.ui.R
 
 @Composable
 internal fun PlayerSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Player", summary = "Playback controls and retro effects") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_player_title),
+        summary = stringResource(R.string.settings_player_summary)
+    ) {
         ToggleRow(
-            label = "Burst screenshot (9 frames)",
+            label = stringResource(R.string.settings_burst_screenshot),
             checked = state.screenshotMode == ScreenshotMode.BURST
         ) {
             onStateChange(
@@ -18,12 +23,12 @@ internal fun PlayerSection(
         }
 
         ToggleRow(
-            label = "VHS effect",
+            label = stringResource(R.string.settings_vhs_effect),
             checked = state.vhsEnabled
         ) { onStateChange(state.copy(vhsEnabled = it)) }
 
         DropdownNavRow(
-            label = "VHS intensity",
+            label = stringResource(R.string.settings_vhs_intensity),
             value = state.vhsIntensity.name.lowercase().replaceFirstChar { it.uppercase() },
             options = VhsIntensity.values().map { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }
         ) { selected ->
@@ -34,13 +39,13 @@ internal fun PlayerSection(
         }
 
         ToggleRow(
-            label = "Tuner-style seek bar",
+            label = stringResource(R.string.settings_tuner_seekbar),
             checked = state.tunerSeekBarEnabled
         ) { onStateChange(state.copy(tunerSeekBarEnabled = it)) }
 
         if (state.tunerSeekBarEnabled) {
             StepperRow(
-                label = "Tuner seek step",
+                label = stringResource(R.string.settings_tuner_seek_step),
                 value = "${state.tunerSeekStepSeconds}s",
                 onMinus = {
                     onStateChange(

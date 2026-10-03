@@ -14,9 +14,12 @@ import com.watermelon.ui.theme.WatermelonTypography
 internal fun LibraryAccessSection(
     onFolderVisibilityClick: () -> Unit
 ) {
-    SettingsGroup(title = "Library access", summary = "Choose which indexed folders appear in Watermelon") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_library_access),
+        summary = stringResource(R.string.settings_library_access_summary)
+    ) {
         NavRow(
-            label = "Folder visibility",
+            label = stringResource(R.string.settings_folder_visibility),
             value = "Manage",
             onClick = onFolderVisibilityClick
         )
@@ -25,7 +28,10 @@ internal fun LibraryAccessSection(
 
 @Composable
 internal fun PrivacySection() {
-    SettingsGroup(title = "Privacy", summary = "What network access is used for") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_privacy),
+        summary = stringResource(R.string.settings_privacy_summary)
+    ) {
         Text(
             text = stringResource(R.string.settings_privacy_internet_usage),
             style = WatermelonTypography.typography.bodySmall,
