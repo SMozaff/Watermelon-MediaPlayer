@@ -2,6 +2,73 @@
 <resources>
     <!-- TODO(i18n): machine-drafted translation, not yet reviewed by a native Farsi
          speaker; verify phrasing/tone before shipping. See values/strings.xml for the
-         English source and the reasoning behind this string. -->
+         English source and the reasoning behind each string. -->
     <string name="settings_privacy_internet_usage">دسترسی به اینترنت فقط برای جست‌وجوی زیرنویس‌هایی که درخواست می‌کنید استفاده می‌شود. چیز دیگری ارسال یا ردیابی نمی‌شود.</string>
+
+    <!-- Settings shell -->
+    <string name="settings_title">تنظیمات</string>
+    <string name="settings_intro_title">واتمرلون را مال خود کنید</string>
+    <string name="settings_intro_summary">پخش، زیرنویس، مرور کتابخانه و خروجی گرفتن را از یک جا تنظیم کنید.</string>
+
+    <!-- Appearance -->
+    <string name="settings_appearance_title">ظاهر</string>
+    <string name="settings_appearance_summary">پوسته و جهت خواندن</string>
+    <string name="settings_pure_dark">پوستهٔ تیرهٔ خالص</string>
+    <string name="settings_force_rtl">اجبار راست‌به‌چپ</string>
+
+    <!-- Player -->
+    <string name="settings_player_title">پخش‌کننده</string>
+    <string name="settings_player_summary">کنترل‌های پخش و جلوه‌های نوستالژیک</string>
+    <string name="settings_burst_screenshot">عکس فوری پیاپی (۹ فریم)</string>
+    <string name="settings_vhs_effect">جلوهٔ وی‌اچ‌اس</string>
+    <string name="settings_vhs_intensity">شدت جلوهٔ وی‌اچ‌اس</string>
+    <string name="settings_tuner_seekbar">نوار پیمایش تیونری</string>
+    <string name="settings_tuner_seek_step">گام پیمایش تیونری</string>
+
+    <!-- Subtitles -->
+    <string name="settings_subtitles_title">زیرنویس</string>
+    <string name="settings_subtitles_summary">سبک متن و جهت خواندن</string>
+    <string name="settings_subtitles_enable">فعال‌سازی زیرنویس</string>
+    <string name="settings_subtitle_text_size">اندازهٔ متن</string>
+    <string name="settings_subtitle_text_color">رنگ متن</string>
+    <string name="settings_subtitle_position">موقعیت</string>
+    <string name="settings_subtitle_bold">ضخیم</string>
+    <string name="settings_subtitle_italic">مورب</string>
+    <string name="settings_subtitle_underline">زیرخط‌دار</string>
+    <string name="settings_subtitle_direction">جهت</string>
+    <string name="settings_subtitle_second_direction">جهت زیرنویس دوم</string>
+
+    <!-- Library &amp; browsing -->
+    <string name="settings_library_title">کتابخانه و مرور</string>
+    <string name="settings_library_summary">کتابخانهٔ رسانهٔ شما چگونه نمایش داده شود</string>
+    <string name="settings_grid_default">شبکه به‌صورت پیش‌فرض</string>
+    <string name="settings_tetris_view">نمای تتریس</string>
+    <string name="settings_show_thumbnails">نمایش تصاویر بندانگشتی</string>
+    <string name="settings_show_durations">نمایش مدت‌زمان</string>
+    <string name="settings_show_file_size">نمایش حجم فایل</string>
+
+    <!-- Continue watching -->
+    <string name="settings_continue_watching_title">ادامهٔ تماشا</string>
+    <string name="settings_continue_watching_summary">رفتار از سرگیری و فهرست پخش</string>
+    <string name="settings_continue_watching_playlist">فهرست پخش ادامهٔ تماشا</string>
+
+    <!-- Subtitle Auto Sync -->
+    <string name="settings_auto_sync_title">هم‌زمان‌سازی خودکار زیرنویس</string>
+    <string name="settings_auto_sync_summary">اصلاح خودکار زمان‌بندی زیرنویس</string>
+    <string name="settings_auto_sync_action">عملکرد هم‌زمان‌سازی</string>
+
+    <!-- System -->
+    <string name="settings_library_access">دسترسی به کتابخانه</string>
+    <string name="settings_library_access_summary">انتخاب کنید کدام پوشه‌های نمایه‌شده در واتمرلون دیده شوند</string>
+    <string name="settings_folder_visibility">نمایان بودن پوشه‌ها</string>
+    <string name="settings_privacy">حریم خصوصی</string>
+    <string name="settings_privacy_summary">دسترسی به شبکه برای چه کاری استفاده می‌شود</string>
+
+    <!-- Media tools -->
+    <string name="settings_media_tools_title">ابزارهای رسانه</string>
+    <string name="settings_media_tools_summary">محل ذخیرهٔ صوت و ویدئوی خروجی</string>
+    <string name="settings_mp3_folder">پوشهٔ صوت ام‌پی‌تری</string>
+    <string name="settings_compressed_folder">پوشهٔ ویدئوی فشرده‌شده</string>
+    <string name="settings_trimmed_folder">پوشهٔ ویدئوی بریده‌شده</string>
+    <string name="settings_custom_folders_note">پوشه‌های سفارشی به اندروید ۱۰ یا جدیدتر نیاز دارند. ویدئوهای فشرده‌شده و بریده‌شده در این دستگاه در محل پیش‌فرض Movies ذخیره می‌شوند.</string>
 </resources>

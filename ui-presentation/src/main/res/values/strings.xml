@@ -5,4 +5,75 @@
          INTERNET permission. Wording confirmed against SubtitleRepositoryImpl.kt: this is
          the app's sole use of the network. -->
     <string name="settings_privacy_internet_usage">Internet access is used only to look up subtitles you request. Nothing else is sent or tracked.</string>
+
+    <!-- Settings. Extracted from hardcoded Kotlin literals; see
+         scripts/verify_no_hardcoded_strings.py for the gate that keeps this count from
+         growing again. Keys are grouped by the screen section that owns them. -->
+
+    <!-- Settings shell -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_intro_title">Make Watermelon yours</string>
+    <string name="settings_intro_summary">Tune playback, subtitles, library browsing and exports from one place.</string>
+
+    <!-- Appearance -->
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_appearance_summary">Theme and reading direction</string>
+    <string name="settings_pure_dark">Pure dark theme</string>
+    <string name="settings_force_rtl">Force RTL overrides</string>
+
+    <!-- Player -->
+    <string name="settings_player_title">Player</string>
+    <string name="settings_player_summary">Playback controls and retro effects</string>
+    <string name="settings_burst_screenshot">Burst screenshot (9 frames)</string>
+    <string name="settings_vhs_effect">VHS effect</string>
+    <string name="settings_vhs_intensity">VHS intensity</string>
+    <string name="settings_tuner_seekbar">Tuner-style seek bar</string>
+    <string name="settings_tuner_seek_step">Tuner seek step</string>
+
+    <!-- Subtitles -->
+    <string name="settings_subtitles_title">Subtitles</string>
+    <string name="settings_subtitles_summary">Text style and reading direction</string>
+    <string name="settings_subtitles_enable">Enable subtitles</string>
+    <string name="settings_subtitle_text_size">Text size</string>
+    <string name="settings_subtitle_text_color">Text color</string>
+    <string name="settings_subtitle_position">Position</string>
+    <string name="settings_subtitle_bold">Bold</string>
+    <string name="settings_subtitle_italic">Italic</string>
+    <string name="settings_subtitle_underline">Underline</string>
+    <string name="settings_subtitle_direction">Direction</string>
+    <string name="settings_subtitle_second_direction">2nd sub direction</string>
+
+    <!-- Library &amp; browsing -->
+    <string name="settings_library_title">Library &amp; browsing</string>
+    <string name="settings_library_summary">How your media library is displayed</string>
+    <string name="settings_grid_default">Grid layout by default</string>
+    <string name="settings_tetris_view">Tetris view</string>
+    <string name="settings_show_thumbnails">Show thumbnails</string>
+    <string name="settings_show_durations">Show durations</string>
+    <string name="settings_show_file_size">Show file size</string>
+
+    <!-- Continue watching -->
+    <string name="settings_continue_watching_title">Continue watching</string>
+    <string name="settings_continue_watching_summary">Resume and playlist behaviour</string>
+    <string name="settings_continue_watching_playlist">Continue Watching playlist</string>
+
+    <!-- Subtitle Auto Sync -->
+    <string name="settings_auto_sync_title">Subtitle Auto Sync</string>
+    <string name="settings_auto_sync_summary">Automatic subtitle timing correction</string>
+    <string name="settings_auto_sync_action">Auto Sync action</string>
+
+    <!-- System -->
+    <string name="settings_library_access">Library access</string>
+    <string name="settings_library_access_summary">Choose which indexed folders appear in Watermelon</string>
+    <string name="settings_folder_visibility">Folder visibility</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_summary">What network access is used for</string>
+
+    <!-- Media tools -->
+    <string name="settings_media_tools_title">Media tools</string>
+    <string name="settings_media_tools_summary">Where exported audio and video are saved</string>
+    <string name="settings_mp3_folder">MP3 audio folder</string>
+    <string name="settings_compressed_folder">Compressed video folder</string>
+    <string name="settings_trimmed_folder">Trimmed video folder</string>
+    <string name="settings_custom_folders_note">Custom folders require Android 10 or later. Compressed and trimmed videos will save to the default Movies location on this device.</string>
 </resources>

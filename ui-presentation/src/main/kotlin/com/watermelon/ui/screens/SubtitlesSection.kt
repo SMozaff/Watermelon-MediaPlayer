@@ -1,35 +1,40 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.watermelon.common.model.SubtitleDirection
 import com.watermelon.common.model.SubtitlePosition
 import com.watermelon.common.model.SubtitleStyle
+import com.watermelon.ui.R
 
 @Composable
 internal fun SubtitlesSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    SettingsGroup(title = "Subtitles", summary = "Text style and reading direction") {
+    SettingsGroup(
+        title = stringResource(R.string.settings_subtitles_title),
+        summary = stringResource(R.string.settings_subtitles_summary)
+    ) {
         val st = state.subtitleStyle
         fun up(new: SubtitleStyle) {
             onStateChange(state.copy(subtitleStyle = new))
         }
 
         ToggleRow(
-            label = "Enable subtitles",
+            label = stringResource(R.string.settings_subtitles_enable),
             checked = st.enabled
         ) { up(st.copy(enabled = it)) }
 
         StepperRow(
-            label = "Text size",
+            label = stringResource(R.string.settings_subtitle_text_size),
             value = "${st.sizeSp}sp",
             onMinus = { up(st.copy(sizeSp = (st.sizeSp - 2).coerceAtLeast(12))) },
             onPlus = { up(st.copy(sizeSp = (st.sizeSp + 2).coerceAtMost(48))) }
         )
 
         DropdownNavRow(
-            label = "Text color",
+            label = stringResource(R.string.settings_subtitle_text_color),
             value = subtitleColorName(st.textColorArgb),
             options = SUBTITLE_COLORS.map { it.second }
         ) { selected ->
@@ -38,7 +43,7 @@ internal fun SubtitlesSection(
         }
 
         DropdownNavRow(
-            label = "Position",
+            label = stringResource(R.string.settings_subtitle_position),
             value = st.position.name.lowercase().replaceFirstChar { it.uppercase() },
             options = SubtitlePosition.values()
                 .map { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }
@@ -49,12 +54,12 @@ internal fun SubtitlesSection(
             up(st.copy(position = next))
         }
 
-        ToggleRow(label = "Bold", checked = st.bold) { up(st.copy(bold = it)) }
-        ToggleRow(label = "Italic", checked = st.italic) { up(st.copy(italic = it)) }
-        ToggleRow(label = "Underline", checked = st.underline) { up(st.copy(underline = it)) }
+        ToggleRow(label = stringResource(R.string.settings_subtitle_bold), checked = st.bold) { up(st.copy(bold = it)) }
+        ToggleRow(label = stringResource(R.string.settings_subtitle_italic), checked = st.italic) { up(st.copy(italic = it)) }
+        ToggleRow(label = stringResource(R.string.settings_subtitle_underline), checked = st.underline) { up(st.copy(underline = it)) }
 
         DropdownNavRow(
-            label = "Direction",
+            label = stringResource(R.string.settings_subtitle_direction),
             value = st.direction.label(),
             options = SubtitleDirection.values().map { it.label() }
         ) { selected ->
@@ -63,7 +68,7 @@ internal fun SubtitlesSection(
         }
 
         DropdownNavRow(
-            label = "2nd sub direction",
+            label = stringResource(R.string.settings_subtitle_second_direction),
             value = st.secondaryDirection.label(),
             options = SubtitleDirection.values().map { it.label() }
         ) { selected ->
