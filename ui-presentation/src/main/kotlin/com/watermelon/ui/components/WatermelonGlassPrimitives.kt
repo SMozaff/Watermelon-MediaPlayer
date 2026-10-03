@@ -32,10 +32,11 @@ import com.watermelon.ui.WatermelonIcons
 /**
  * Shared Watermelon Glass surface.
  *
- * The [blur] argument remains part of the public API for design-system compatibility, but it is
- * intentionally not applied as a fake backdrop blur. Compose's blur modifier blurs the primitive
- * itself rather than arbitrary content behind it. Readability therefore comes from the semantic
- * surface role and border hierarchy below.
+ * There is deliberately no `blur` argument. It used to exist here and be passed at four call
+ * sites, but was never applied: Compose's `blur` modifier blurs the primitive itself rather than
+ * arbitrary content behind it, so a "backdrop blur" is not expressible this way. Readability
+ * comes from the semantic surface role and border hierarchy below, which is why the parameter was
+ * removed rather than left in place implying an effect that did not exist.
  */
 @Composable
 fun WatermelonGlassSurface(
@@ -43,7 +44,6 @@ fun WatermelonGlassSurface(
     elevated: Boolean = false,
     role: WatermelonGlass.Role = if (elevated) WatermelonGlass.Role.Control else WatermelonGlass.Role.Card,
     shape: RoundedCornerShape = WatermelonShapes.card,
-    blur: WatermelonGlass.Blur = WatermelonGlass.Blur.Subtle,
     border: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -67,13 +67,11 @@ fun WatermelonGlassCard(
     modifier: Modifier = Modifier,
     elevated: Boolean = false,
     role: WatermelonGlass.Role = if (elevated) WatermelonGlass.Role.Control else WatermelonGlass.Role.Card,
-    blur: WatermelonGlass.Blur = WatermelonGlass.Blur.Subtle,
     content: @Composable ColumnScope.() -> Unit
 ) = WatermelonGlassSurface(
     modifier = modifier,
     elevated = elevated,
     role = role,
-    blur = blur,
     shape = WatermelonShapes.card,
     content = content
 )
@@ -166,7 +164,6 @@ fun WatermelonGlassPanel(
     modifier = modifier,
     elevated = elevated,
     role = role,
-    blur = WatermelonGlass.Blur.Medium,
     shape = WatermelonShapes.sheet,
     content = content
 )
@@ -174,7 +171,7 @@ fun WatermelonGlassPanel(
 @Composable
 fun WatermelonGlassDivider(
     modifier: Modifier = Modifier,
-    color: Color = WatermelonGlass.border
+    color: Color = WatermelonGlass.borderColor()
 ) {
     Box(
         modifier = modifier

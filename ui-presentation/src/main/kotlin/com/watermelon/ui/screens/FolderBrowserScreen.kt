@@ -127,9 +127,11 @@ fun FolderBrowserScreen(
 
     val isGrid = currentLayout == FolderLayout.GRID
     val gridColumns = when (currentItemSize) {
-        com.watermelon.ui.components.ItemSize.TINY -> GridCells.Fixed(4)
-        com.watermelon.ui.components.ItemSize.SMALL -> GridCells.Fixed(3)
-        com.watermelon.ui.components.ItemSize.MEDIUM -> GridCells.Fixed(2)
+        // One distinct column count per slider detent, matching VideoListScreen. This ladder
+        // used to read 4/3/2/2/1, so the fourth detent redrew the grid identically.
+        com.watermelon.ui.components.ItemSize.TINY -> GridCells.Fixed(5)
+        com.watermelon.ui.components.ItemSize.SMALL -> GridCells.Fixed(4)
+        com.watermelon.ui.components.ItemSize.MEDIUM -> GridCells.Fixed(3)
         com.watermelon.ui.components.ItemSize.LARGE -> GridCells.Fixed(2)
         com.watermelon.ui.components.ItemSize.XLARGE -> GridCells.Fixed(1)
     }
@@ -177,7 +179,7 @@ fun FolderBrowserScreen(
 
         HorizontalDivider(
             thickness = WatermelonSpacing.hairline,
-            color = WatermelonGlass.border
+            color = WatermelonGlass.borderColor()
         )
 
         if (libraryState !is LibraryUiState.Content) {

@@ -73,7 +73,7 @@ fun FolderVisibilityScreen(
         }
 
         HorizontalDivider(
-            color = WatermelonGlass.border,
+            color = WatermelonGlass.borderColor(),
             thickness = WatermelonSpacing.hairline
         )
 
@@ -138,7 +138,7 @@ fun FolderVisibilityScreen(
                     )
                 }
                 HorizontalDivider(
-                    color = WatermelonGlass.border,
+                    color = WatermelonGlass.borderColor(),
                     thickness = WatermelonSpacing.hairline,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.md)
                 )

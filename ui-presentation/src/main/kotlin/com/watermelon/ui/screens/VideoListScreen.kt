@@ -228,9 +228,12 @@ fun VideoListScreen(
     }
 
     val gridColumns = when (currentItemSize) {
-        VideoItemSize.TINY -> GridCells.Fixed(4)
-        VideoItemSize.SMALL -> GridCells.Fixed(3)
-        VideoItemSize.MEDIUM -> GridCells.Fixed(2)
+        // One distinct column count per slider detent. This ladder used to read 4/3/2/2/1,
+        // which made the fourth detent a no-op: tapping the slider from MEDIUM to LARGE
+        // redrew the grid identically, so the control appeared broken.
+        VideoItemSize.TINY -> GridCells.Fixed(5)
+        VideoItemSize.SMALL -> GridCells.Fixed(4)
+        VideoItemSize.MEDIUM -> GridCells.Fixed(3)
         VideoItemSize.LARGE -> GridCells.Fixed(2)
         VideoItemSize.XLARGE -> GridCells.Fixed(1)
     }
@@ -301,7 +304,7 @@ fun VideoListScreen(
 
             HorizontalDivider(
                 thickness = WatermelonSpacing.hairline,
-                color = WatermelonGlass.border
+                color = WatermelonGlass.borderColor()
             )
 
             if (libraryState !is LibraryUiState.Content) {

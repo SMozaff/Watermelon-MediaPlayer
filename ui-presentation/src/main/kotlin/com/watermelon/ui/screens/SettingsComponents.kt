@@ -86,8 +86,6 @@ internal fun SettingsGroup(
     WatermelonGlassSurface(
         modifier = Modifier.fillMaxWidth(),
         elevated = expanded,
-        blur = if (expanded) com.watermelon.ui.theme.WatermelonGlass.Blur.Medium
-        else com.watermelon.ui.theme.WatermelonGlass.Blur.Subtle,
         shape = com.watermelon.ui.theme.WatermelonShapes.card
     ) {
         Column {
@@ -124,7 +122,7 @@ internal fun SettingsGroup(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column {
-                    HorizontalDivider(color = com.watermelon.ui.theme.WatermelonGlass.border)
+                    HorizontalDivider(color = WatermelonGlass.borderColor())
                     Column(
                         modifier = Modifier.padding(
                             horizontal = WatermelonSpacing.md,
