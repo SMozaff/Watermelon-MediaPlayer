@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.PlayerColors
 import kotlin.math.roundToLong
 
@@ -287,7 +288,7 @@ fun TunerFramePreview(
         modifier = modifier
             .width(200.dp)
             .height(112.dp)
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(WatermelonShapes.Radius.control))
             .background(androidx.compose.ui.graphics.Color.Black),
         contentAlignment = androidx.compose.ui.Alignment.BottomCenter,
     ) {
@@ -306,7 +307,7 @@ fun TunerFramePreview(
                 .padding(bottom = 6.dp)
                 .background(
                     androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.72f),
-                    androidx.compose.foundation.shape.RoundedCornerShape(5.dp)
+                    androidx.compose.foundation.shape.RoundedCornerShape(WatermelonShapes.Radius.small)
                 )
                 .padding(horizontal = 7.dp, vertical = 3.dp)
         )

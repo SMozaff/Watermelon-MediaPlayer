@@ -101,7 +101,7 @@ fun MediaJobsSheet(
     ) {
         Text(
             text = "Media jobs",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
         )

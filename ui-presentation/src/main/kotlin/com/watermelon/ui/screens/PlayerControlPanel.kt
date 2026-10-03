@@ -1,14 +1,11 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -20,15 +17,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
-
-private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
 object PlayerControlPanel {
 
@@ -331,79 +325,6 @@ fun FileActionsSheet(
         )
         SheetBottomSpace()
     }
-}
-
-@Composable
-private fun SheetTitle(text: String) {
-    Text(
-        text = text,
-        color = PlayerColors.current.textPrimary,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
-    )
-}
-
-@Composable
-private fun SheetSectionLabel(text: String) {
-    Text(
-        text = text,
-        color = PlayerColors.current.textSecondary,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
-        modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
-    )
-}
-
-@Composable
-private fun SheetDivider() {
-    HorizontalDivider(
-        color = PlayerColors.current.textPrimary.copy(alpha = 0.12f),
-        modifier = Modifier.padding(vertical = WatermelonSpacing.xs),
-    )
-}
-
-@Composable
-private fun SheetAction(
-    label: String,
-    detail: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    destructive: Boolean = false,
-) {
-    TextButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = label,
-                    color = when {
-                        destructive -> PlayerColors.current.accent
-                        enabled -> PlayerColors.current.textPrimary
-                        else -> PlayerColors.current.iconInactive
-                    },
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = detail,
-                    color = if (enabled) {
-                        PlayerColors.current.textSecondary
-                    } else {
-                        PlayerColors.current.iconInactive
-                    },
-                )
-            },
-        )
-    }
-}
-
-@Composable
-private fun SheetBottomSpace() {
-    Column(modifier = Modifier.padding(bottom = WatermelonSpacing.lg)) {}
 }
 
 private fun formatSpeed(speed: Float): String =

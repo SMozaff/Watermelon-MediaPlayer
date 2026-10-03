@@ -158,7 +158,7 @@ fun MiniPlayerBar(
                         .fillMaxWidth()
                         .height(2.dp),
                     color = WatermelonColors.Accent,
-                    trackColor = WatermelonGlass.highlight,
+                    trackColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Card),
                 )
             }
         }

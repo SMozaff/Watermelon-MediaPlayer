@@ -78,7 +78,6 @@ fun WatermelonBottomNavigation(
             .fillMaxWidth()
             .height(72.dp),
         elevated = true,
-        blur = WatermelonGlass.Blur.Medium,
         shape = com.watermelon.ui.theme.WatermelonShapes.sheet
     ) {
         NavigationBar(
@@ -123,7 +122,7 @@ fun WatermelonBottomNavigation(
                         unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
                         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = WatermelonGlass.highlight.copy(alpha = 0.55f)
+                        indicatorColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Selected)
                     )
                 )
             }

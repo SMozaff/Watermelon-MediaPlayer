@@ -49,7 +49,7 @@ fun PremiumUpsellDialog(
             ) {
                 Text(
                     "Premium Feature",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(

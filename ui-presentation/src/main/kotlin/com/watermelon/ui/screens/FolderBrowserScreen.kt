@@ -127,9 +127,11 @@ fun FolderBrowserScreen(
 
     val isGrid = currentLayout == FolderLayout.GRID
     val gridColumns = when (currentItemSize) {
-        com.watermelon.ui.components.ItemSize.TINY -> GridCells.Fixed(4)
-        com.watermelon.ui.components.ItemSize.SMALL -> GridCells.Fixed(3)
-        com.watermelon.ui.components.ItemSize.MEDIUM -> GridCells.Fixed(2)
+        // One distinct column count per slider detent, matching VideoListScreen. This ladder
+        // used to read 4/3/2/2/1, so the fourth detent redrew the grid identically.
+        com.watermelon.ui.components.ItemSize.TINY -> GridCells.Fixed(5)
+        com.watermelon.ui.components.ItemSize.SMALL -> GridCells.Fixed(4)
+        com.watermelon.ui.components.ItemSize.MEDIUM -> GridCells.Fixed(3)
         com.watermelon.ui.components.ItemSize.LARGE -> GridCells.Fixed(2)
         com.watermelon.ui.components.ItemSize.XLARGE -> GridCells.Fixed(1)
     }
@@ -177,7 +179,7 @@ fun FolderBrowserScreen(
 
         HorizontalDivider(
             thickness = WatermelonSpacing.hairline,
-            color = WatermelonGlass.border
+            color = WatermelonGlass.borderColor()
         )
 
         if (libraryState !is LibraryUiState.Content) {
@@ -196,12 +198,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "Scanning your media library",
                                 style = WatermelonTypography.typography.bodyLarge,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 "Folders will appear as indexing finishes",
                                 style = WatermelonTypography.typography.bodySmall,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -217,12 +219,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "No media folders found",
                                 style = WatermelonTypography.typography.titleMedium,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 "Watermelon could not find eligible videos in your visible folders.",
                                 style = WatermelonTypography.typography.bodyMedium,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             WatermelonGlassButton(
                                 onClick = viewModel::refresh,
@@ -244,12 +246,12 @@ fun FolderBrowserScreen(
                             Text(
                                 "Library unavailable",
                                 style = WatermelonTypography.typography.titleMedium,
-                                color = WatermelonColors.DarkOnSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 state.message,
                                 style = WatermelonTypography.typography.bodyMedium,
-                                color = WatermelonColors.DarkOnSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             WatermelonGlassButton(
                                 onClick = viewModel::refresh,

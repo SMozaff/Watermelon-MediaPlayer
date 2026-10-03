@@ -125,14 +125,7 @@ fun TvSettingsScreen(
         }
 
         item { TvSettingsSection("Media tools") }
-        item {
-            TvToggleSetting(
-                label = "Premium unlocked",
-                enabled = state.isPremiumUnlocked,
-                supportingText = "Placeholder setting; no purchase flow is implemented.",
-                onClick = { onStateChange(state.copy(isPremiumUnlocked = !state.isPremiumUnlocked)) }
-            )
-        }
+        // See MediaToolsSection.kt for why no premium toggle is surfaced here.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             item {
                 TvActionSetting(

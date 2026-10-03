@@ -114,19 +114,4 @@ object WatermelonGlass {
         Role.Modal -> 10.dp
         Role.Selected -> 4.dp
     }
-
-    enum class Blur(val radius: Dp) {
-        None(0.dp),
-        Subtle(8.dp),
-        Medium(16.dp),
-        Strong(24.dp)
-    }
-
-    enum class Depth {
-        Flat,
-        Control,
-        Card,
-        Floating,
-        Modal
-    }
 }

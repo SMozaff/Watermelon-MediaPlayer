@@ -39,16 +39,17 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 
-/** Video list's own size axis — SMALL (compact row with extra metadata: resolution, file
- *  size, date added) and LARGE (big, simple row: name + duration only). Deliberately only
- *  2 values, unlike folders/playlists' [ItemSize] below, which keeps 3 (SMALL/MEDIUM/LARGE)
- *  — the two screens' sizing scales are independent by design. */
+/** Video list's size axis, driving grid column count via the five-detent [ItemSizeSlider].
+ *
+ *  These five rungs previously documented themselves as "only 2 values" and the sibling
+ *  [ItemSize] as "3 values (SMALL/MEDIUM/LARGE)". Both enums have always declared five
+ *  (TINY…XLARGE) with identical members, so the note described an intent that was never
+ *  reflected in the code. */
 enum class VideoItemSize(val label: String) { TINY(""), SMALL(""), MEDIUM(""), LARGE(""), XLARGE("") }
 
-/** Folders/playlists' own size axis (used by FolderListItem/FolderBrowserScreen) — kept at
- *  3 values, unlike the video list's [VideoItemSize] above. Small rows there also show
- *  extra metadata (item count, duration, last modified — see FolderListItem's
- *  smallMetaText). */
+/** Folders/playlists' size axis (used by FolderListItem/FolderBrowserScreen), same five rungs as
+ *  [VideoItemSize]. At SMALL/TINY, folder rows show extra metadata (item count, duration, last
+ *  modified — see FolderListItem's smallMetaText). */
 enum class ItemSize(val label: String) { TINY(""), SMALL(""), MEDIUM(""), LARGE(""), XLARGE("") }
 
 @OptIn(ExperimentalFoundationApi::class)

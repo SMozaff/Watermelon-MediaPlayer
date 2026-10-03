@@ -17,6 +17,24 @@ import androidx.compose.ui.unit.sp
  * presentation board" requirement: the previous scale only covered 5 Material3 slots
  * and had no caption, overline/badge, or tabular-numeral style — so timecodes (seek bar,
  * duration labels) shifted width per-digit and badges had no dedicated small label style.
+ *
+ * ## The scale is now total
+ *
+ * Material3 slots that are not explicitly set fall back to the M3 baseline, which had two
+ * visible consequences here. `bodySmall` (18 call sites — list-item metadata, dialog helper
+ * text, secondary lines) and `titleSmall` (2 call sites) rendered in stock Roboto metrics,
+ * and `headlineSmall` (8 call sites) landed at 24sp *Regular* — both larger and lighter than
+ * the neighbouring custom slots, so text hierarchy read inconsistently across screens.
+ * Every slot this app actually uses is now defined below, in a strictly descending order:
+ *
+ * ```
+ * displayLarge 34 > headlineSmall 26 > titleLarge 20 > titleMedium 18
+ *              > titleSmall 16 = bodyLarge 16 > bodyMedium 14 = labelLarge 14
+ *              > bodySmall 12 = labelMedium 12 > labelSmall 10
+ * ```
+ *
+ * Equal sizes at different weights (titleSmall vs bodyLarge, bodySmall vs labelMedium) are
+ * intentional and are the Material3 convention for a semibold vs regular pairing.
  */
 object WatermelonTypography {
 
@@ -24,8 +42,17 @@ object WatermelonTypography {
 
     val typography = Typography(
         displayLarge = TextStyle(fontFamily = farsiFriendly, fontSize = 34.sp, fontWeight = FontWeight.SemiBold),
-        titleLarge = TextStyle(fontFamily = farsiFriendly, fontSize = 22.sp, fontWeight = FontWeight.SemiBold),
+
+        // Genuine screen-level headings only (TV screen headers, the Compress screen title).
+        // Note that dialog and sheet titles deliberately do NOT use this slot — a dialog's title
+        // is a title, so those call sites read titleLarge. Material3's default headlineSmall is
+        // 24sp Regular, which rendered stock dialog titles in a light weight that looked thin
+        // and floaty against the rest of this semibold industrial scale.
+        headlineSmall = TextStyle(fontFamily = farsiFriendly, fontSize = 26.sp, fontWeight = FontWeight.SemiBold),
+
+        titleLarge = TextStyle(fontFamily = farsiFriendly, fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
         titleMedium = TextStyle(fontFamily = farsiFriendly, fontSize = 18.sp, fontWeight = FontWeight.Medium),
+        titleSmall = TextStyle(fontFamily = farsiFriendly, fontSize = 16.sp, fontWeight = FontWeight.Medium),
         bodyLarge = TextStyle(
             fontFamily = farsiFriendly,
             fontSize = 16.sp,
@@ -34,6 +61,7 @@ object WatermelonTypography {
             textAlign = TextAlign.Start
         ),
         bodyMedium = TextStyle(fontFamily = farsiFriendly, fontSize = 14.sp),
+        bodySmall = TextStyle(fontFamily = farsiFriendly, fontSize = 12.sp),
         labelLarge = TextStyle(fontFamily = farsiFriendly, fontSize = 14.sp, fontWeight = FontWeight.Medium),
 
         // ── New in the expanded scale ────────────────────────────────────────

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -48,7 +49,7 @@ fun FolderVisibilityScreen(
         Text(
             text = "Hidden folders are excluded from the library index.",
             style = WatermelonTypography.typography.bodySmall,
-            color = WatermelonColors.DarkOnSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(
                 start = WatermelonSpacing.md,
                 end = WatermelonSpacing.md,
@@ -61,7 +62,7 @@ fun FolderVisibilityScreen(
             Text(
                 text = "$hiddenCount hidden",
                 style = WatermelonTypography.typography.labelMedium,
-                color = WatermelonColors.DarkOnSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(
                     start = WatermelonSpacing.md,
@@ -72,7 +73,7 @@ fun FolderVisibilityScreen(
         }
 
         HorizontalDivider(
-            color = WatermelonGlass.border,
+            color = WatermelonGlass.borderColor(),
             thickness = WatermelonSpacing.hairline
         )
 
@@ -80,7 +81,7 @@ fun FolderVisibilityScreen(
             Text(
                 text = "No folders indexed yet.",
                 style = WatermelonTypography.typography.bodyMedium,
-                color = WatermelonColors.DarkOnSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(WatermelonSpacing.md)
             )
             return@Column
@@ -112,14 +113,14 @@ fun FolderVisibilityScreen(
                         Text(
                             text = displayName,
                             style = WatermelonTypography.typography.bodyLarge,
-                            color = WatermelonColors.DarkOnSurface,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = path,
                             style = WatermelonTypography.typography.labelSmall,
-                            color = WatermelonColors.DarkOnSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -130,14 +131,14 @@ fun FolderVisibilityScreen(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = WatermelonColors.Palette.PaperWhite,
                             checkedTrackColor = WatermelonColors.Accent,
-                            uncheckedThumbColor = WatermelonColors.DarkOnSurfaceVariant,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             uncheckedTrackColor = WatermelonGlass.controlSurface(),
                             uncheckedBorderColor = WatermelonGlass.borderColor()
                         )
                     )
                 }
                 HorizontalDivider(
-                    color = WatermelonGlass.border,
+                    color = WatermelonGlass.borderColor(),
                     thickness = WatermelonSpacing.hairline,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.md)
                 )

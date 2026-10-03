@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.WatermelonIcons
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -53,11 +55,11 @@ fun MultiSelectionDock(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(WatermelonGlass.controlSurface(), RoundedCornerShape(18.dp))
+                .background(WatermelonGlass.controlSurface(), RoundedCornerShape(WatermelonShapes.Radius.card))
                 .border(
                     width = 1.dp,
                     color = WatermelonGlass.borderColor(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(WatermelonShapes.Radius.card),
                 )
                 .padding(WatermelonSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs),
@@ -74,13 +76,13 @@ fun MultiSelectionDock(
                 Text(
                     text = "$selectedCount selected",
                     style = WatermelonTypography.typography.labelLarge,
-                    color = WatermelonColors.DarkOnSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(start = WatermelonSpacing.sm),
                 )
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onDeselectAll) {
-                    Text("Clear selection", color = WatermelonColors.DarkOnSurface)
+                    Text("Clear selection", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -92,13 +94,13 @@ fun MultiSelectionDock(
                     onClick = onAddToPlaylist,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Add to playlist", color = WatermelonColors.DarkOnSurface)
+                    Text("Add to playlist", color = MaterialTheme.colorScheme.onSurface)
                 }
                 TextButton(
                     onClick = onShare,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Share", color = WatermelonColors.DarkOnSurface)
+                    Text("Share", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -107,7 +109,7 @@ fun MultiSelectionDock(
                     onClick = remove,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Remove from this playlist", color = WatermelonColors.DarkOnSurface)
+                    Text("Remove from this playlist", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 

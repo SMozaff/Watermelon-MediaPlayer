@@ -59,6 +59,7 @@ import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
+import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.utils.ScreenshotManager
 import com.watermelon.ui.utils.ScreenshotResult
 import kotlinx.coroutines.launch
@@ -157,10 +158,10 @@ fun ControlsLayer(
     Row(
         modifier = Modifier.fillMaxWidth().align(Alignment.TopStart)
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .shadow(14.dp, WatermelonShapes.sheet)
-            .clip(WatermelonShapes.sheet)
+            .shadow(14.dp, WatermelonShapes.control)
+            .clip(WatermelonShapes.control)
             .background(WatermelonGlass.controlSurface())
-            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.sheet),
+            .border(1.dp, WatermelonGlass.borderColor(), WatermelonShapes.control),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
@@ -226,10 +227,10 @@ fun ControlsLayer(
     Column(
         modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp)
-            .shadow(18.dp, WatermelonShapes.sheet)
-            .clip(WatermelonShapes.sheet)
+            .shadow(18.dp, WatermelonShapes.control)
+            .clip(WatermelonShapes.control)
             .background(WatermelonGlass.controlSurface())
-            .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.sheet),
+            .border(1.dp, WatermelonGlass.highlightColor(), WatermelonShapes.control),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PlayerTransportControls(
@@ -286,9 +287,9 @@ fun ControlsLayer(
             )
             Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp)) {
                 val tunerDisplayPosition = if (actualState.isScrubbingSeekBar) actualState.tunerPreviewPosition else position
-                Text(formatTime(tunerDisplayPosition), color = PlayerColors.current.textPrimary)
+                Text(formatTime(tunerDisplayPosition), style = WatermelonTypography.timecode, color = PlayerColors.current.textPrimary)
                 Spacer(Modifier.weight(1f))
-                Text("-${formatTime((durationMs - tunerDisplayPosition).coerceAtLeast(0L))}", color = PlayerColors.current.textPrimary)
+                Text("-${formatTime((durationMs - tunerDisplayPosition).coerceAtLeast(0L))}", style = WatermelonTypography.timecode, color = PlayerColors.current.textPrimary)
             }
         } else {
             if (actualState.isScrubbingSeekBar && uri.isNotBlank()) {
@@ -302,9 +303,9 @@ fun ControlsLayer(
             val seekDisplayPosition =
                 if (actualState.isScrubbingSeekBar) actualState.seekBarPreviewPosition else position
             Row(Modifier.fillMaxWidth()) {
-                Text(formatTime(seekDisplayPosition), color = PlayerColors.current.textPrimary)
+                Text(formatTime(seekDisplayPosition), style = WatermelonTypography.timecode, color = PlayerColors.current.textPrimary)
                 Spacer(Modifier.weight(1f))
-                Text(formatTime(durationMs), color = PlayerColors.current.textPrimary)
+                Text(formatTime(durationMs), style = WatermelonTypography.timecode, color = PlayerColors.current.textPrimary)
             }
             WatermelonSeekBar(
                 positionMs = position,
@@ -551,7 +552,7 @@ private fun PlayerTransportControls(
             WatermelonGlyph(
                 if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
                 if (isPlaying) "Pause" else "Play",
-                tint = Color.White,
+                tint = PlayerColors.current.onAccent,
                 modifier = Modifier.width(32.dp).height(32.dp)
             )
         }

@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.watermelon.ui.R
 import com.watermelon.ui.components.WatermelonGlyph
 import com.watermelon.ui.components.WatermelonGlassSurface
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonColors
 import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -53,7 +54,7 @@ import com.watermelon.ui.theme.WatermelonTypography
 @Composable
 internal fun SettingsIntro() {
     Surface(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(WatermelonShapes.Radius.card),
         color = WatermelonColors.Accent,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -85,8 +86,6 @@ internal fun SettingsGroup(
     WatermelonGlassSurface(
         modifier = Modifier.fillMaxWidth(),
         elevated = expanded,
-        blur = if (expanded) com.watermelon.ui.theme.WatermelonGlass.Blur.Medium
-        else com.watermelon.ui.theme.WatermelonGlass.Blur.Subtle,
         shape = com.watermelon.ui.theme.WatermelonShapes.card
     ) {
         Column {
@@ -123,7 +122,7 @@ internal fun SettingsGroup(
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column {
-                    HorizontalDivider(color = com.watermelon.ui.theme.WatermelonGlass.border)
+                    HorizontalDivider(color = WatermelonGlass.borderColor())
                     Column(
                         modifier = Modifier.padding(
                             horizontal = WatermelonSpacing.md,
@@ -194,7 +193,7 @@ internal fun TextFieldRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = WatermelonSpacing.xs),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(WatermelonShapes.Radius.panel),
             colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = WatermelonGlass.controlSurface(),
                 unfocusedContainerColor = WatermelonGlass.controlSurface(),
@@ -342,9 +341,9 @@ internal fun StepperRow(
             modifier = Modifier.weight(1f)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onMinus, modifier = Modifier .clip(RoundedCornerShape(10.dp))
+            TextButton(onClick = onMinus, modifier = Modifier .clip(RoundedCornerShape(WatermelonShapes.Radius.control))
                 .background(WatermelonGlass.controlSurface())
-                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(10.dp))) {
+                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(WatermelonShapes.Radius.control))) {
                 Text(
                     text = "-",
                     fontSize = 20.sp,
@@ -357,8 +356,8 @@ internal fun StepperRow(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.sm)
             )
-            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(WatermelonGlass.controlSurface())
-                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(10.dp))) {
+            TextButton(onClick = onPlus, modifier = Modifier.clip(RoundedCornerShape(WatermelonShapes.Radius.control)).background(WatermelonGlass.controlSurface())
+                .border(1.dp, WatermelonGlass.borderColor(), RoundedCornerShape(WatermelonShapes.Radius.control))) {
                 Text(
                     text = "+",
                     fontSize = 20.sp,

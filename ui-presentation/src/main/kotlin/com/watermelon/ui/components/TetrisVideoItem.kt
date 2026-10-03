@@ -92,7 +92,7 @@ fun TetrisVideoItem(
                     style = WatermelonTypography.timecode,
                     color = WatermelonColors.Palette.PaperWhite,
                     modifier = Modifier.align(Alignment.BottomEnd)
-                        .background(WatermelonGlass.scrim.copy(alpha = 0.72f), RoundedCornerShape(6.dp)),
+                        .background(WatermelonGlass.scrim.copy(alpha = 0.72f), RoundedCornerShape(WatermelonShapes.Radius.small)),
                 )
             }
 

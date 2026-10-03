@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.watermelon.ui.components.LevelIndicator
 import com.watermelon.ui.components.LockOverlay
 import com.watermelon.ui.player.VhsEffectController
+import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.WatermelonGlyph
@@ -35,7 +36,7 @@ fun TransientIndicatorsLayer(
     if (state.isHolding) {
         Row(
             modifier = Modifier.align(Alignment.Center)
-                .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(8.dp))
+                .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(WatermelonShapes.Radius.chip))
                 .padding(horizontal = 20.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -64,7 +65,7 @@ fun TransientIndicatorsLayer(
     state.screenshotMessage?.let { msg ->
         Box(
             modifier = Modifier.align(Alignment.TopCenter).padding(top = 60.dp)
-                .background(Color.Black.copy(alpha = 0.78f), RoundedCornerShape(6.dp))
+                .background(Color.Black.copy(alpha = 0.78f), RoundedCornerShape(WatermelonShapes.Radius.small))
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) { Text(msg, color = PlayerColors.current.textPrimary) }
     }

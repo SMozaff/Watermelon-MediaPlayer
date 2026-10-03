@@ -86,7 +86,7 @@ fun PlayerPlaylistPickerDialog(
 
                 if (userPlaylists.isNotEmpty()) {
                     HorizontalDivider(
-                        color = WatermelonGlass.border,
+                        color = WatermelonGlass.borderColor(),
                         modifier = Modifier.fillMaxWidth()
                     )
                     userPlaylists.forEach { playlist ->

@@ -43,7 +43,6 @@ fun WatermelonHeader(
             .fillMaxWidth()
             .height(64.dp),
         elevated = true,
-        blur = WatermelonGlass.Blur.Medium,
         shape = WatermelonShapes.sheet
     ) {
         Row(

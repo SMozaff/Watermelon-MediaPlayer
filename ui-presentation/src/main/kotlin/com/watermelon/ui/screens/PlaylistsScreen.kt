@@ -127,12 +127,12 @@ fun PlaylistsScreen(
                     Text(
                         "Create playlists for the videos you want to watch again.",
                         style = WatermelonTypography.typography.bodyLarge,
-                        color = WatermelonColors.DarkOnSurface,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         "Keep favourites, trips, shows, or any group together without moving the original files.",
                         style = WatermelonTypography.typography.bodyMedium,
-                        color = WatermelonColors.DarkOnSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = WatermelonSpacing.sm),
                     )
                         WatermelonGlassButton(
@@ -181,12 +181,12 @@ fun PlaylistsScreen(
                                     Text(
                                         text = playlist.name,
                                         style = WatermelonTypography.typography.bodyLarge,
-                                        color = WatermelonColors.DarkOnSurface
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
                                         text = "${playlist.itemCount} video${if (playlist.itemCount == 1) "" else "s"}",
                                         style = WatermelonTypography.typography.bodyMedium,
-                                        color = WatermelonColors.DarkOnSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 if (isUserPlaylist) {
@@ -234,7 +234,7 @@ fun PlaylistsScreen(
             onDismissRequest = { showCreateDialog = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("New playlist", color = WatermelonColors.DarkOnSurface) },
+            title = { Text("New playlist", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 TextField(
                     value = name,
@@ -267,7 +267,7 @@ fun PlaylistsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) {
-                    Text("Cancel", color = WatermelonColors.DarkOnSurface)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
@@ -279,7 +279,7 @@ fun PlaylistsScreen(
             onDismissRequest = { renameTarget = null },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Rename playlist", color = WatermelonColors.DarkOnSurface) },
+            title = { Text("Rename playlist", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 TextField(
                     value = name,
@@ -309,7 +309,7 @@ fun PlaylistsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { renameTarget = null }) {
-                    Text("Cancel", color = WatermelonColors.DarkOnSurface)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
@@ -320,11 +320,11 @@ fun PlaylistsScreen(
             onDismissRequest = { deleteTarget = null },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Delete \"${target.name}\"?", color = WatermelonColors.DarkOnSurface) },
+            title = { Text("Delete \"${target.name}\"?", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Text(
                     "This removes the playlist. The video files themselves are not deleted.",
-                    color = WatermelonColors.DarkOnSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             confirmButton = {
@@ -337,7 +337,7 @@ fun PlaylistsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) {
-                    Text("Cancel", color = WatermelonColors.DarkOnSurface)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
