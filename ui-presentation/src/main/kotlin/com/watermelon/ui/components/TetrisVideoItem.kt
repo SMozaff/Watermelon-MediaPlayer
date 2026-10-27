@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -103,7 +105,7 @@ fun TetrisVideoItem(
                 ) {
                     WatermelonGlyph(
                         icon = WatermelonIcons.MoreVert,
-                        contentDescription = "More options",
+                        contentDescription = stringResource(R.string.cd_more_options),
                         tint = WatermelonColors.Palette.PaperWhite,
                     )
                 }
@@ -113,7 +115,7 @@ fun TetrisVideoItem(
                 ) {
                     WatermelonGlyph(
                         icon = WatermelonIcons.Play,
-                        contentDescription = "Play",
+                        contentDescription = stringResource(R.string.cd_play),
                         tint = WatermelonColors.Palette.PaperWhite,
                     )
                 }

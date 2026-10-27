@@ -72,6 +72,7 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.LibraryUiState
+import com.watermelon.ui.viewmodel.DeleteError
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
 // Plain enum: the display label is localized at the call site through
@@ -193,10 +194,17 @@ fun VideoListScreen(
     }
 
     LaunchedEffect(deleteError) {
-        deleteError?.let { message ->
+        deleteError?.let { error ->
+            val messageRes = when (error) {
+                DeleteError.NONE_SELECTED -> R.string.error_delete_none_selected
+                DeleteError.INVALID_URIS -> R.string.error_delete_invalid_uris
+                DeleteError.PREPARE_FAILED -> R.string.error_delete_prepare_failed
+                DeleteError.DELETE_FAILED -> R.string.error_delete_failed
+                DeleteError.PARTIAL -> R.string.error_delete_partial
+            }
             android.widget.Toast.makeText(
                 context,
-                message,
+                context.getString(messageRes),
                 android.widget.Toast.LENGTH_LONG,
             ).show()
             viewModel.clearDeleteError()
@@ -392,7 +400,7 @@ fun VideoListScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    state.message,
+                                    stringResource(R.string.library_error_body),
                                     style = WatermelonTypography.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

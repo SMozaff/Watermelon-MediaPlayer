@@ -29,6 +29,8 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.UserIntent
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -102,17 +104,17 @@ fun TvPlayerControls(
             horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
         ) {
             if (hasPreviousTrack) {
-                TvFocusableButton(label = "Previous", onClick = onSkipPrevious)
+                TvFocusableButton(label = stringResource(R.string.cd_previous), onClick = onSkipPrevious)
             }
-            TvFocusableButton(label = "Rewind 10 sec", onClick = { onSeek(-1) })
+            TvFocusableButton(label = stringResource(R.string.tv_rewind_10), onClick = { onSeek(-1) })
             TvFocusableButton(
-                label = if (isPlaying) "Pause" else "Play",
+                label = if (isPlaying) stringResource(R.string.cd_pause) else stringResource(R.string.cd_play),
                 onClick = { onIntent(if (isPlaying) UserIntent.Pause else UserIntent.Resume) },
                 modifier = Modifier.focusRequester(playPauseFocus)
             )
-            TvFocusableButton(label = "Forward 10 sec", onClick = { onSeek(+1) })
+            TvFocusableButton(label = stringResource(R.string.tv_forward_10), onClick = { onSeek(+1) })
             if (hasNextTrack) {
-                TvFocusableButton(label = "Next", onClick = onSkipNext)
+                TvFocusableButton(label = stringResource(R.string.cd_next), onClick = onSkipNext)
             }
         }
         if (hasSubtitles) {
@@ -121,16 +123,16 @@ fun TvPlayerControls(
                 horizontalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
             ) {
                 TvFocusableButton(
-                    label = "Subtitles −100 ms",
+                    label = stringResource(R.string.tv_subtitles_minus_100ms),
                     onClick = { onSubtitleNudge(-100L) }
                 )
                 TvFocusableButton(
-                    label = "Subtitles +100 ms",
+                    label = stringResource(R.string.tv_subtitles_plus_100ms),
                     onClick = { onSubtitleNudge(+100L) }
                 )
                 if (showAutoSync) {
                     TvFocusableButton(
-                        label = "Auto Sync",
+                        label = stringResource(R.string.subtitles_auto_sync),
                         onClick = onAutoSync
                     )
                 }

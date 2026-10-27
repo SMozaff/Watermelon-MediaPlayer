@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -62,6 +64,11 @@ fun WatermelonSeekBar(
         (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
     val fraction = if (scrubbing) scrubFraction else liveFraction
     val colors = PlayerColors.current
+    val seekBarDescription = stringResource(
+        R.string.cd_seek_bar,
+        formatTimeForA11y(positionMs),
+        formatTimeForA11y(durationMs)
+    )
 
     Canvas(
         modifier = modifier
@@ -70,7 +77,7 @@ fun WatermelonSeekBar(
             // least 48dp tall so the control meets the minimum accessible touch-target size.
             .height(maxOf(thumbRadius * 2 + 8.dp, 48.dp))
             .semantics {
-                contentDescription = "Seek bar, ${formatTimeForA11y(positionMs)} of ${formatTimeForA11y(durationMs)}"
+                contentDescription = seekBarDescription
                 progressBarRangeInfo = ProgressBarRangeInfo(
                     current = liveFraction,
                     range = 0f..1f

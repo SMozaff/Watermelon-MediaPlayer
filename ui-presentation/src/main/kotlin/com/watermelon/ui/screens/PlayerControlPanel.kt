@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.RepeatMode
@@ -42,15 +43,15 @@ fun PlayerActionsSheet(
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
-        SheetTitle("Player actions")
+        SheetTitle(stringResource(R.string.player_actions_title))
         SheetAction(
-            label = "Quick tools",
-            detail = "Speed, subtitles, aspect ratio, sleep timer, screenshot, PiP, and background play",
+            label = stringResource(R.string.player_quick_tools),
+            detail = stringResource(R.string.player_quick_tools_detail),
             onClick = onQuickTools,
         )
         SheetAction(
-            label = "File actions",
-            detail = "Favourite, playlist, share, media tools, and device deletion",
+            label = stringResource(R.string.player_file_actions),
+            detail = stringResource(R.string.player_file_actions_detail),
             onClick = onFileActions,
         )
         SheetBottomSpace()
@@ -99,9 +100,9 @@ fun QuickToolsSheet(
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
-        SheetTitle("Quick tools")
+        SheetTitle(stringResource(R.string.player_quick_tools))
 
-        SheetSectionLabel("Playback speed")
+        SheetSectionLabel(stringResource(R.string.player_section_speed))
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = WatermelonSpacing.md),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -123,7 +124,7 @@ fun QuickToolsSheet(
         }
 
         SheetDivider()
-        SheetSectionLabel("Aspect ratio")
+        SheetSectionLabel(stringResource(R.string.player_section_aspect))
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = WatermelonSpacing.md),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -131,7 +132,7 @@ fun QuickToolsSheet(
             VideoRatio.values().forEach { ratio ->
                 TextButton(onClick = { onRatioChange(ratio) }) {
                     Text(
-                        ratio.label,
+                        stringResource(ratio.labelRes),
                         color = if (ratio == currentRatio) {
                             PlayerColors.current.iconActive
                         } else {
@@ -144,7 +145,7 @@ fun QuickToolsSheet(
         }
 
         SheetDivider()
-        SheetSectionLabel("Orientation")
+        SheetSectionLabel(stringResource(R.string.player_section_orientation))
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = WatermelonSpacing.md),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -153,7 +154,7 @@ fun QuickToolsSheet(
                 IconButton(onClick = { onOrientationChange(orientation) }) {
                     androidx.compose.material3.Icon(
                         painter = painterResource(orientation.iconRes),
-                        contentDescription = orientation.name.lowercase().replaceFirstChar { it.uppercase() },
+                        contentDescription = stringResource(orientation.labelRes),
                         tint = if (orientation == currentOrientation) {
                             PlayerColors.current.iconActive
                         } else {
@@ -165,108 +166,117 @@ fun QuickToolsSheet(
         }
 
         SheetDivider()
-        SheetSectionLabel("Seeking")
+        SheetSectionLabel(stringResource(R.string.player_section_seeking))
         SheetAction(
-            label = if (tunerSeekBarEnabled) "Use standard seek bar" else "Use tuner seek",
+            label = if (tunerSeekBarEnabled) stringResource(R.string.player_use_standard_seekbar) else stringResource(R.string.player_use_tuner_seek),
             detail = if (tunerSeekBarEnabled) {
-                "Switch to a conventional progress bar with direct positioning."
+                stringResource(R.string.player_use_standard_seekbar_detail)
             } else {
-                "Switch to the tuner dial using $tunerSeekStepSeconds second detents."
+                stringResource(R.string.player_use_tuner_seek_detail, tunerSeekStepSeconds)
             },
             onClick = { onTunerSeekBarEnabledChange(!tunerSeekBarEnabled) },
         )
 
         SheetDivider()
         SheetAction(
-            label = if (isMuted) "Unmute" else "Mute",
-            detail = "Toggle device media volume",
+            label = if (isMuted) stringResource(R.string.player_unmute) else stringResource(R.string.player_mute),
+            detail = stringResource(R.string.player_mute_detail),
             onClick = onMuteToggle,
         )
         SheetAction(
-            label = "Repeat: ${repeatMode.name.lowercase().replaceFirstChar { it.uppercase() }}",
-            detail = "Change repeat mode",
+            label = stringResource(
+                R.string.player_repeat_label,
+                stringResource(
+                    when (repeatMode) {
+                        RepeatMode.NONE -> R.string.repeat_mode_none
+                        RepeatMode.ONE -> R.string.repeat_mode_one
+                        RepeatMode.ALL -> R.string.repeat_mode_all
+                    }
+                )
+            ),
+            detail = stringResource(R.string.player_repeat_detail),
             onClick = onRepeat,
         )
         SheetAction(
-            label = if (isShuffled) "Shuffle: on" else "Shuffle: off",
-            detail = "Change queue order",
+            label = if (isShuffled) stringResource(R.string.player_shuffle_on) else stringResource(R.string.player_shuffle_off),
+            detail = stringResource(R.string.player_shuffle_detail),
             onClick = onShuffle,
         )
         if (hasSubtitleTrack) {
             SheetDivider()
-            SheetSectionLabel("Subtitle timing")
+            SheetSectionLabel(stringResource(R.string.player_section_subtitle_timing))
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = WatermelonSpacing.md),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 TextButton(onClick = { onSubtitleNudge(-100L) }) {
-                    Text("−100 ms", color = PlayerColors.current.textPrimary)
+                    Text(stringResource(R.string.player_subtitles_minus_100ms), color = PlayerColors.current.textPrimary)
                 }
                 Text(
-                    text = "${subtitleOffsetMs} ms",
+                    text = stringResource(R.string.player_subtitles_offset_ms, subtitleOffsetMs),
                     color = PlayerColors.current.textPrimary,
                     fontWeight = FontWeight.Bold,
                 )
                 TextButton(onClick = { onSubtitleNudge(+100L) }) {
-                    Text("+100 ms", color = PlayerColors.current.textPrimary)
+                    Text(stringResource(R.string.player_subtitles_plus_100ms), color = PlayerColors.current.textPrimary)
                 }
             }
             if (autoSyncEnabled) {
                 SheetAction(
-                    label = "Auto Sync",
+                    label = stringResource(R.string.subtitles_auto_sync),
                     detail = subtitleAutoSyncDetail(autoSyncStatus),
                     onClick = onAutoSync,
                 )
             }
             if (onFindOnlineSubtitles != null) {
                 SheetAction(
-                    label = "Find another subtitle",
-                    detail = "Search OpenSubtitles for this video",
+                    label = stringResource(R.string.subtitles_find_another),
+                    detail = stringResource(R.string.subtitles_search_opensubtitles),
                     onClick = onFindOnlineSubtitles,
                 )
             }
         } else {
             // No subtitle loaded: offer online search as explicit user action
             SheetDivider()
-            SheetSectionLabel("Subtitles")
+            SheetSectionLabel(stringResource(R.string.player_section_subtitles))
             if (onFindOnlineSubtitles != null) {
                 SheetAction(
-                    label = "Find online subtitles",
-                    detail = "Search OpenSubtitles for this video",
+                    label = stringResource(R.string.subtitles_find_online),
+                    detail = stringResource(R.string.subtitles_search_opensubtitles),
                     onClick = onFindOnlineSubtitles,
                 )
             } else {
                 SheetAction(
-                    label = "Subtitle controls",
-                    detail = "No subtitle track is available for this video.",
+                    label = stringResource(R.string.subtitles_controls_label),
+                    detail = stringResource(R.string.subtitles_no_track),
                     enabled = false,
                     onClick = {},
                 )
             }
         }
         SheetAction(
-            label = "Sleep timer",
-            detail = "Pause playback after a selected interval",
+            label = stringResource(R.string.sleep_timer_title),
+            detail = stringResource(R.string.sleep_timer_detail),
             onClick = onSleepTimer,
         )
         SheetAction(
-            label = "Take screenshot",
-            detail = "Save the current video frame",
+            label = stringResource(R.string.player_screenshot),
+            detail = stringResource(R.string.player_screenshot_detail),
             onClick = onScreenshot,
         )
         SheetAction(
-            label = if (isPiP) "Picture in picture: active" else "Picture in picture",
+            label = if (isPiP) stringResource(R.string.player_pip_active) else stringResource(R.string.player_pip),
             detail = if (canUsePip) {
-                "Continue watching in a floating window"
+                stringResource(R.string.player_pip_detail)
             } else {
-                "Picture in picture is not supported on this Android version."
+                stringResource(R.string.player_pip_unavailable)
             },
             enabled = canUsePip,
             onClick = onPip,
         )
         SheetAction(
-            label = if (isBackground) "Background play: on" else "Background play",
-            detail = "Continue audio when leaving the player",
+            label = if (isBackground) stringResource(R.string.player_background_on) else stringResource(R.string.player_background),
+            detail = stringResource(R.string.player_background_detail),
             onClick = onBackground,
         )
         SheetBottomSpace()
@@ -293,33 +303,33 @@ fun FileActionsSheet(
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
-        SheetTitle("File actions")
-        SheetAction("Share", "Send this video to another app", onShare)
+        SheetTitle(stringResource(R.string.player_file_actions))
+        SheetAction(stringResource(R.string.action_share), stringResource(R.string.player_share_detail), onShare)
         SheetAction(
-            label = if (isFavourite) "Remove from favourites" else "Add to favourites",
-            detail = "Keep this video in your personal favourites collection",
+            label = if (isFavourite) stringResource(R.string.player_remove_from_favourites) else stringResource(R.string.player_add_to_favourites),
+            detail = stringResource(R.string.player_favourite_detail),
             onClick = onFavourite,
         )
-        SheetAction("Add to playlist", "Choose or create a playlist for this video", onAddToPlaylist)
+        SheetAction(stringResource(R.string.video_add_to_playlist_title), stringResource(R.string.player_add_to_playlist_detail), onAddToPlaylist)
 
         if (onExtractAudio != null || onTrimVideo != null || onCompressVideo != null) {
             SheetDivider()
-            SheetSectionLabel("Media tools")
+            SheetSectionLabel(stringResource(R.string.player_section_media_tools))
             onTrimVideo?.let {
-                SheetAction("Trim", "Create a shorter version of this video", it)
+                SheetAction(stringResource(R.string.action_trim), stringResource(R.string.player_trim_detail), it)
             }
             onCompressVideo?.let {
-                SheetAction("Compress", "Create a smaller copy of this video", it)
+                SheetAction(stringResource(R.string.action_compress), stringResource(R.string.player_compress_detail), it)
             }
             onExtractAudio?.let {
-                SheetAction("Extract audio", "Create an audio file from this video", it)
+                SheetAction(stringResource(R.string.action_extract_audio), stringResource(R.string.player_extract_audio_detail), it)
             }
         }
 
         SheetDivider()
         SheetAction(
-            label = "Delete from device",
-            detail = "Permanently remove this video after confirmation",
+            label = stringResource(R.string.action_delete_from_device),
+            detail = stringResource(R.string.player_delete_detail),
             destructive = true,
             onClick = onDelete,
         )
@@ -330,20 +340,23 @@ fun FileActionsSheet(
 private fun formatSpeed(speed: Float): String =
     if (speed == speed.toLong().toFloat()) "${speed.toLong()}×" else "${speed}×"
 
+@Composable
 private fun subtitleAutoSyncDetail(status: com.watermelon.common.subtitle.sync.SyncStatus): String =
-    when (status) {
-        com.watermelon.common.subtitle.sync.SyncStatus.IDLE -> "Analyze the audio track to correct subtitle timing."
-        com.watermelon.common.subtitle.sync.SyncStatus.CHECKING_CACHE,
-        com.watermelon.common.subtitle.sync.SyncStatus.ANALYZING -> "Analyzing…"
-        com.watermelon.common.subtitle.sync.SyncStatus.SYNCHRONIZED -> "Synchronized."
-        com.watermelon.common.subtitle.sync.SyncStatus.LOW_CONFIDENCE ->
-            "Low confidence — no automatic change applied. Try the manual nudge instead."
-        com.watermelon.common.subtitle.sync.SyncStatus.COMPLEX_DRIFT ->
-            "Timing drifts over the video and can't be fixed with a single offset. Try the manual nudge instead."
-        com.watermelon.common.subtitle.sync.SyncStatus.UNSUPPORTED -> "Auto Sync is unsupported for this file."
-        com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED -> "Auto Sync is unavailable right now."
-        com.watermelon.common.subtitle.sync.SyncStatus.FAILED -> "Auto Sync failed. Try again."
-    }
+    stringResource(
+        when (status) {
+            com.watermelon.common.subtitle.sync.SyncStatus.IDLE -> R.string.subtitles_sync_idle
+            com.watermelon.common.subtitle.sync.SyncStatus.CHECKING_CACHE,
+            com.watermelon.common.subtitle.sync.SyncStatus.ANALYZING -> R.string.subtitles_sync_analyzing
+            com.watermelon.common.subtitle.sync.SyncStatus.SYNCHRONIZED -> R.string.subtitles_sync_synchronized
+            com.watermelon.common.subtitle.sync.SyncStatus.LOW_CONFIDENCE ->
+                R.string.subtitles_sync_low_confidence
+            com.watermelon.common.subtitle.sync.SyncStatus.COMPLEX_DRIFT ->
+                R.string.subtitles_sync_complex_drift
+            com.watermelon.common.subtitle.sync.SyncStatus.UNSUPPORTED -> R.string.subtitles_sync_unsupported
+            com.watermelon.common.subtitle.sync.SyncStatus.RESOURCE_DENIED -> R.string.subtitles_sync_unavailable
+            com.watermelon.common.subtitle.sync.SyncStatus.FAILED -> R.string.subtitles_sync_failed
+        }
+    )
 
 
 }

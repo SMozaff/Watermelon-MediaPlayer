@@ -27,7 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
@@ -79,7 +81,7 @@ fun SleepTimerDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Sleep Timer",
+                    stringResource(R.string.sleep_timer_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -102,7 +104,7 @@ fun SleepTimerDialog(
                             verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.sm)
                         ) {
                             Text(
-                                "Timer running — ${formatRemaining(remainingMs)} left",
+                                stringResource(R.string.sleep_timer_running, formatRemaining(remainingMs)),
                                 style = WatermelonTypography.timecode,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -114,7 +116,7 @@ fun SleepTimerDialog(
                                     contentColor = PlayerColors.current.background
                                 )
                             ) {
-                                Text("Cancel timer")
+                                Text(stringResource(R.string.sleep_cancel_timer))
                             }
                         }
                     }
@@ -122,14 +124,14 @@ fun SleepTimerDialog(
 
                 // Mode 1: End of current video
                 ModeButton(
-                    label = "End of current video",
+                    label = stringResource(R.string.sleep_end_of_video),
                     isSelected = selectedMode == "current_video",
                     onClick = { selectedMode = "current_video"; customMinutes = "" }
                 )
 
                 // Mode 2: End of folder
                 ModeButton(
-                    label = "End of folder",
+                    label = stringResource(R.string.sleep_end_of_folder),
                     isSelected = selectedMode == "folder",
                     onClick = { selectedMode = "folder"; customMinutes = "" }
                 )
@@ -140,7 +142,7 @@ fun SleepTimerDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     ModeButton(
-                        label = "Custom time",
+                        label = stringResource(R.string.sleep_custom_time),
                         isSelected = selectedMode == "custom",
                         onClick = { selectedMode = "custom" }
                     )
@@ -188,7 +190,7 @@ fun SleepTimerDialog(
                                 customMinutes = it.filter { c -> c.isDigit() }
                                 selectedPreset = null
                             },
-                            label = { Text("Minutes") },
+                            label = { Text(stringResource(R.string.sleep_minutes)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = WatermelonShapes.control,
                             colors = TextFieldDefaults.colors(
@@ -219,7 +221,7 @@ fun SleepTimerDialog(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.action_cancel))
                     }
 
                     Button(
@@ -244,7 +246,7 @@ fun SleepTimerDialog(
                         ),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Set")
+                        Text(stringResource(R.string.action_set))
                     }
                 }
             }

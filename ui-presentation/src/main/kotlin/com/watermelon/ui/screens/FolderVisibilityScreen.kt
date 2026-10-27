@@ -1,5 +1,7 @@
 package com.watermelon.ui.screens
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,7 +40,7 @@ fun FolderVisibilityScreen(
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         WatermelonHeader(
-            title = "Folder Visibility",
+            title = stringResource(R.string.settings_folder_visibility),
             showBackButton = true,
             onBackClick = onBack,
             modifier = Modifier.fillMaxWidth()
@@ -47,7 +49,7 @@ fun FolderVisibilityScreen(
         Spacer(modifier = Modifier.height(WatermelonSpacing.sm))
 
         Text(
-            text = "Hidden folders are excluded from the library index.",
+            text = stringResource(R.string.folder_visibility_hint),
             style = WatermelonTypography.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(
@@ -79,7 +81,7 @@ fun FolderVisibilityScreen(
 
         if (folders.isEmpty()) {
             Text(
-                text = "No folders indexed yet.",
+                text = stringResource(R.string.folder_visibility_empty),
                 style = WatermelonTypography.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(WatermelonSpacing.md)

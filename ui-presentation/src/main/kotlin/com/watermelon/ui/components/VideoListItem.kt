@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -151,7 +152,7 @@ fun VideoListItem(
                         ) {
                             WatermelonGlyph(
                                 icon = WatermelonIcons.MoreVert,
-                                contentDescription = "More options",
+                                contentDescription = stringResource(R.string.cd_more_options),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -174,7 +175,7 @@ fun VideoListItem(
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.Play,
-                            contentDescription = "Play",
+                            contentDescription = stringResource(R.string.cd_play),
                             tint = WatermelonColors.Palette.PaperWhite
                         )
                     }
@@ -230,7 +231,7 @@ fun VideoListItem(
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.Play,
-                            contentDescription = "Play",
+                            contentDescription = stringResource(R.string.cd_play),
                             tint = WatermelonColors.Palette.PaperWhite.copy(alpha = 0.8f)
                         )
                     }
@@ -294,7 +295,7 @@ fun VideoListItem(
                     ) {
                         WatermelonGlyph(
                             icon = WatermelonIcons.MoreVert,
-                            contentDescription = "More options",
+                            contentDescription = stringResource(R.string.cd_more_options),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -338,19 +339,19 @@ internal fun VideoItemContextMenu(
         ) {
             onExtractAudio?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Extract Audio", color = MaterialTheme.colorScheme.onSurface) },
+                    text = { Text(stringResource(R.string.action_extract_audio), color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }
             onTrimVideo?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Trim", color = MaterialTheme.colorScheme.onSurface) },
+                    text = { Text(stringResource(R.string.action_trim), color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }
             onCompressVideo?.let { action ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("Compress", color = MaterialTheme.colorScheme.onSurface) },
+                    text = { Text(stringResource(R.string.action_compress), color = MaterialTheme.colorScheme.onSurface) },
                     onClick = { onDismiss(); action(item) }
                 )
             }

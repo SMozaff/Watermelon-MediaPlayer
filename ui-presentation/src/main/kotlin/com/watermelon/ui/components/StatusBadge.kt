@@ -1,5 +1,6 @@
 package com.watermelon.ui.components
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +47,7 @@ object StatusBadge {
     fun New(modifier: Modifier = Modifier, compact: Boolean = false) {
         IconBadge(
             icon = WatermelonIcons.New,
-            contentDescription = "New",
+            contentDescription = stringResource(R.string.cd_new),
             tint = WatermelonColors.Accent,
             compact = compact,
             modifier = modifier
@@ -57,7 +58,7 @@ object StatusBadge {
     fun Favorite(modifier: Modifier = Modifier, compact: Boolean = false) {
         IconBadge(
             icon = WatermelonIcons.Star,
-            contentDescription = "Favorite",
+            contentDescription = stringResource(R.string.cd_favorite),
             tint = WatermelonColors.Warning,
             compact = compact,
             modifier = modifier
