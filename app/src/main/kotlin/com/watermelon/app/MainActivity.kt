@@ -40,8 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -309,6 +312,13 @@ class MainActivity : ComponentActivity() {
 
     private val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
     private var permissionsGranted by mutableStateOf(false)
+
+    /**
+     * True once Android has marked every required media permission as permanently denied.
+     * The permission prompt then swaps its action from re-launching the (silent) system
+     * dialog to deep-linking the user into this app's system settings page.
+     */
+    private var permissionPermanentlyDenied by mutableStateOf(false)
     private var playbackMode by mutableStateOf(PlaybackMode.NORMAL)
     private val isPiPActive: Boolean get() = playbackMode == PlaybackMode.PIP
 
@@ -322,7 +332,17 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         permissionsGranted = results.values.all { it }
-        if (permissionsGranted) triggerInitialIndex()
+        if (permissionsGranted) {
+            permissionPermanentlyDenied = false
+            triggerInitialIndex()
+        } else {
+            // After a declined request, the system no longer shows the permission dialog for
+            // permanently-denied permissions. The only recovery path then is the app's
+            // settings page, which the prompt surfaces via openPermissionSettings().
+            permissionPermanentlyDenied = requiredPermissions.none { perm ->
+                ActivityCompat.shouldShowRequestPermissionRationale(this, perm)
+            }
+        }
     }
 
     private val pipActionReceiver = object : BroadcastReceiver() {
@@ -451,7 +471,11 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.weight(1f)
                             )
                         } else {
-                            PermissionPrompt(onRequest = { permissionLauncher.launch(requiredPermissions) })
+                            PermissionPrompt(
+                                permanentlyDenied = permissionPermanentlyDenied,
+                                onRequest = { permissionLauncher.launch(requiredPermissions) },
+                                onOpenSettings = { openPermissionSettings() }
+                            )
                         }
                     }
                         val miniUri = miniPlayerUri
@@ -643,6 +667,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // Re-check on every start: the user may have granted access from system settings
+        // after a permanent denial, a path that fires no launcher callback.
+        if (!permissionsGranted && requiredPermissions.all { perm ->
+                ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
+            }
+        ) {
+            permissionsGranted = true
+            permissionPermanentlyDenied = false
+            triggerInitialIndex()
+        }
         if (playbackController == null) {
             playbackConnection.connect { controller ->
                 mediaController = controller
@@ -1007,7 +1041,7 @@ class MainActivity : ComponentActivity() {
                 if (isTelevision) {
                     com.watermelon.ui.tv.TvVideoListScreen(
                         viewModel = vm,
-                        title = "All Videos",
+                        title = stringResource(com.watermelon.ui.R.string.all_videos_title),
                         onVideoClick = { item -> navController.navigate("player/${Uri.encode(item.uri)}") },
                         showThumbnails = settingsState.showThumbnails,
                         showDurations = settingsState.showDurations,
@@ -1026,7 +1060,7 @@ class MainActivity : ComponentActivity() {
                         showThumbnails = settingsState.showThumbnails,
                         showDurations = settingsState.showDurations,
                         showFileSize = settingsState.showFileSize,
-                        folderName = "Videos",
+                        folderName = stringResource(com.watermelon.ui.R.string.nav_videos),
                         onBack = { navController.popBackStack() },
                         onExtractAudio = { item ->
                             // Premium gating temporarily disabled -- everything unlocked
@@ -1150,7 +1184,7 @@ class MainActivity : ComponentActivity() {
                 val pbController = playbackController
                 if (controller == null || pbController == null) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Connecting…", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.connecting), style = MaterialTheme.typography.bodyLarge)
                     }
                 } else {
                     val vm = remember(pbController) { PlayerViewModel(pbController) }
@@ -1464,7 +1498,7 @@ class MainActivity : ComponentActivity() {
                 val pbController = playbackController
                 if (controller == null || pbController == null) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Connecting…", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.connecting), style = MaterialTheme.typography.bodyLarge)
                     }
                 } else {
                     val playerVm = remember(pbController) { PlayerViewModel(pbController) }
@@ -1671,10 +1705,10 @@ class MainActivity : ComponentActivity() {
                     showPlayerDeleteDialog = false
                     pendingPlayerDelete = null
                 },
-                title = { androidx.compose.material3.Text("Delete from device?") },
+                title = { androidx.compose.material3.Text(stringResource(R.string.player_delete_title)) },
                 text = {
                     androidx.compose.material3.Text(
-                        "${deleteTarget.displayName} will be permanently removed from your device and library."
+                        stringResource(R.string.player_delete_body, deleteTarget.displayName)
                     )
                 },
                 confirmButton = {
@@ -1682,7 +1716,7 @@ class MainActivity : ComponentActivity() {
                         showPlayerDeleteDialog = false
                         requestPlayerDelete(deleteTarget)
                     }) {
-                        androidx.compose.material3.Text("Delete")
+                        androidx.compose.material3.Text(stringResource(com.watermelon.ui.R.string.action_delete))
                     }
                 },
                 dismissButton = {
@@ -1690,7 +1724,7 @@ class MainActivity : ComponentActivity() {
                         showPlayerDeleteDialog = false
                         pendingPlayerDelete = null
                     }) {
-                        androidx.compose.material3.Text("Cancel")
+                        androidx.compose.material3.Text(stringResource(com.watermelon.ui.R.string.action_cancel))
                     }
                 }
             )
@@ -1705,7 +1739,7 @@ class MainActivity : ComponentActivity() {
                         runCatching { mediaRepository.refreshIndex() }
                         android.widget.Toast.makeText(
                             this@MainActivity,
-                            "Deleted ${outcome.target.displayName}",
+                            getString(R.string.toast_deleted, outcome.target.displayName),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                         if (navController.currentDestination?.route == "player/{uri}") {
@@ -1715,14 +1749,14 @@ class MainActivity : ComponentActivity() {
                     is PlayerDeleteOutcome.Cancelled -> {
                         android.widget.Toast.makeText(
                             this@MainActivity,
-                            "Deletion cancelled",
+                            getString(R.string.toast_deletion_cancelled),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
                     is PlayerDeleteOutcome.Failed -> {
                         android.widget.Toast.makeText(
                             this@MainActivity,
-                            outcome.reason,
+                            getString(R.string.toast_delete_failed, outcome.reason),
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }
@@ -1741,7 +1775,11 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun PermissionPrompt(onRequest: () -> Unit) {
+    private fun PermissionPrompt(
+        permanentlyDenied: Boolean,
+        onRequest: () -> Unit,
+        onOpenSettings: () -> Unit
+    ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -1749,11 +1787,35 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.padding(24.dp)
             ) {
                 Text(
-                    "Watermelon needs access to your videos to build the library.",
-                    style = MaterialTheme.typography.bodyLarge
+                    stringResource(
+                        if (permanentlyDenied) R.string.permission_permanently_denied_hint
+                        else R.string.permission_rationale
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center
                 )
-                Button(onClick = onRequest) { Text("Grant access") }
+                Button(
+                    onClick = if (permanentlyDenied) onOpenSettings else onRequest
+                ) {
+                    Text(
+                        stringResource(
+                            if (permanentlyDenied) R.string.permission_open_settings
+                            else R.string.permission_grant
+                        )
+                    )
+                }
             }
+        }
+    }
+
+    private fun openPermissionSettings() {
+        runCatching {
+            startActivity(
+                Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.fromParts("package", packageName, null)
+                )
+            )
         }
     }
 

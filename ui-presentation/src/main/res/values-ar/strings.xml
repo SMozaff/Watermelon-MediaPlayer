@@ -71,4 +71,80 @@
     <string name="settings_compressed_folder">مجلد الفيديو المضغوط</string>
     <string name="settings_trimmed_folder">مجلد الفيديو المقصوص</string>
     <string name="settings_custom_folders_note">تحتاج المجلدات المخصصة إلى Android 10 أو أحدث. ستُحفظ الفيديوهات المضغوطة والمقصوصة في موقع Movies الافتراضي على هذا الجهاز.</string>
+
+    <!-- استخراج سلاسل الأسطح الأساسية (المرحلة 1 من إصلاحات واجهة المستخدم): التنقل،
+         الإجراءات، تسميات شريط الأدوات/الحوارات، حالات المكتبة، قوائم التشغيل،
+         وحوارات قائمة الفيديو. متطابقة مع values و values-fa. -->
+
+    <!-- التنقل -->
+    <string name="nav_folders">المجلدات</string>
+    <string name="nav_videos">الفيديوهات</string>
+    <string name="nav_playlists">قوائم التشغيل</string>
+    <string name="nav_favorites">المفضلة</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <string name="all_videos_title">كل الفيديوهات</string>
+
+    <!-- الإجراءات الشائعة -->
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_create">إنشاء</string>
+    <string name="action_save">حفظ</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_rename">إعادة تسمية</string>
+    <string name="action_done">تم</string>
+    <string name="action_select_all">تحديد الكل</string>
+
+    <!-- شريط الأدوات والحوارات -->
+    <string name="toolbar_sort">الترتيب: %1$s</string>
+    <string name="toolbar_view">العرض: %1$s</string>
+    <string name="layout_list">قائمة</string>
+    <string name="layout_grid">شبكة</string>
+    <string name="layout_tetris">تيتريس</string>
+    <string name="sort_ascending">تصاعدي</string>
+    <string name="sort_descending">تنازلي</string>
+    <string name="sort_folders_title">ترتيب المجلدات</string>
+    <string name="sort_videos_title">ترتيب الفيديوهات</string>
+    <string name="view_options_title">خيارات العرض</string>
+    <string name="sort_by_name">الاسم</string>
+    <string name="sort_by_date">التاريخ</string>
+    <string name="sort_by_duration">المدة</string>
+    <string name="sort_by_file_type">نوع الملف</string>
+    <string name="sort_by_size">الحجم</string>
+    <string name="sort_by_quality">الجودة</string>
+    <string name="sort_by_custom">مخصص</string>
+    <string name="sort_by_modified">تاريخ التعديل</string>
+    <string name="sort_by_video_count">عدد الفيديوهات</string>
+
+    <!-- حالات المكتبة -->
+    <string name="library_scanning_videos">جارٍ فحص فيديوهاتك</string>
+    <string name="library_scanning_folders">جارٍ فحص مكتبة الوسائط لديك</string>
+    <string name="library_scanning_folders_hint">ستظهر المجلدات عند انتهاء الفهرسة</string>
+    <string name="library_empty_videos_title">لا توجد فيديوهات</string>
+    <string name="library_empty_videos_body">حدّث المكتبة أو تحقق من المجلدات التي يمكن لـ Watermelon رؤيتها.</string>
+    <string name="library_empty_folders_title">لا توجد مجلدات وسائط</string>
+    <string name="library_empty_folders_body">لم يتمكن Watermelon من العثور على فيديوهات مؤهلة في مجلداتك الظاهرة.</string>
+    <string name="library_title">مكتبة الوسائط</string>
+    <string name="library_error_title">المكتبة غير متاحة</string>
+    <string name="library_refresh">تحديث المكتبة</string>
+    <string name="library_try_again">حاول مجددًا</string>
+
+    <!-- قوائم التشغيل -->
+    <string name="playlists_create_playlist">إنشاء قائمة تشغيل</string>
+    <string name="playlists_new_playlist_title">قائمة تشغيل جديدة</string>
+    <string name="playlists_rename_playlist_title">إعادة تسمية قائمة التشغيل</string>
+    <string name="playlists_name_placeholder">اسم قائمة التشغيل</string>
+    <string name="playlists_delete_title">حذف \"%1$s\"؟</string>
+    <string name="playlists_delete_body">سيؤدي هذا إلى إزالة قائمة التشغيل. لا يتم حذف ملفات الفيديو نفسها.</string>
+    <string name="playlists_options_cd">خيارات قائمة التشغيل</string>
+    <string name="playlists_empty_title">أنشئ قوائم تشغيل للفيديوهات التي تريد مشاهدتها مرة أخرى.</string>
+    <string name="playlists_empty_body">احتفظ بالمفضلة والرحلات والمسلسلات أو أي مجموعة معًا دون نقل الملفات الأصلية.</string>
+
+    <!-- حوارات قائمة الفيديو -->
+    <string name="video_delete_dialog_title">حذف %1$d من الفيديوهات؟</string>
+    <string name="video_delete_dialog_body">سيؤدي هذا إلى حذف الملفات المحددة نهائيًا من جهازك.</string>
+    <string name="video_add_to_playlist_title">إضافة إلى قائمة تشغيل</string>
+    <string name="video_create_new_playlist">+ إنشاء قائمة تشغيل جديدة</string>
+    <string name="video_toast_deleted">تم حذف الفيديوهات المحددة</string>
+    <string name="video_toast_deletion_cancelled">تم إلغاء الحذف</string>
+    <string name="video_share_chooser_title">مشاركة الفيديوهات</string>
 </resources>

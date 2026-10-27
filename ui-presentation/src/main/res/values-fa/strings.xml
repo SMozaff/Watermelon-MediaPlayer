@@ -71,4 +71,80 @@
     <string name="settings_compressed_folder">پوشهٔ ویدئوی فشرده‌شده</string>
     <string name="settings_trimmed_folder">پوشهٔ ویدئوی بریده‌شده</string>
     <string name="settings_custom_folders_note">پوشه‌های سفارشی به اندروید ۱۰ یا جدیدتر نیاز دارند. ویدئوهای فشرده‌شده و بریده‌شده در این دستگاه در محل پیش‌فرض Movies ذخیره می‌شوند.</string>
+
+    <!-- استخراج رشته‌های سطوح اصلی (مرحلهٔ ۱ اصلاحات رابط کاربری): ناوبری،
+         عملکردها، برچسب‌های نوار ابزار/دیالوگ، وضعیت‌های کتابخانه، فهرست‌های پخش
+         و دیالوگ‌های فهرست ویدئو. هم‌تراز با values و values-ar. -->
+
+    <!-- ناوبری -->
+    <string name="nav_folders">پوشه‌ها</string>
+    <string name="nav_videos">ویدئوها</string>
+    <string name="nav_playlists">فهرست‌های پخش</string>
+    <string name="nav_favorites">علاقه‌مندی‌ها</string>
+    <string name="nav_settings">تنظیمات</string>
+
+    <string name="all_videos_title">همهٔ ویدئوها</string>
+
+    <!-- عملکردهای رایج -->
+    <string name="action_cancel">لغو</string>
+    <string name="action_create">ایجاد</string>
+    <string name="action_save">ذخیره</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_rename">تغییر نام</string>
+    <string name="action_done">انجام شد</string>
+    <string name="action_select_all">انتخاب همه</string>
+
+    <!-- نوار ابزار و دیالوگ‌ها -->
+    <string name="toolbar_sort">مرتب‌سازی: %1$s</string>
+    <string name="toolbar_view">نما: %1$s</string>
+    <string name="layout_list">فهرستی</string>
+    <string name="layout_grid">شبکه‌ای</string>
+    <string name="layout_tetris">تتریس</string>
+    <string name="sort_ascending">صعودی</string>
+    <string name="sort_descending">نزولی</string>
+    <string name="sort_folders_title">مرتب‌سازی پوشه‌ها</string>
+    <string name="sort_videos_title">مرتب‌سازی ویدئوها</string>
+    <string name="view_options_title">گزینه‌های نما</string>
+    <string name="sort_by_name">نام</string>
+    <string name="sort_by_date">تاریخ</string>
+    <string name="sort_by_duration">مدت‌زمان</string>
+    <string name="sort_by_file_type">نوع فایل</string>
+    <string name="sort_by_size">حجم</string>
+    <string name="sort_by_quality">کیفیت</string>
+    <string name="sort_by_custom">سفارشی</string>
+    <string name="sort_by_modified">تاریخ تغییر</string>
+    <string name="sort_by_video_count">تعداد ویدئو</string>
+
+    <!-- وضعیت‌های کتابخانه -->
+    <string name="library_scanning_videos">در حال پویش ویدئوهای شما</string>
+    <string name="library_scanning_folders">در حال پویش کتابخانهٔ رسانهٔ شما</string>
+    <string name="library_scanning_folders_hint">پوشه‌ها با پایان نمایه‌سازی ظاهر می‌شوند</string>
+    <string name="library_empty_videos_title">ویدئویی پیدا نشد</string>
+    <string name="library_empty_videos_body">کتابخانه را تازه‌سازی کنید یا بررسی کنید Watermelon به کدام پوشه‌ها دسترسی دارد.</string>
+    <string name="library_empty_folders_title">پوشهٔ رسانه‌ای پیدا نشد</string>
+    <string name="library_empty_folders_body">Watermelon نتوانست در پوشه‌های نمایان شما ویدئوی مناسب پیدا کند.</string>
+    <string name="library_title">کتابخانهٔ رسانه</string>
+    <string name="library_error_title">کتابخانه در دسترس نیست</string>
+    <string name="library_refresh">تازه‌سازی کتابخانه</string>
+    <string name="library_try_again">تلاش دوباره</string>
+
+    <!-- فهرست‌های پخش -->
+    <string name="playlists_create_playlist">ایجاد فهرست پخش</string>
+    <string name="playlists_new_playlist_title">فهرست پخش جدید</string>
+    <string name="playlists_rename_playlist_title">تغییر نام فهرست پخش</string>
+    <string name="playlists_name_placeholder">نام فهرست پخش</string>
+    <string name="playlists_delete_title">«%1$s» حذف شود؟</string>
+    <string name="playlists_delete_body">این کار فهرست پخش را حذف می‌کند. خود فایل‌های ویدئو حذف نمی‌شوند.</string>
+    <string name="playlists_options_cd">گزینه‌های فهرست پخش</string>
+    <string name="playlists_empty_title">برای ویدئوهایی که می‌خواهید دوباره ببینید، فهرست پخش بسازید.</string>
+    <string name="playlists_empty_body">علاقه‌مندی‌ها، سفرها، سریال‌ها یا هر گروهی را بدون جابه‌جا کردن فایل‌های اصلی کنار هم نگه دارید.</string>
+
+    <!-- دیالوگ‌های فهرست ویدئو -->
+    <string name="video_delete_dialog_title">حذف %1$d ویدئو؟</string>
+    <string name="video_delete_dialog_body">این کار فایل‌های انتخاب‌شده را برای همیشه از دستگاه شما حذف می‌کند.</string>
+    <string name="video_add_to_playlist_title">افزودن به فهرست پخش</string>
+    <string name="video_create_new_playlist">+ ایجاد فهرست پخش جدید</string>
+    <string name="video_toast_deleted">ویدئوهای انتخاب‌شده حذف شدند</string>
+    <string name="video_toast_deletion_cancelled">حذف لغو شد</string>
+    <string name="video_share_chooser_title">هم‌رسانی ویدئوها</string>
 </resources>

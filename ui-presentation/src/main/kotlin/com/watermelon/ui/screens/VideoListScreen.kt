@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -73,10 +74,24 @@ import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.LibraryUiState
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
-private enum class VideoSort(val label: String) {
-    NAME("Name"), DATE("Date"), DURATION("Duration"),
-    FILE_TYPE("File Type"), SIZE("Size"), QUALITY("Quality"), CUSTOM("Custom")
+// Plain enum: the display label is localized at the call site through
+// VideoSort.label(), since string resources resolve only in composition.
+private enum class VideoSort {
+    NAME, DATE, DURATION, FILE_TYPE, SIZE, QUALITY, CUSTOM
 }
+
+@Composable
+private fun VideoSort.label(): String = stringResource(
+    when (this) {
+        VideoSort.NAME -> R.string.sort_by_name
+        VideoSort.DATE -> R.string.sort_by_date
+        VideoSort.DURATION -> R.string.sort_by_duration
+        VideoSort.FILE_TYPE -> R.string.sort_by_file_type
+        VideoSort.SIZE -> R.string.sort_by_size
+        VideoSort.QUALITY -> R.string.sort_by_quality
+        VideoSort.CUSTOM -> R.string.sort_by_custom
+    }
+)
 
 private enum class VideoLayout { LIST, GRID, TETRIS }
 
@@ -107,7 +122,7 @@ fun VideoListScreen(
     showThumbnails: Boolean = true,
     showDurations: Boolean = true,
     showFileSize: Boolean = false,
-    folderName: String = "Videos",
+    folderName: String = stringResource(R.string.nav_videos),
     onBack: () -> Unit = {},
     // Media tools entry points (extract audio / trim / compress). Null = feature not wired
     // by this caller yet; the context menu simply won't show that item. Kept optional so
@@ -157,14 +172,14 @@ fun VideoListScreen(
             viewModel.onDeleteConfirmed()
             android.widget.Toast.makeText(
                 context,
-                "Deleted selected videos",
+                context.getString(R.string.video_toast_deleted),
                 android.widget.Toast.LENGTH_SHORT,
             ).show()
         } else {
             viewModel.onDeleteCancelled()
             android.widget.Toast.makeText(
                 context,
-                "Deletion cancelled",
+                context.getString(R.string.video_toast_deletion_cancelled),
                 android.widget.Toast.LENGTH_SHORT,
             ).show()
         }
@@ -254,7 +269,9 @@ fun VideoListScreen(
                 onAddToPlaylist = { showPlaylistPicker = true },
                 onShare = {
                     val intent = viewModel.buildShareIntent()
-                    context.startActivity(Intent.createChooser(intent, "Share videos"))
+                    context.startActivity(
+                        Intent.createChooser(intent, context.getString(R.string.video_share_chooser_title))
+                    )
                 },
                 visible = selection.isActive,
                 onRemoveFromPlaylist = if (viewModel.isPlaylist && viewModel.isRemovable) {
@@ -274,22 +291,31 @@ fun VideoListScreen(
             ) {
                 if (selection.isActive) {
                     TextButton(onClick = { viewModel.selectAll() }) {
-                        Text("Select all", color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.action_select_all), color = MaterialTheme.colorScheme.onSurface)
                     }
                     TextButton(onClick = { viewModel.clearSelection() }) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                     }
                 } else {
                     LabeledIconButton(
                         icon = IconType.DrawableIcon(WatermelonIcons.Sort),
-                        label = "Sort: ${currentSort.label}",
+                        label = stringResource(R.string.toolbar_sort, currentSort.label()),
                         onClick = { sortMenuOpen = true },
                     )
                     LabeledIconButton(
                         icon = IconType.DrawableIcon(
                             if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList
                         ),
-                        label = "View: ${when (currentLayout) { VideoLayout.GRID -> "Grid"; VideoLayout.TETRIS -> "Tetris"; else -> "List" }}",
+                        label = stringResource(
+                            R.string.toolbar_view,
+                            stringResource(
+                                when (currentLayout) {
+                                    VideoLayout.GRID -> R.string.layout_grid
+                                    VideoLayout.TETRIS -> R.string.layout_tetris
+                                    else -> R.string.layout_list
+                                }
+                            )
+                        ),
                         onClick = { viewOptionsOpen = true },
                     )
                     ItemSizeSlider(
@@ -321,7 +347,7 @@ fun VideoListScreen(
                             ) {
                                 WatermelonLoadingAnimation(modifier = Modifier.size(160.dp))
                                 Text(
-                                    "Scanning your videos",
+                                    stringResource(R.string.library_scanning_videos),
                                     style = WatermelonTypography.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -337,17 +363,17 @@ fun VideoListScreen(
                                 modifier = Modifier.padding(WatermelonSpacing.xl)
                             ) {
                                 Text(
-                                    "No videos found",
+                                    stringResource(R.string.library_empty_videos_title),
                                     style = WatermelonTypography.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    "Refresh the library or check which folders Watermelon can see.",
+                                    stringResource(R.string.library_empty_videos_body),
                                     style = WatermelonTypography.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 WatermelonGlassButton(onClick = onRefresh, selected = true) {
-                                    Text("Refresh library", color = WatermelonColors.Accent)
+                                    Text(stringResource(R.string.library_refresh), color = WatermelonColors.Accent)
                                 }
                             }
                         }
@@ -361,7 +387,7 @@ fun VideoListScreen(
                                 modifier = Modifier.padding(WatermelonSpacing.xl)
                             ) {
                                 Text(
-                                    "Library unavailable",
+                                    stringResource(R.string.library_error_title),
                                     style = WatermelonTypography.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -371,7 +397,7 @@ fun VideoListScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 WatermelonGlassButton(onClick = onRefresh, selected = true) {
-                                    Text("Try again", color = WatermelonColors.Accent)
+                                    Text(stringResource(R.string.library_try_again), color = WatermelonColors.Accent)
                                 }
                             }
                         }
@@ -509,7 +535,7 @@ fun VideoListScreen(
             onDismissRequest = { sortMenuOpen = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Sort videos") },
+            title = { Text(stringResource(R.string.sort_videos_title)) },
             text = {
                 Column {
                     VideoSort.values().forEach { option ->
@@ -521,7 +547,7 @@ fun VideoListScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = if (option == currentSort) "✓ ${option.label}" else option.label,
+                                text = if (option == currentSort) "✓ ${option.label()}" else option.label(),
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
@@ -532,14 +558,15 @@ fun VideoListScreen(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
-                            text = if (ascending) "✓ Ascending" else "Descending",
+                            text = if (ascending) "✓ ${stringResource(R.string.sort_ascending)}"
+                            else stringResource(R.string.sort_descending),
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { sortMenuOpen = false }) { Text("Done") }
+                TextButton(onClick = { sortMenuOpen = false }) { Text(stringResource(R.string.action_done)) }
             },
         )
     }
@@ -549,7 +576,7 @@ fun VideoListScreen(
             onDismissRequest = { viewOptionsOpen = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("View options") },
+            title = { Text(stringResource(R.string.view_options_title)) },
             text = {
                 Column {
                     VideoLayout.values()
@@ -559,12 +586,15 @@ fun VideoListScreen(
                             onClick = { currentLayout = layout },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
+                            val layoutLabel = stringResource(
+                                when (layout) {
+                                    VideoLayout.GRID -> R.string.layout_grid
+                                    VideoLayout.TETRIS -> R.string.layout_tetris
+                                    else -> R.string.layout_list
+                                }
+                            )
                             Text(
-                                text = if (layout == currentLayout) {
-                                    "✓ ${layout.name.lowercase().replaceFirstChar { it.uppercase() }}"
-                                } else {
-                                    layout.name.lowercase().replaceFirstChar { it.uppercase() }
-                                },
+                                text = if (layout == currentLayout) "✓ $layoutLabel" else layoutLabel,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
@@ -573,7 +603,7 @@ fun VideoListScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { viewOptionsOpen = false }) { Text("Done") }
+                TextButton(onClick = { viewOptionsOpen = false }) { Text(stringResource(R.string.action_done)) }
             },
         )
     }
@@ -583,8 +613,8 @@ fun VideoListScreen(
             onDismissRequest = { showDeleteDialog = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Delete ${selection.count} video(s)?", color = MaterialTheme.colorScheme.onSurface) },
-            text = { Text("This will permanently delete the selected files from your device.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            title = { Text(stringResource(R.string.video_delete_dialog_title, selection.count), color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text(stringResource(R.string.video_delete_dialog_body), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     val sender = viewModel.buildDeleteRequest(context.contentResolver)
@@ -595,12 +625,12 @@ fun VideoListScreen(
                         )
                     }
                 }) {
-                    Text("Delete", color = WatermelonColors.Error)
+                    Text(stringResource(R.string.action_delete), color = WatermelonColors.Error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
@@ -614,14 +644,14 @@ fun VideoListScreen(
             onDismissRequest = { showPlaylistPicker = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Add to playlist", color = MaterialTheme.colorScheme.onSurface) },
+            title = { Text(stringResource(R.string.video_add_to_playlist_title), color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
                     if (showCreateField) {
                         TextField(
                             value = newPlaylistName,
                             onValueChange = { newPlaylistName = it },
-                            placeholder = { Text("Playlist name") },
+                            placeholder = { Text(stringResource(R.string.playlists_name_placeholder)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -630,7 +660,7 @@ fun VideoListScreen(
                                 showCreateField = false
                                 newPlaylistName = ""
                             }) {
-                                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             TextButton(
                                 onClick = {
@@ -643,7 +673,7 @@ fun VideoListScreen(
                                     }
                                 }
                             ) {
-                                Text("Create", color = MaterialTheme.colorScheme.onSurface)
+                                Text(stringResource(R.string.action_create), color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     } else {
@@ -651,7 +681,7 @@ fun VideoListScreen(
                             onClick = { showCreateField = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("+ Create new playlist", color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.video_create_new_playlist), color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
 
@@ -676,7 +706,7 @@ fun VideoListScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showPlaylistPicker = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
