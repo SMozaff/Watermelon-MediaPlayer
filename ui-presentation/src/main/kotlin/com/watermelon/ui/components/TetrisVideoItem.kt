@@ -101,7 +101,10 @@ fun TetrisVideoItem(
             if (!selectionActive) {
                 androidx.compose.material3.IconButton(
                     onClick = { showMenu = true },
-                    modifier = Modifier.align(Alignment.TopEnd).size(34.dp),
+                    // No forced size: the forced 34dp previously shrank the touch target
+                    // below the 48dp accessibility minimum. The default IconButton layout
+                    // keeps a 48dp touch target with a visually smaller glyph.
+                    modifier = Modifier.align(Alignment.TopEnd),
                 ) {
                     WatermelonGlyph(
                         icon = WatermelonIcons.MoreVert,
@@ -111,7 +114,9 @@ fun TetrisVideoItem(
                 }
                 androidx.compose.material3.IconButton(
                     onClick = onClick,
-                    modifier = Modifier.align(Alignment.Center).size(46.dp),
+                    // 46dp forced previously landed just under the 48dp minimum; the
+                    // default IconButton layout guarantees it.
+                    modifier = Modifier.align(Alignment.Center),
                 ) {
                     WatermelonGlyph(
                         icon = WatermelonIcons.Play,
