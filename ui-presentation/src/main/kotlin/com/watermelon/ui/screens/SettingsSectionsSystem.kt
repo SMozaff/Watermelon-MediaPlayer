@@ -20,7 +20,7 @@ internal fun LibraryAccessSection(
     ) {
         NavRow(
             label = stringResource(R.string.settings_folder_visibility),
-            value = "Manage",
+            value = stringResource(R.string.tv_settings_manage),
             onClick = onFolderVisibilityClick
         )
     }

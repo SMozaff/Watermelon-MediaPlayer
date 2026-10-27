@@ -34,10 +34,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.watermelon.ui.R
 import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.RepeatMode
 import com.watermelon.common.model.SleepTimerMode
@@ -175,7 +177,7 @@ fun ControlsLayer(
                 onBack()
             }
         }) {
-            WatermelonGlyph(WatermelonIcons.ArrowBack, "Back", tint = PlayerColors.current.iconDefault)
+            WatermelonGlyph(WatermelonIcons.ArrowBack, stringResource(R.string.cd_back), tint = PlayerColors.current.iconDefault)
         }
         TextButton(
             onClick = { actualState.showMediaInfo = true },
@@ -183,7 +185,7 @@ fun ControlsLayer(
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = mediaTitle.ifBlank { "Now playing" },
+                    text = mediaTitle.ifBlank { stringResource(R.string.player_now_playing) },
                     color = PlayerColors.current.textPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -205,7 +207,7 @@ fun ControlsLayer(
             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
             ui.lock(); onLockChanged?.invoke(true)
         }) {
-            WatermelonGlyph(WatermelonIcons.Lock, "Lock", tint = PlayerColors.current.iconDefault)
+            WatermelonGlyph(WatermelonIcons.Lock, stringResource(R.string.cd_lock), tint = PlayerColors.current.iconDefault)
         }
         IconButton(onClick = {
             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
@@ -216,7 +218,7 @@ fun ControlsLayer(
         }) {
             WatermelonGlyph(
                 WatermelonIcons.MoreVert,
-                "Player actions",
+                stringResource(R.string.player_actions_title),
                 tint = if (actualState.showControlPanel) PlayerColors.current.iconActive else PlayerColors.current.iconDefault
             )
         }
@@ -397,8 +399,8 @@ fun ControlsLayer(
                     }
                     val result = ScreenshotManager.takeScreenshot(context, uri, position, durationMs, mode)
                     actualState.screenshotMessage = when (result) {
-                        is ScreenshotResult.Success -> "Saved ${result.uris.size} screenshot(s)"
-                        is ScreenshotResult.Error -> "Screenshot failed"
+                        is ScreenshotResult.Success -> context.getString(R.string.player_screenshot_saved, result.uris.size)
+                        is ScreenshotResult.Error -> context.getString(R.string.player_screenshot_failed)
                     }
                 }
             },
@@ -479,14 +481,14 @@ fun ControlsLayer(
                             com.watermelon.common.repository.OnlineSubtitleSearchResult.AuthenticationRequired ->
                                 OnlineSubtitlesUiState.AuthenticationRequired
                             com.watermelon.common.repository.OnlineSubtitleSearchResult.PermissionDenied ->
-                                OnlineSubtitlesUiState.Error("Permission denied")
+                                OnlineSubtitlesUiState.Error(context.getString(R.string.subtitles_error_permission_denied))
                             com.watermelon.common.repository.OnlineSubtitleSearchResult.QuotaExceeded ->
                                 OnlineSubtitlesUiState.QuotaExceeded
                             is com.watermelon.common.repository.OnlineSubtitleSearchResult.Failure ->
                                 OnlineSubtitlesUiState.Error(result.message)
                         }
                     } catch (e: Exception) {
-                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Unknown error")
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: context.getString(R.string.subtitles_error_unknown))
                     }
                 }
             },
@@ -503,7 +505,7 @@ fun ControlsLayer(
                         actualState.showOnlineSubtitlesSheet = false
                         actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Idle
                     } catch (e: Exception) {
-                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: "Download failed")
+                        actualState.onlineSubtitlesUiState = OnlineSubtitlesUiState.Error(e.message ?: context.getString(R.string.subtitles_error_download_failed))
                     }
                 }
             },
@@ -537,7 +539,7 @@ private fun PlayerTransportControls(
         IconButton(onClick = onPrevious) {
             WatermelonGlyph(
                 WatermelonIcons.SkipPrevious,
-                "Previous track",
+                stringResource(R.string.cd_previous_track),
                 tint = PlayerColors.current.iconDefault,
                 modifier = Modifier.width(30.dp).height(30.dp)
             )
@@ -551,7 +553,7 @@ private fun PlayerTransportControls(
         ) {
             WatermelonGlyph(
                 if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
-                if (isPlaying) "Pause" else "Play",
+                if (isPlaying) stringResource(R.string.cd_pause) else stringResource(R.string.cd_play),
                 tint = PlayerColors.current.onAccent,
                 modifier = Modifier.width(32.dp).height(32.dp)
             )
@@ -560,7 +562,7 @@ private fun PlayerTransportControls(
             IconButton(onClick = onNext) {
                 WatermelonGlyph(
                     WatermelonIcons.SkipNext,
-                    "Next track",
+                    stringResource(R.string.cd_next_track),
                     tint = PlayerColors.current.iconDefault,
                     modifier = Modifier.width(30.dp).height(30.dp)
                 )

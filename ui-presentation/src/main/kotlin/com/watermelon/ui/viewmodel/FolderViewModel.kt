@@ -11,6 +11,7 @@ import com.watermelon.common.repository.FolderRepository
 import com.watermelon.common.repository.MediaRepository
 import com.watermelon.common.repository.PlaylistRepository
 import com.watermelon.common.repository.FolderVisibilityStore
+import com.watermelon.ui.R
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
  *   "Main Storage"        → storage folders
  */
 sealed interface BrowserRow {
-    data class Header(val title: String) : BrowserRow
+    data class Header(val titleRes: Int) : BrowserRow
     data class Folder(val node: FolderNode) : BrowserRow
 }
 
@@ -98,10 +99,10 @@ class FolderViewModel(
         val userNodes = playlistNodes.filter { it.playlistType == PlaylistType.USER }
 
         buildList {
-            add(BrowserRow.Header("My Video Playlists"))
+            add(BrowserRow.Header(R.string.browser_header_playlists))
             (systemNodes + userNodes).forEach { add(BrowserRow.Folder(it)) }
             if (storageFolders.isNotEmpty()) {
-                add(BrowserRow.Header("Main Storage"))
+                add(BrowserRow.Header(R.string.browser_header_storage))
                 storageFolders.forEach { add(BrowserRow.Folder(it)) }
             }
         }.also {
@@ -138,9 +139,7 @@ class FolderViewModel(
     ) { currentRows, indexingState ->
         val hasFolders = currentRows.any { it is BrowserRow.Folder }
         when {
-            indexingState == IndexingState.FAILED -> LibraryUiState.Error(
-                "We couldn't refresh your media library. Check access and try again."
-            )
+            indexingState == IndexingState.FAILED -> LibraryUiState.Error
             !hasFolders && (indexingState == IndexingState.SWEEPING ||
                 indexingState == IndexingState.EXTRACTING || indexingState == IndexingState.IDLE) ->
                 LibraryUiState.Loading

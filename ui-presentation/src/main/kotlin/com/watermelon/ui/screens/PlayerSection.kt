@@ -1,6 +1,7 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.watermelon.ui.R
 
@@ -9,6 +10,7 @@ internal fun PlayerSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
+    val context = LocalContext.current
     SettingsGroup(
         title = stringResource(R.string.settings_player_title),
         summary = stringResource(R.string.settings_player_summary)
@@ -29,12 +31,10 @@ internal fun PlayerSection(
 
         DropdownNavRow(
             label = stringResource(R.string.settings_vhs_intensity),
-            value = state.vhsIntensity.name.lowercase().replaceFirstChar { it.uppercase() },
-            options = VhsIntensity.values().map { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }
+            value = stringResource(state.vhsIntensity.labelRes()),
+            options = VhsIntensity.values().map { context.getString(it.labelRes()) }
         ) { selected ->
-            val next = VhsIntensity.values().first {
-                it.name.lowercase().replaceFirstChar { c -> c.uppercase() } == selected
-            }
+            val next = VhsIntensity.values().first { context.getString(it.labelRes()) == selected }
             onStateChange(state.copy(vhsIntensity = next))
         }
 
@@ -60,4 +60,11 @@ internal fun PlayerSection(
             )
         }
     }
+}
+
+private fun VhsIntensity.labelRes(): Int = when (this) {
+    VhsIntensity.OFF -> R.string.vhs_intensity_off
+    VhsIntensity.LOW -> R.string.vhs_intensity_low
+    VhsIntensity.MED -> R.string.vhs_intensity_med
+    VhsIntensity.HIGH -> R.string.vhs_intensity_high
 }

@@ -14,7 +14,10 @@ import com.watermelon.ui.components.WatermelonHeader
 import com.watermelon.ui.theme.WatermelonSpacing
 
 data class SettingsState(
-    val pureDark: Boolean = true,
+    /** Theme preference. SYSTEM follows the OS dark-mode toggle (re-evaluated live while
+     *  the app is open); DARK and LIGHT are fixed regardless of the OS setting. Replaces
+     *  the pre-2b pureDark boolean, which could only express the two fixed modes. */
+    val themeMode: ThemeMode = ThemeMode.DARK,
     val forcedRtl: Boolean = false,
     val gridDefault: Boolean = false,
     val tetrisViewEnabled: Boolean = true,
@@ -59,6 +62,7 @@ data class SettingsState(
 
 enum class VhsIntensity { OFF, LOW, MED, HIGH }
 enum class ScreenshotMode { SINGLE, BURST }
+enum class ThemeMode { SYSTEM, DARK, LIGHT }
 
 @Composable
 fun SettingsScreen(

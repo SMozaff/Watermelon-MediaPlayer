@@ -16,11 +16,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonGlass
 
@@ -75,7 +77,7 @@ fun MediaJobsBar(
                 maxLines = 1,
             )
         }
-        TextButton(onClick = onOpenJobs) { Text("View jobs") }
+        TextButton(onClick = onOpenJobs) { Text(stringResource(R.string.jobs_view)) }
     }
 }
 
@@ -100,14 +102,14 @@ fun MediaJobsSheet(
         tonalElevation = 0.dp,
     ) {
         Text(
-            text = "Media jobs",
+            text = stringResource(R.string.jobs_title),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
         )
         if (activeJobs.isEmpty() && recentJobs.isEmpty()) {
             Text(
-                text = "No media jobs have started in this session.",
+                text = stringResource(R.string.jobs_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.md),
@@ -115,7 +117,7 @@ fun MediaJobsSheet(
         }
         if (activeJobs.isNotEmpty()) {
             Text(
-                text = "ACTIVE",
+                text = stringResource(R.string.jobs_section_active),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
@@ -127,7 +129,7 @@ fun MediaJobsSheet(
         }
         if (recentJobs.isNotEmpty()) {
             Text(
-                text = "RECENT",
+                text = stringResource(R.string.jobs_section_recent),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
@@ -170,14 +172,15 @@ private fun MediaJobRow(job: MediaJob, onCancel: () -> Unit) {
                     maxLines = 1,
                 )
             }
-            TextButton(onClick = onCancel) { Text("Cancel") }
+            TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) }
         }
         LinearProgressIndicator(
             progress = { job.progressPercent.coerceIn(0, 100) / 100f },
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = if (job.state is MediaJobState.Queued) "Queued" else "${job.progressPercent}% complete",
+            text = if (job.state is MediaJobState.Queued) stringResource(R.string.jobs_queued)
+            else stringResource(R.string.jobs_progress_percent, job.progressPercent),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -201,9 +204,9 @@ private fun MediaJobOutcomeRow(
     ) {
         Text(
             text = when (state) {
-                is MediaJobState.Completed -> "${jobPastTense(job.type)} complete"
-                is MediaJobState.Failed -> "${jobVerb(job.type)} failed"
-                is MediaJobState.Cancelled -> "${jobVerb(job.type)} cancelled"
+                is MediaJobState.Completed -> stringResource(R.string.jobs_status_complete, jobPastTense(job.type))
+                is MediaJobState.Failed -> stringResource(R.string.jobs_status_failed, jobVerb(job.type))
+                is MediaJobState.Cancelled -> stringResource(R.string.jobs_status_cancelled, jobVerb(job.type))
                 else -> jobVerb(job.type)
             },
             style = MaterialTheme.typography.titleSmall,
@@ -219,19 +222,19 @@ private fun MediaJobOutcomeRow(
         when (state) {
             is MediaJobState.Completed -> {
                 Text(
-                    text = "Output: ${outputName(state.outputUri)}",
+                    text = stringResource(R.string.jobs_output_name, outputName(state.outputUri)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (state.awaitingOriginalFileDecision) {
-                    TextButton(onClick = onReviewOriginal) { Text("Review original") }
+                    TextButton(onClick = onReviewOriginal) { Text(stringResource(R.string.jobs_review_original)) }
                 } else {
                     Row {
-                        TextButton(onClick = onOpenResult) { Text("Open result") }
+                        TextButton(onClick = onOpenResult) { Text(stringResource(R.string.jobs_open_result)) }
                         if (job.type == MediaJobType.EXTRACT_AUDIO) {
-                            TextButton(onClick = onOpenSettings) { Text("Media tool settings") }
+                            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.jobs_media_tool_settings)) }
                         }
-                        TextButton(onClick = onDismiss) { Text("Dismiss") }
+                        TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
                     }
                 }
             }
@@ -242,32 +245,40 @@ private fun MediaJobOutcomeRow(
                     color = MaterialTheme.colorScheme.error,
                 )
                 Row {
-                    TextButton(onClick = onOpenSettings) { Text("Change settings") }
-                    TextButton(onClick = onDismiss) { Text("Dismiss") }
+                    TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.jobs_change_settings)) }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
                 }
             }
             is MediaJobState.Cancelled -> {
-                TextButton(onClick = onDismiss) { Text("Dismiss") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
             }
             else -> Unit
         }
     }
 }
 
-fun jobVerb(type: MediaJobType): String = when (type) {
-    MediaJobType.EXTRACT_AUDIO -> "Extracting audio"
-    MediaJobType.TRIM -> "Trimming video"
-    MediaJobType.COMPRESS -> "Compressing video"
-}
+@Composable
+fun jobVerb(type: MediaJobType): String = stringResource(
+    when (type) {
+        MediaJobType.EXTRACT_AUDIO -> R.string.jobs_verb_extract_audio
+        MediaJobType.TRIM -> R.string.jobs_verb_trim
+        MediaJobType.COMPRESS -> R.string.jobs_verb_compress
+    }
+)
 
-private fun jobPastTense(type: MediaJobType): String = when (type) {
-    MediaJobType.EXTRACT_AUDIO -> "Audio extraction"
-    MediaJobType.TRIM -> "Trim"
-    MediaJobType.COMPRESS -> "Compression"
-}
+@Composable
+private fun jobPastTense(type: MediaJobType): String = stringResource(
+    when (type) {
+        MediaJobType.EXTRACT_AUDIO -> R.string.jobs_past_extract_audio
+        MediaJobType.TRIM -> R.string.jobs_past_trim
+        MediaJobType.COMPRESS -> R.string.jobs_past_compress
+    }
+)
 
+@Composable
 fun jobSourceLabel(job: MediaJob): String =
-    android.net.Uri.decode(job.inputUri).substringAfterLast('/').ifBlank { "Media file" }
+    android.net.Uri.decode(job.inputUri).substringAfterLast('/').ifBlank { stringResource(R.string.jobs_source_fallback) }
 
+@Composable
 private fun outputName(uri: String): String =
-    android.net.Uri.decode(uri).substringAfterLast('/').ifBlank { "Media output" }
+    android.net.Uri.decode(uri).substringAfterLast('/').ifBlank { stringResource(R.string.jobs_output_fallback) }

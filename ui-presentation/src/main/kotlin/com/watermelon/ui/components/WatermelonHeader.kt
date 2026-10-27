@@ -1,5 +1,6 @@
 package com.watermelon.ui.components
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -56,7 +57,7 @@ fun WatermelonHeader(
                 WatermelonGlassIconButton(
                     onClick = onBackClick,
                     icon = WatermelonIcons.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.cd_back),
                     modifier = Modifier.size(48.dp)
                 )
             } else {
@@ -70,7 +71,7 @@ fun WatermelonHeader(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_watermelon_logo),
-                    contentDescription = "Watermelon MediaPlayer",
+                    contentDescription = stringResource(R.string.cd_app_logo),
                     tint = androidx.compose.ui.graphics.Color.Unspecified,
                     modifier = Modifier
                         .size(28.dp)
@@ -92,7 +93,7 @@ fun WatermelonHeader(
                     WatermelonGlassIconButton(
                         onClick = onSettingsClick,
                         icon = WatermelonIcons.Settings,
-                        contentDescription = "Settings",
+                        contentDescription = stringResource(R.string.cd_settings),
                         modifier = Modifier.size(48.dp)
                     )
                 }
@@ -100,7 +101,7 @@ fun WatermelonHeader(
                     WatermelonGlassIconButton(
                         onClick = onMenuClick,
                         icon = WatermelonIcons.MoreVert,
-                        contentDescription = "Menu",
+                        contentDescription = stringResource(R.string.cd_menu),
                         modifier = Modifier.size(48.dp)
                     )
                 }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -39,6 +40,7 @@ import androidx.media3.common.util.UnstableApi
 import com.watermelon.mediatools.engine.VideoCompressor
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
+import com.watermelon.ui.R
 import com.watermelon.ui.components.KeepOrDeleteOriginalDialog
 import com.watermelon.ui.components.MediaJobProgressSheet
 import com.watermelon.ui.theme.WatermelonGlass
@@ -87,8 +89,8 @@ fun CompressScreen(
     val context = LocalContext.current
     val sourceDurationMs = remember(inputUri) { readDurationForEstimate(context, inputUri) }
     val customTargetError = when {
-        customTargetMb.isNotBlank() && parsedTargetMb == null -> "Enter a whole number of MB."
-        parsedTargetMb != null && parsedTargetMb < 2 -> "Choose at least 2 MB so video and audio can be encoded reliably."
+        customTargetMb.isNotBlank() && parsedTargetMb == null -> stringResource(R.string.compress_error_whole_number)
+        parsedTargetMb != null && parsedTargetMb < 2 -> stringResource(R.string.compress_error_min_size)
         else -> null
     }
     val hasUnsavedConfiguration = selectedPreset != null || customTargetMb.isNotBlank()
@@ -109,10 +111,10 @@ fun CompressScreen(
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = requestExit) { Text("Back") }
+            TextButton(onClick = requestExit) { Text(stringResource(R.string.action_back)) }
             Spacer(Modifier.weight(1f))
             Text(
-                "Compress",
+                stringResource(R.string.compress_title),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(vertical = WatermelonSpacing.sm),
             )
@@ -120,13 +122,13 @@ fun CompressScreen(
         }
 
         Text(
-            "Compress video",
+            stringResource(R.string.compress_headline),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
 
         Text(
-            "Choose a smart preset, or set a target size when you need the output under a specific MB.",
+            stringResource(R.string.compress_intro),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -135,7 +137,7 @@ fun CompressScreen(
             PresetCard(
                 preset = preset,
                 isSelected = selectedPreset == preset,
-                estimate = estimatedPresetOutput(sourceDurationMs, preset),
+                estimateMb = estimatedPresetOutputMb(sourceDurationMs, preset),
                 onClick = { selectedPreset = preset }
             )
         }
@@ -154,17 +156,17 @@ fun CompressScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Compress with preset")
+            Text(stringResource(R.string.compress_with_preset))
         }
 
         OutlinedTextField(
             value = customTargetMb,
             onValueChange = { value -> customTargetMb = value.filter { it.isDigit() }.take(4) },
-            label = { Text("Custom target size (MB)") },
+            label = { Text(stringResource(R.string.compress_custom_target_label)) },
             supportingText = {
                 Text(
                     customTargetError
-                        ?: "Watermelon calculates bitrate from duration, then validates the final size."
+                        ?: stringResource(R.string.compress_bitrate_hint)
                 )
             },
             singleLine = true,
@@ -193,7 +195,7 @@ fun CompressScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Compress to target size")
+            Text(stringResource(R.string.compress_to_target))
         }
     }
 
@@ -255,16 +257,16 @@ fun CompressScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
-            title = { Text("Discard compression changes?") },
-            text = { Text("Your selected preset or target size has not been used yet. You can continue editing or discard it and return.") },
+            title = { Text(stringResource(R.string.compress_discard_title)) },
+            text = { Text(stringResource(R.string.compress_discard_body)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDiscardChangesDialog = false
                     onBack()
-                }) { Text("Discard changes") }
+                }) { Text(stringResource(R.string.action_discard_changes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDiscardChangesDialog = false }) { Text("Continue editing") }
+                TextButton(onClick = { showDiscardChangesDialog = false }) { Text(stringResource(R.string.action_continue_editing)) }
             },
         )
     }
@@ -274,10 +276,10 @@ fun CompressScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
-            title = { Text("Compression will continue") },
+            title = { Text(stringResource(R.string.compress_continue_title)) },
             text = {
                 Text(
-                    "This compression is still running in the background. You can reopen Compress from File actions to inspect its progress."
+                    stringResource(R.string.compress_continue_body)
                 )
             },
             confirmButton = {
@@ -285,10 +287,10 @@ fun CompressScreen(
                     showBackgroundExitDialog = false
                     activeJobId = null
                     onBack()
-                }) { Text("Keep running") }
+                }) { Text(stringResource(R.string.action_keep_running)) }
             },
             dismissButton = {
-                TextButton(onClick = { showBackgroundExitDialog = false }) { Text("Stay") }
+                TextButton(onClick = { showBackgroundExitDialog = false }) { Text(stringResource(R.string.action_stay)) }
             },
         )
     }
@@ -313,7 +315,7 @@ fun CompressScreen(
 private fun PresetCard(
     preset: VideoCompressor.Preset,
     isSelected: Boolean,
-    estimate: String?,
+    estimateMb: Double?,
     onClick: () -> Unit,
 ) {
     androidx.compose.foundation.layout.Column(
@@ -325,24 +327,41 @@ private fun PresetCard(
             .padding(WatermelonSpacing.md)
     ) {
         Text(
-            preset.label,
+            stringResource(presetLabelRes(preset)),
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             style = MaterialTheme.typography.bodyLarge
         )
         Text(
-            preset.description,
+            stringResource(presetDescriptionRes(preset)),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = WatermelonSpacing.xs)
         )
+        val estimateText = estimateMb?.let { mb ->
+            stringResource(R.string.compress_estimate, mb, preset.targetShortSidePx)
+        } ?: stringResource(R.string.compress_estimate_unavailable)
         Text(
-            estimate ?: "Estimated output is unavailable for this video.",
+            estimateText,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(top = WatermelonSpacing.xs)
         )
     }
+}
+
+private fun presetLabelRes(preset: VideoCompressor.Preset): Int = when (preset) {
+    VideoCompressor.Preset.BEST_QUALITY -> R.string.compress_preset_best_quality
+    VideoCompressor.Preset.BALANCED -> R.string.compress_preset_balanced
+    VideoCompressor.Preset.SMALL_FILE -> R.string.compress_preset_small_file
+    VideoCompressor.Preset.SHARE_READY -> R.string.compress_preset_share_ready
+}
+
+private fun presetDescriptionRes(preset: VideoCompressor.Preset): Int = when (preset) {
+    VideoCompressor.Preset.BEST_QUALITY -> R.string.compress_preset_best_quality_desc
+    VideoCompressor.Preset.BALANCED -> R.string.compress_preset_balanced_desc
+    VideoCompressor.Preset.SMALL_FILE -> R.string.compress_preset_small_file_desc
+    VideoCompressor.Preset.SHARE_READY -> R.string.compress_preset_share_ready_desc
 }
 
 private fun readDurationForEstimate(
@@ -362,13 +381,11 @@ private fun readDurationForEstimate(
 }
 
 @OptIn(UnstableApi::class)
-private fun estimatedPresetOutput(
+private fun estimatedPresetOutputMb(
     durationMs: Long?,
     preset: VideoCompressor.Preset,
-): String? {
+): Double? {
     val durationSeconds = durationMs?.toDouble()?.div(1_000.0) ?: return null
     val bytes = durationSeconds * (preset.videoBitrateBps + preset.audioBitrateBps) / 8.0
-    val mb = bytes / (1024.0 * 1024.0)
-    val resolution = "up to ${preset.targetShortSidePx}p"
-    return "Estimate: about ${"%.1f".format(mb)} MB · $resolution"
+    return bytes / (1024.0 * 1024.0)
 }

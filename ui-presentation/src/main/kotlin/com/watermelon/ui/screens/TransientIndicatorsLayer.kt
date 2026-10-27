@@ -1,5 +1,7 @@
 package com.watermelon.ui.screens
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,7 +52,7 @@ fun TransientIndicatorsLayer(
         LevelIndicator(
             fraction = state.volumeFraction,
             icon = if (state.currentVolume == 0) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
-            contentDescription = "Volume",
+            contentDescription = stringResource(R.string.cd_volume),
             modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp)
         )
     }
@@ -58,7 +60,7 @@ fun TransientIndicatorsLayer(
         LevelIndicator(
             fraction = state.currentBrightness,
             icon = WatermelonIcons.BrightnessHigh,
-            contentDescription = "Brightness",
+            contentDescription = stringResource(R.string.cd_brightness),
             modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp)
         )
     }

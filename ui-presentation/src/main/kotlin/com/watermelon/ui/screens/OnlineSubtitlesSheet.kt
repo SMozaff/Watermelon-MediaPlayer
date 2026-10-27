@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.watermelon.ui.R
 import com.watermelon.common.model.SubtitleTrack
 import com.watermelon.common.repository.OnlineSubtitleSearchResult
 import com.watermelon.ui.theme.PlayerColors
@@ -56,19 +58,19 @@ fun OnlineSubtitlesSheet(
         scrimColor = WatermelonGlass.scrim,
         tonalElevation = 0.dp,
     ) {
-        SheetTitle("Find online subtitles")
+        SheetTitle(stringResource(R.string.subtitles_find_online))
         
         when (val state = uiState) {
             is OnlineSubtitlesUiState.Idle -> {
                 Text(
-                    text = "Search OpenSubtitles for this video",
+                    text = stringResource(R.string.subtitles_search_opensubtitles),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
                 )
                 SheetAction(
-                    label = "Search now",
-                    detail = "Requires internet connection",
+                    label = stringResource(R.string.subtitles_search_now),
+                    detail = stringResource(R.string.subtitles_search_requires_internet),
                     onClick = onSearch,
                 )
             }
@@ -84,7 +86,7 @@ fun OnlineSubtitlesSheet(
                         color = PlayerColors.current.iconActive,
                     )
                     Text(
-                        text = "Searching...",
+                        text = stringResource(R.string.subtitles_searching),
                         color = PlayerColors.current.textPrimary,
                         fontSize = 14.sp,
                     )
@@ -94,7 +96,7 @@ fun OnlineSubtitlesSheet(
             is OnlineSubtitlesUiState.Results -> {
                 if (state.tracks.isEmpty()) {
                     Text(
-                        text = "No subtitles found",
+                        text = stringResource(R.string.subtitles_no_results),
                         color = PlayerColors.current.textSecondary,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
@@ -111,23 +113,25 @@ fun OnlineSubtitlesSheet(
                         ListItem(
                             headlineContent = {
                                 Text(
-                                    text = track.label.ifBlank { "Unknown" },
+                                    text = track.label.ifBlank { stringResource(R.string.subtitles_track_unknown) },
                                     color = PlayerColors.current.textPrimary,
                                     fontWeight = FontWeight.Normal,
                                 )
                             },
                             supportingContent = {
                                 Column {
+                                    val downloadsSuffix = if (track.downloadCount > 0) {
+                                        " • " + stringResource(R.string.subtitles_track_downloads, track.downloadCount)
+                                    } else {
+                                        ""
+                                    }
+                                    val hashSuffix = if (track.hashMatched) {
+                                        " • " + stringResource(R.string.subtitles_track_hash_match)
+                                    } else {
+                                        ""
+                                    }
                                     Text(
-                                        text = buildString {
-                                            append(track.language.uppercase())
-                                            if (track.downloadCount > 0) {
-                                                append(" • ${track.downloadCount} downloads")
-                                            }
-                                            if (track.hashMatched) {
-                                                append(" • Hash match")
-                                            }
-                                        },
+                                        text = track.language.uppercase() + downloadsSuffix + hashSuffix,
                                         color = PlayerColors.current.textSecondary,
                                         fontSize = 12.sp,
                                     )
@@ -140,7 +144,7 @@ fun OnlineSubtitlesSheet(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "Download",
+                                text = stringResource(R.string.subtitles_download),
                                 color = PlayerColors.current.iconActive,
                                 fontWeight = FontWeight.SemiBold,
                             )
@@ -160,7 +164,7 @@ fun OnlineSubtitlesSheet(
                         color = PlayerColors.current.iconActive,
                     )
                     Text(
-                        text = "Downloading ${state.track.language.uppercase()}...",
+                        text = stringResource(R.string.subtitles_downloading, state.track.language.uppercase()),
                         color = PlayerColors.current.textPrimary,
                         fontSize = 14.sp,
                     )
@@ -169,21 +173,21 @@ fun OnlineSubtitlesSheet(
             
             is OnlineSubtitlesUiState.Error -> {
                 Text(
-                    text = "Error: ${state.message}",
+                    text = stringResource(R.string.subtitles_error, state.message),
                     color = PlayerColors.current.accent,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
                 )
                 SheetAction(
-                    label = "Try again",
-                    detail = "Retry the search",
+                    label = stringResource(R.string.library_try_again),
+                    detail = stringResource(R.string.subtitles_retry_search),
                     onClick = onSearch,
                 )
             }
             
             is OnlineSubtitlesUiState.Offline -> {
                 Text(
-                    text = "No internet connection",
+                    text = stringResource(R.string.subtitles_offline),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
@@ -192,13 +196,13 @@ fun OnlineSubtitlesSheet(
             
             is OnlineSubtitlesUiState.ProviderNotConfigured -> {
                 Text(
-                    text = "OpenSubtitles API key not configured",
+                    text = stringResource(R.string.subtitles_not_configured),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
                 )
                 Text(
-                    text = "Contact the developer to request API key configuration",
+                    text = stringResource(R.string.subtitles_not_configured_hint),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
@@ -207,7 +211,7 @@ fun OnlineSubtitlesSheet(
             
             is OnlineSubtitlesUiState.AuthenticationRequired -> {
                 Text(
-                    text = "Authentication required",
+                    text = stringResource(R.string.subtitles_auth_required),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
@@ -216,7 +220,7 @@ fun OnlineSubtitlesSheet(
             
             is OnlineSubtitlesUiState.QuotaExceeded -> {
                 Text(
-                    text = "API quota exceeded. Try again later.",
+                    text = stringResource(R.string.subtitles_quota_exceeded),
                     color = PlayerColors.current.textSecondary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),

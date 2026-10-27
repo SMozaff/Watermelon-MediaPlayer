@@ -21,11 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
+import com.watermelon.ui.R
 import com.watermelon.common.model.SubtitleDirection
 import com.watermelon.common.model.SubtitlePosition
 import com.watermelon.common.model.SubtitleStyle
 import com.watermelon.ui.screens.ScreenshotMode
 import com.watermelon.ui.screens.SettingsState
+import com.watermelon.ui.screens.ThemeMode
 import com.watermelon.ui.screens.VhsIntensity
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -51,134 +54,137 @@ fun TvSettingsScreen(
     ) {
         item {
             TvScreenHeader(
-                title = "Settings",
-                supportingText = "Use the D-pad to choose a setting. Press SELECT to change it."
+                title = stringResource(R.string.settings_title),
+                supportingText = stringResource(R.string.tv_settings_hint)
             )
         }
 
-        item { TvSettingsSection("Appearance") }
+        item { TvSettingsSection(stringResource(R.string.settings_appearance_title)) }
         item {
-            TvToggleSetting(
-                label = "Pure dark theme",
-                enabled = state.pureDark,
-                onClick = { onStateChange(state.copy(pureDark = !state.pureDark)) }
+            TvChoiceSetting(
+                label = stringResource(R.string.settings_theme_mode),
+                value = state.themeMode.tvLabel(),
+                options = ThemeMode.values().toList(),
+                current = state.themeMode,
+                labelFor = { it.tvLabel() },
+                onSelect = { onStateChange(state.copy(themeMode = it)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Force RTL overrides",
+                label = stringResource(R.string.settings_force_rtl),
                 enabled = state.forcedRtl,
                 onClick = { onStateChange(state.copy(forcedRtl = !state.forcedRtl)) }
             )
         }
 
-        item { TvSettingsSection("Library and browsing") }
+        item { TvSettingsSection(stringResource(R.string.settings_library_title)) }
         item {
             TvToggleSetting(
-                label = "Grid layout by default",
+                label = stringResource(R.string.settings_grid_default),
                 enabled = state.gridDefault,
-                supportingText = "Used on touch devices; TV always uses a D-pad list.",
+                supportingText = stringResource(R.string.tv_settings_grid_note),
                 onClick = { onStateChange(state.copy(gridDefault = !state.gridDefault)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Show video previews",
+                label = stringResource(R.string.settings_show_thumbnails),
                 enabled = state.showThumbnails,
-                supportingText = "Controls previews in the TV catalogue.",
+                supportingText = stringResource(R.string.tv_settings_previews_note),
                 onClick = { onStateChange(state.copy(showThumbnails = !state.showThumbnails)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Show durations",
+                label = stringResource(R.string.settings_show_durations),
                 enabled = state.showDurations,
                 onClick = { onStateChange(state.copy(showDurations = !state.showDurations)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Show file size",
+                label = stringResource(R.string.settings_show_file_size),
                 enabled = state.showFileSize,
                 onClick = { onStateChange(state.copy(showFileSize = !state.showFileSize)) }
             )
         }
         item {
             TvActionSetting(
-                label = "Folder visibility",
-                value = "Manage",
-                supportingText = "Choose which indexed folders appear in the library.",
+                label = stringResource(R.string.settings_folder_visibility),
+                value = stringResource(R.string.tv_settings_manage),
+                supportingText = stringResource(R.string.tv_folder_visibility_hint),
                 onClick = onFolderVisibilityClick
             )
         }
 
-        item { TvSettingsSection("Continue watching") }
+        item { TvSettingsSection(stringResource(R.string.settings_continue_watching_title)) }
         item {
             TvToggleSetting(
-                label = "Continue Watching playlist",
+                label = stringResource(R.string.settings_continue_watching_playlist),
                 enabled = state.continueWatchingEnabled,
-                supportingText = "Resume positions remain stored when this is hidden.",
+                supportingText = stringResource(R.string.tv_settings_resume_note),
                 onClick = {
                     onStateChange(state.copy(continueWatchingEnabled = !state.continueWatchingEnabled))
                 }
             )
         }
 
-        item { TvSettingsSection("Media tools") }
+        item { TvSettingsSection(stringResource(R.string.settings_media_tools_title)) }
         // See MediaToolsSection.kt for why no premium toggle is surfaced here.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             item {
                 TvActionSetting(
-                    label = "MP3 audio folder",
+                    label = stringResource(R.string.settings_mp3_folder),
                     value = state.mp3OutputPath,
-                    supportingText = "Press SELECT to edit using the on-screen keyboard.",
+                    supportingText = stringResource(R.string.tv_settings_keyboard_hint),
                     onClick = { editingPath = OutputPathField.MP3 }
                 )
             }
             item {
                 TvActionSetting(
-                    label = "Compressed video folder",
+                    label = stringResource(R.string.settings_compressed_folder),
                     value = state.compressedOutputPath,
-                    supportingText = "Press SELECT to edit using the on-screen keyboard.",
+                    supportingText = stringResource(R.string.tv_settings_keyboard_hint),
                     onClick = { editingPath = OutputPathField.COMPRESSED }
                 )
             }
             item {
                 TvActionSetting(
-                    label = "Trimmed video folder",
+                    label = stringResource(R.string.settings_trimmed_folder),
                     value = state.trimmedOutputPath,
-                    supportingText = "Press SELECT to edit using the on-screen keyboard.",
+                    supportingText = stringResource(R.string.tv_settings_keyboard_hint),
                     onClick = { editingPath = OutputPathField.TRIMMED }
                 )
             }
         } else {
             item {
-                TvStaticNote("Custom output folders require Android 10 or later on this device.")
+                TvStaticNote(stringResource(R.string.tv_settings_custom_folders_note))
             }
         }
 
-        item { TvSettingsSection("Player") }
+        item { TvSettingsSection(stringResource(R.string.settings_player_title)) }
         item {
             TvChoiceSetting(
-                label = "Screenshot mode",
-                value = if (state.screenshotMode == ScreenshotMode.BURST) "Burst (9 frames)" else "Single",
+                label = stringResource(R.string.tv_settings_screenshot_mode),
+                value = if (state.screenshotMode == ScreenshotMode.BURST) stringResource(R.string.tv_screenshot_burst) else stringResource(R.string.tv_screenshot_single),
                 options = listOf(ScreenshotMode.SINGLE, ScreenshotMode.BURST),
                 current = state.screenshotMode,
-                labelFor = { if (it == ScreenshotMode.BURST) "Burst (9 frames)" else "Single" },
+                labelFor = { if (it == ScreenshotMode.BURST) stringResource(R.string.tv_screenshot_burst) else stringResource(R.string.tv_screenshot_single) },
                 onSelect = { onStateChange(state.copy(screenshotMode = it)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "VHS effect",
+                label = stringResource(R.string.settings_vhs_effect),
                 enabled = state.vhsEnabled,
-                supportingText = "Applies to the touch player; TV playback stays clean and direct.",
+                supportingText = stringResource(R.string.tv_settings_vhs_note),
                 onClick = { onStateChange(state.copy(vhsEnabled = !state.vhsEnabled)) }
             )
         }
         item {
             TvChoiceSetting(
-                label = "VHS intensity",
+                label = stringResource(R.string.settings_vhs_intensity),
                 value = state.vhsIntensity.tvLabel(),
                 options = VhsIntensity.values().toList(),
                 current = state.vhsIntensity,
@@ -188,16 +194,16 @@ fun TvSettingsScreen(
         }
         item {
             TvToggleSetting(
-                label = "Tuner-style seek bar",
+                label = stringResource(R.string.settings_tuner_seekbar),
                 enabled = state.tunerSeekBarEnabled,
-                supportingText = "Applies to the touch player; TV uses dedicated seek controls.",
+                supportingText = stringResource(R.string.tv_settings_tuner_note),
                 onClick = { onStateChange(state.copy(tunerSeekBarEnabled = !state.tunerSeekBarEnabled)) }
             )
         }
         if (state.tunerSeekBarEnabled) {
             item {
                 TvChoiceSetting(
-                    label = "Tuner seek step",
+                    label = stringResource(R.string.settings_tuner_seek_step),
                     value = "${state.tunerSeekStepSeconds} seconds",
                     options = (1..20).toList(),
                     current = state.tunerSeekStepSeconds,
@@ -207,11 +213,11 @@ fun TvSettingsScreen(
             }
         }
 
-        item { TvSettingsSection("Subtitles") }
+        item { TvSettingsSection(stringResource(R.string.settings_subtitles_title)) }
         val subtitleStyle = state.subtitleStyle
         item {
             TvToggleSetting(
-                label = "Enable subtitles",
+                label = stringResource(R.string.settings_subtitles_enable),
                 enabled = subtitleStyle.enabled,
                 onClick = {
                     onStateChange(state.copy(subtitleStyle = subtitleStyle.copy(enabled = !subtitleStyle.enabled)))
@@ -220,7 +226,7 @@ fun TvSettingsScreen(
         }
         item {
             TvChoiceSetting(
-                label = "Text size",
+                label = stringResource(R.string.settings_subtitle_text_size),
                 value = "${subtitleStyle.sizeSp}sp",
                 options = (12..48 step 2).toList(),
                 current = subtitleStyle.sizeSp,
@@ -230,7 +236,7 @@ fun TvSettingsScreen(
         }
         item {
             TvChoiceSetting(
-                label = "Text color",
+                label = stringResource(R.string.settings_subtitle_text_color),
                 value = subtitleStyle.textColorName(),
                 options = TV_SUBTITLE_COLORS,
                 current = subtitleStyle.textColorArgb,
@@ -240,7 +246,7 @@ fun TvSettingsScreen(
         }
         item {
             TvChoiceSetting(
-                label = "Position",
+                label = stringResource(R.string.settings_subtitle_position),
                 value = subtitleStyle.position.tvLabel(),
                 options = SubtitlePosition.values().toList(),
                 current = subtitleStyle.position,
@@ -250,21 +256,21 @@ fun TvSettingsScreen(
         }
         item {
             TvToggleSetting(
-                label = "Bold subtitles",
+                label = stringResource(R.string.settings_subtitle_bold),
                 enabled = subtitleStyle.bold,
                 onClick = { updateSubtitleStyle(state, onStateChange, subtitleStyle.copy(bold = !subtitleStyle.bold)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Italic subtitles",
+                label = stringResource(R.string.settings_subtitle_italic),
                 enabled = subtitleStyle.italic,
                 onClick = { updateSubtitleStyle(state, onStateChange, subtitleStyle.copy(italic = !subtitleStyle.italic)) }
             )
         }
         item {
             TvToggleSetting(
-                label = "Underline subtitles",
+                label = stringResource(R.string.settings_subtitle_underline),
                 enabled = subtitleStyle.underline,
                 onClick = {
                     updateSubtitleStyle(state, onStateChange, subtitleStyle.copy(underline = !subtitleStyle.underline))
@@ -273,7 +279,7 @@ fun TvSettingsScreen(
         }
         item {
             TvChoiceSetting(
-                label = "Primary direction",
+                label = stringResource(R.string.settings_subtitle_direction),
                 value = subtitleStyle.direction.tvLabel(),
                 options = SubtitleDirection.values().toList(),
                 current = subtitleStyle.direction,
@@ -283,7 +289,7 @@ fun TvSettingsScreen(
         }
         item {
             TvChoiceSetting(
-                label = "Second subtitle direction",
+                label = stringResource(R.string.settings_subtitle_second_direction),
                 value = subtitleStyle.secondaryDirection.tvLabel(),
                 options = SubtitleDirection.values().toList(),
                 current = subtitleStyle.secondaryDirection,
@@ -296,8 +302,8 @@ fun TvSettingsScreen(
 
         item {
             TvActionSetting(
-                label = "Back to library",
-                value = "BACK also returns",
+                label = stringResource(R.string.tv_back_to_library),
+                value = stringResource(R.string.tv_back_also_returns),
                 onClick = onBack,
                 modifier = Modifier.padding(top = WatermelonSpacing.md, bottom = WatermelonSpacing.xl)
             )
@@ -311,7 +317,7 @@ fun TvSettingsScreen(
             OutputPathField.TRIMMED -> state.trimmedOutputPath
         }
         TvOutputPathDialog(
-            title = field.label,
+            title = stringResource(field.labelRes),
             initialValue = currentValue,
             onConfirm = { updated ->
                 onStateChange(
@@ -353,7 +359,7 @@ internal fun TvToggleSetting(
 ) {
     TvActionSetting(
         label = label,
-        value = if (enabled) "On" else "Off",
+        value = if (enabled) stringResource(R.string.action_on) else stringResource(R.string.action_off),
         supportingText = supportingText,
         onClick = onClick
     )
@@ -410,13 +416,13 @@ private fun <T> TvChoiceSetting(
     value: String,
     options: List<T>,
     current: T,
-    labelFor: (T) -> String,
+    labelFor: @Composable (T) -> String,
     onSelect: (T) -> Unit
 ) {
     TvActionSetting(
         label = label,
         value = value,
-        supportingText = "Press SELECT to change.",
+        supportingText = stringResource(R.string.tv_settings_select_to_change),
         onClick = { onSelect(nextOption(options, current)) }
     )
 }
@@ -448,7 +454,7 @@ private fun TvOutputPathDialog(
         text = {
             Column {
                 Text(
-                    text = "Enter a MediaStore-relative folder. The TV keyboard opens when the field is selected.",
+                    text = stringResource(R.string.tv_settings_folder_input_hint),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 TextField(
@@ -465,9 +471,9 @@ private fun TvOutputPathDialog(
             TextButton(
                 onClick = { onConfirm(value.trim()) },
                 enabled = value.trim().isNotEmpty()
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
     )
 }
 
@@ -487,26 +493,50 @@ private fun updateSubtitleStyle(
     onStateChange(state.copy(subtitleStyle = style))
 }
 
-private fun VhsIntensity.tvLabel(): String = name.lowercase().replaceFirstChar { it.uppercase() }
+@Composable
+private fun ThemeMode.tvLabel(): String = when (this) {
+    ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system)
+    ThemeMode.DARK -> stringResource(R.string.theme_mode_dark)
+    ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light)
+}
 
-private fun SubtitlePosition.tvLabel(): String = name.lowercase().replaceFirstChar { it.uppercase() }
+@Composable
+private fun VhsIntensity.tvLabel(): String = when (this) {
+    VhsIntensity.OFF -> stringResource(R.string.vhs_intensity_off)
+    VhsIntensity.LOW -> stringResource(R.string.vhs_intensity_low)
+    VhsIntensity.MED -> stringResource(R.string.vhs_intensity_med)
+    VhsIntensity.HIGH -> stringResource(R.string.vhs_intensity_high)
+}
 
-private fun SubtitleDirection.tvLabel(): String = name.lowercase().replaceFirstChar { it.uppercase() }
+@Composable
+private fun SubtitlePosition.tvLabel(): String = when (this) {
+    SubtitlePosition.BOTTOM -> stringResource(R.string.subtitle_position_bottom)
+    SubtitlePosition.TOP -> stringResource(R.string.subtitle_position_top)
+}
 
+@Composable
+private fun SubtitleDirection.tvLabel(): String = when (this) {
+    SubtitleDirection.AUTO -> stringResource(R.string.subtitle_direction_auto)
+    SubtitleDirection.FORCE_RTL -> stringResource(R.string.subtitle_direction_force_rtl)
+    SubtitleDirection.FORCE_LTR -> stringResource(R.string.subtitle_direction_force_ltr)
+}
+
+@Composable
 private fun SubtitleStyle.textColorName(): String = colorName(textColorArgb)
 
+@Composable
 private fun colorName(color: Long): String = when (color) {
-    0xFFFFFFFFL -> "White"
-    0xFFFFFF00L -> "Yellow"
-    0xFF00FFFFL -> "Cyan"
-    0xFF00FF00L -> "Green"
-    else -> "White"
+    0xFFFFFFFFL -> stringResource(R.string.subtitle_color_white)
+    0xFFFFFF00L -> stringResource(R.string.subtitle_color_yellow)
+    0xFF00FFFFL -> stringResource(R.string.subtitle_color_cyan)
+    0xFF00FF00L -> stringResource(R.string.subtitle_color_green)
+    else -> stringResource(R.string.subtitle_color_white)
 }
 
 private val TV_SUBTITLE_COLORS = listOf(0xFFFFFFFFL, 0xFFFFFF00L, 0xFF00FFFFL, 0xFF00FF00L)
 
-private enum class OutputPathField(val label: String) {
-    MP3("MP3 audio folder"),
-    COMPRESSED("Compressed video folder"),
-    TRIMMED("Trimmed video folder")
+private enum class OutputPathField(val labelRes: Int) {
+    MP3(R.string.settings_mp3_folder),
+    COMPRESSED(R.string.settings_compressed_folder),
+    TRIMMED(R.string.settings_trimmed_folder)
 }

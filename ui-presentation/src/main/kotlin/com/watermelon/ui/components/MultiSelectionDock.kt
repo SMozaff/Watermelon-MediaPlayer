@@ -20,9 +20,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonColors
@@ -70,11 +72,11 @@ fun MultiSelectionDock(
             ) {
                 WatermelonGlyph(
                     icon = WatermelonIcons.CheckCircle,
-                    contentDescription = "Selection active",
+                    contentDescription = stringResource(R.string.cd_selection_active),
                     tint = WatermelonColors.Accent,
                 )
                 Text(
-                    text = "$selectedCount selected",
+                    text = stringResource(R.string.selection_count_selected, selectedCount),
                     style = WatermelonTypography.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
@@ -82,7 +84,7 @@ fun MultiSelectionDock(
                 )
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onDeselectAll) {
-                    Text("Clear selection", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_clear_selection), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -94,13 +96,13 @@ fun MultiSelectionDock(
                     onClick = onAddToPlaylist,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Add to playlist", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.video_add_to_playlist_title), color = MaterialTheme.colorScheme.onSurface)
                 }
                 TextButton(
                     onClick = onShare,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Share", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_share), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -109,7 +111,7 @@ fun MultiSelectionDock(
                     onClick = remove,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Remove from this playlist", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.playlists_remove_from_this), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -117,7 +119,7 @@ fun MultiSelectionDock(
                 onClick = onDelete,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Delete from device", color = WatermelonColors.Error)
+                Text(stringResource(R.string.action_delete_from_device), color = WatermelonColors.Error)
             }
         }
     }

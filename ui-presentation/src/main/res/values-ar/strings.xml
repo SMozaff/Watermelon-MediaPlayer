@@ -13,7 +13,10 @@
     <!-- Appearance -->
     <string name="settings_appearance_title">المظهر</string>
     <string name="settings_appearance_summary">السمة واتجاه القراءة</string>
-    <string name="settings_pure_dark">سمة داكنة بالكامل</string>
+    <string name="settings_theme_mode">السمة</string>
+    <string name="theme_mode_system">حسب النظام</string>
+    <string name="theme_mode_dark">داكنة</string>
+    <string name="theme_mode_light">فاتحة</string>
     <string name="settings_force_rtl">فرض اتجاه من اليمين إلى اليسار</string>
 
     <!-- Player -->
@@ -129,6 +132,7 @@
     <string name="library_try_again">حاول مجددًا</string>
 
     <!-- قوائم التشغيل -->
+    <string name="playlist_title">قائمة التشغيل</string>
     <string name="playlists_create_playlist">إنشاء قائمة تشغيل</string>
     <string name="playlists_new_playlist_title">قائمة تشغيل جديدة</string>
     <string name="playlists_rename_playlist_title">إعادة تسمية قائمة التشغيل</string>
@@ -147,4 +151,339 @@
     <string name="video_toast_deleted">تم حذف الفيديوهات المحددة</string>
     <string name="video_toast_deletion_cancelled">تم إلغاء الحذف</string>
     <string name="video_share_chooser_title">مشاركة الفيديوهات</string>
+
+    <!-- المرحلة 2أ (واجهة المستخدم): استخراج كامل للسلاسل النصية لأدوات الوسائط (ضغط/اقتطاع)،
+         مهام الوسائط، أوراق وحوارات المشغّل، مؤقت النوم، بحث الترجمة عبر الإنترنت،
+         ظهور المجلدات، شاشات التلفاز، أوصاف إمكانية الوصول، ورموز أخطاء ViewModel.
+         TODO(i18n): هذه الترجمات آلية ولم تُراجَع بعد من قِبل متحدث عربي أصلي. -->
+
+    <!-- إجراءات شائعة -->
+    <string name="action_back">رجوع</string>
+    <string name="action_clear_selection">مسح التحديد</string>
+    <string name="action_close">إغلاق</string>
+    <string name="action_compress">ضغط</string>
+    <string name="action_continue_editing">متابعة التحرير</string>
+    <string name="action_delete_from_device">حذف من الجهاز</string>
+    <string name="action_discard_changes">تجاهل التغييرات</string>
+    <string name="action_dismiss">تجاهل</string>
+    <string name="action_extract_audio">استخراج الصوت</string>
+    <string name="action_got_it">فهمت</string>
+    <string name="action_keep_running">إبقاء التشغيل</string>
+    <string name="action_ok">حسنًا</string>
+    <string name="action_off">إيقاف</string>
+    <string name="action_on">تشغيل</string>
+    <string name="action_open">فتح</string>
+    <string name="action_open_settings">فتح الإعدادات</string>
+    <string name="action_set">تعيين</string>
+    <string name="action_share">مشاركة</string>
+    <string name="action_stay">البقاء</string>
+    <string name="action_trim">اقتطاع</string>
+
+    <!-- حالة المكتبة وأخطاء الحذف (مأخوذة من رموز ViewModel) -->
+    <string name="browser_header_playlists">قوائم تشغيل الفيديو</string>
+    <string name="browser_header_storage">التخزين الرئيسي</string>
+    <string name="library_error_body">تعذّر تحديث مكتبة الوسائط. تحقّق من الأذونات ثم أعد المحاولة.</string>
+    <string name="error_delete_none_selected">لم يتم تحديد أي ملفات.</string>
+    <string name="error_delete_invalid_uris">بعض الملفات المحددة لها معرّفات وسائط غير صالحة.</string>
+    <string name="error_delete_prepare_failed">تعذّر على واترميلون تجهيز الملفات المحددة للحذف.</string>
+    <string name="error_delete_failed">تعذّر على واترميلون حذف الملفات المحددة.</string>
+    <string name="error_delete_partial">تعذّر حذف بعض الملفات.</string>
+    <string name="selection_count_selected">تم تحديد %1$d</string>
+    <string name="folder_visibility_hint">المجلدات المخفية تُستثنى من مكتبة الوسائط.</string>
+    <string name="folder_visibility_empty">لم يُفهرَس أي مجلد بعد.</string>
+
+    <!-- أوصاف إمكانية الوصول -->
+    <string name="cd_app_logo">مشغّل واترميلون</string>
+    <string name="cd_back">رجوع</string>
+    <string name="cd_brightness">السطوع</string>
+    <string name="cd_close_player">إغلاق المشغّل</string>
+    <string name="cd_favorite">المفضلة</string>
+    <string name="cd_item_size">حجم العنصر: %1$s</string>
+    <string name="cd_larger_items">عناصر أكبر</string>
+    <string name="cd_lock">قفل</string>
+    <string name="cd_menu">القائمة</string>
+    <string name="cd_more_options">خيارات إضافية</string>
+    <string name="cd_new">جديد</string>
+    <string name="cd_next">التالي</string>
+    <string name="cd_next_track">المقطع التالي</string>
+    <string name="cd_open_full_player">فتح المشغّل الكامل لـ %1$s</string>
+    <string name="cd_pause">إيقاف مؤقت</string>
+    <string name="cd_play">تشغيل</string>
+    <string name="cd_previous">السابق</string>
+    <string name="cd_previous_track">المقطع السابق</string>
+    <string name="cd_seek_bar">شريط التمرير، %1$s من %2$s</string>
+    <string name="cd_seek_tuner">موالفة التمرير، %1$s من %2$s</string>
+    <string name="cd_selection_active">وضع التحديد مُنشَّط</string>
+    <string name="cd_settings">الإعدادات</string>
+    <string name="cd_slide_both_locks">اسحب القفلين معًا لفتح الشاشة</string>
+    <string name="cd_slide_up_to_unlock">اسحب لأعلى لفتح الشاشة</string>
+    <string name="cd_smaller_items">عناصر أصغر</string>
+    <string name="cd_thumbnail_for">صورة مصغّرة لـ %1$s</string>
+    <string name="cd_thumbnail_unavailable">الصورة المصغّرة غير متاحة</string>
+    <string name="cd_trim_range">نطاق الاقتطاع، البداية %1$s، النهاية %2$s</string>
+    <string name="cd_video_preview_at">معاينة الفيديو عند %1$s</string>
+    <string name="cd_volume">مستوى الصوت</string>
+
+    <!-- أداة الضغط -->
+    <string name="compress_title">ضغط</string>
+    <string name="compress_headline">ضغط الفيديو</string>
+    <string name="compress_intro">اختر إعدادًا مسبقًا ذكيًا، أو حدّد حجمًا مستهدفًا عندما يجب أن يبقى الناتج تحت حجم معين.</string>
+    <string name="compress_with_preset">الضغط بإعداد مسبق</string>
+    <string name="compress_custom_target_label">الحجم المستهدف المخصص (ميجابايت)</string>
+    <string name="compress_bitrate_hint">يحسب واترميلون معدل البت من المدة ثم يتحقق من الحجم النهائي.</string>
+    <string name="compress_error_whole_number">أدخل عددًا صحيحًا بالميجابايت.</string>
+    <string name="compress_error_min_size">اختر ٢ ميجابايت على الأقل لضمان ترميز الفيديو والصوت بشكل موثوق.</string>
+    <string name="compress_to_target">الضغط إلى الحجم المستهدف</string>
+    <string name="compress_discard_title">هل تريد تجاهل تغييرات الضغط؟</string>
+    <string name="compress_discard_body">لم يُستخدم الإعداد المسبق أو الحجم المستهدف الذي اخترته بعد. يمكنك متابعة التحرير أو تجاهله والعودة.</string>
+    <string name="compress_continue_title">الضغط قيد التنفيذ</string>
+    <string name="compress_continue_body">لا يزال هذا الضغط يعمل في الخلفية. يمكنك إعادة فتح الضغط من "إجراءات الملف" لمتابعة التقدم.</string>
+    <string name="compress_estimate">تقديري: نحو %1$.1f ميجابايت · حتى %2$d بكسل</string>
+    <string name="compress_estimate_unavailable">لا يتوفر تقدير للحجم لهذا الفيديو.</string>
+    <string name="compress_preset_best_quality">أفضل جودة</string>
+    <string name="compress_preset_best_quality_desc">ضغط لطيف يحافظ على التفاصيل عندما يكون المصدر جيدًا بالفعل.</string>
+    <string name="compress_preset_balanced">متوازن</string>
+    <string name="compress_preset_balanced_desc">تقليل حجم يومي جيد دون إفساد شكل الملف.</string>
+    <string name="compress_preset_small_file">ملف صغير</string>
+    <string name="compress_preset_small_file_desc">ضغط قوي بدقة ٤٨٠p لتوفير مساحة التخزين.</string>
+    <string name="compress_preset_share_ready">جاهز للمشاركة</string>
+    <string name="compress_preset_share_ready_desc">ناتج صغير جدًا للرسائل السريعة والتحميل.</string>
+
+    <!-- أداة الاقتطاع -->
+    <string name="trim_title">اقتطاع</string>
+    <string name="trim_action">اقتطاع</string>
+    <string name="trim_discard_title">هل تريد تجاهل تغييرات الاقتطاع؟</string>
+    <string name="trim_discard_body">لم يُحفظ نطاق الاقتطاع الذي اخترته بعد. يمكنك متابعة التحرير أو تجاهله والعودة.</string>
+    <string name="trim_continue_title">الاقتطاع قيد التنفيذ</string>
+    <string name="trim_continue_body">لا يزال هذا الاقتطاع يعمل في الخلفية. يمكنك إعادة فتح الاقتطاع من "إجراءات الملف" لمتابعة التقدم.</string>
+
+    <!-- مهام الوسائط -->
+    <string name="jobs_view">عرض المهام</string>
+    <string name="jobs_title">مهام الوسائط</string>
+    <string name="jobs_empty">لم تُبدأ أي مهام أدوات وسائط في هذه الجلسة.</string>
+    <string name="jobs_section_active">نشط</string>
+    <string name="jobs_section_recent">الأخيرة</string>
+    <string name="jobs_queued">في قائمة الانتظار</string>
+    <string name="jobs_progress_percent">اكتمل %1$d%%</string>
+    <string name="jobs_output_name">الناتج: %1$s</string>
+    <string name="jobs_source_fallback">ملف وسائط</string>
+    <string name="jobs_output_fallback">ناتج وسائط</string>
+    <string name="jobs_review_original">مراجعة الأصل</string>
+    <string name="jobs_open_result">فتح النتيجة</string>
+    <string name="jobs_media_tool_settings">إعدادات أدوات الوسائط</string>
+    <string name="jobs_change_settings">تغيير الإعدادات</string>
+    <string name="jobs_continue_background">متابعة في الخلفية</string>
+    <string name="jobs_mp3_ready">ملف MP3 جاهز</string>
+    <string name="jobs_done">تم</string>
+    <string name="jobs_saved_to">حُفظ في %1$s</string>
+    <string name="jobs_saved_settings_hint">يمكنك تغيير هذا المجلد من "الإعدادات › أدوات الوسائط".</string>
+    <string name="jobs_failed_extract">فشل تحويل MP3</string>
+    <string name="jobs_failed_generic">لم تكتمل المهمة</string>
+    <string name="jobs_status_complete">اكتمل %1$s</string>
+    <string name="jobs_status_failed">فشل %1$s</string>
+    <string name="jobs_status_cancelled">أُلغيت %1$s</string>
+    <string name="jobs_error_open_output">تعذّر فتح هذا الناتج على الجهاز.</string>
+    <string name="jobs_verb_extract_audio">جارٍ استخراج الصوت</string>
+    <string name="jobs_verb_trim">جارٍ اقتطاع الفيديو</string>
+    <string name="jobs_verb_compress">جارٍ ضغط الفيديو</string>
+    <string name="jobs_past_extract_audio">استخراج الصوت</string>
+    <string name="jobs_past_trim">اقتطاع</string>
+    <string name="jobs_past_compress">ضغط</string>
+    <string name="jobs_type_extract">جارٍ التحويل إلى MP3</string>
+    <string name="jobs_type_trim">جارٍ اقتطاع الفيديو</string>
+    <string name="jobs_type_compress">جارٍ ضغط الفيديو</string>
+    <string name="jobs_progress_label_extract">جارٍ ترميز الصوت</string>
+    <string name="jobs_progress_label_trim">جارٍ معالجة الفيديو</string>
+    <string name="jobs_progress_label_compress">جارٍ ضغط الفيديو</string>
+
+    <!-- حوار الاحتفاظ بالأصل أو حذفه -->
+    <string name="keep_original_title">هل تريد الاحتفاظ بالأصل؟</string>
+    <string name="keep_original_body_trim">الاحتفاظ بالأصل %1$s إلى جانب النسخة المقتطعة %2$s، أم حذف الأصل؟</string>
+    <string name="keep_original_body_compress">الاحتفاظ بالأصل %1$s إلى جانب النسخة المضغوطة %2$s، أم حذف الأصل؟</string>
+    <string name="keep_original_trim_range">نطاق الاقتطاع الفعلي: %1$s – %2$s</string>
+    <string name="keep_original_size_summary">الأصل %1$s → المضغوط %2$s · توفير %3$d%%</string>
+    <string name="keep_original_waiting">في انتظار القرار…</string>
+    <string name="keep_original_keep">الاحتفاظ بالأصل</string>
+    <string name="keep_original_delete">حذف الأصل</string>
+
+    <!-- الترقية إلى الميزات المميزة -->
+    <string name="premium_title">ميزة مميزة</string>
+    <string name="premium_body">استخراج الصوت والاقتطاع والضغط أدوات مميزة. رقِّ لتفعيلها.</string>
+
+    <!-- قوائم التشغيل (منتقي المشغّل) -->
+    <string name="playlists_create_and_add">إنشاء وإضافة</string>
+    <string name="playlists_create_new">إنشاء قائمة تشغيل جديدة</string>
+    <string name="playlists_empty_hint">أنشئ قائمة التشغيل الأولى لتنظيم الفيديو الحالي.</string>
+    <string name="playlists_remove_from_this">إزالة من هذه القائمة</string>
+
+    <!-- أوراق المشغّل -->
+    <string name="player_actions_title">إجراءات المشغّل</string>
+    <string name="player_quick_tools">أدوات سريعة</string>
+    <string name="player_quick_tools_detail">السرعة، الترجمة، نسبة العرض، مؤقت النوم، لقطة الشاشة، صورة داخل صورة، والتشغيل في الخلفية</string>
+    <string name="player_file_actions">إجراءات الملف</string>
+    <string name="player_file_actions_detail">المفضلة، قائمة التشغيل، المشاركة، أدوات الوسائط، والحذف من الجهاز</string>
+    <string name="player_section_speed">سرعة التشغيل</string>
+    <string name="player_section_aspect">نسبة العرض</string>
+    <string name="player_section_orientation">اتجاه العرض</string>
+    <string name="player_section_seeking">التمرير</string>
+    <string name="player_section_subtitle_timing">توقيت الترجمة</string>
+    <string name="player_section_subtitles">الترجمة</string>
+    <string name="player_section_media_tools">أدوات الوسائط</string>
+    <string name="player_use_standard_seekbar">استخدام شريط التمرير القياسي</string>
+    <string name="player_use_standard_seekbar_detail">الانتقال إلى شريط التقدم المعتاد مع التمرير المباشر.</string>
+    <string name="player_use_tuner_seek">استخدام التمرير بالمووالفة</string>
+    <string name="player_use_tuner_seek_detail">الانتقال إلى قرص الموالفة بخطوات %1$d ثانية.</string>
+    <string name="player_mute">كتم الصوت</string>
+    <string name="player_unmute">إلغاء الكتم</string>
+    <string name="player_mute_detail">تبديل مستوى صوت وسائط الجهاز</string>
+    <string name="player_repeat_label">التكرار: %1$s</string>
+    <string name="repeat_mode_none">لا شيء</string>
+    <string name="repeat_mode_one">مقطع واحد</string>
+    <string name="repeat_mode_all">الكل</string>
+    <string name="player_repeat_detail">تبديل وضع التكرار</string>
+    <string name="player_shuffle_on">خلط: مُشغَّل</string>
+    <string name="player_shuffle_off">خلط: مُوقَف</string>
+    <string name="player_shuffle_detail">تبديل ترتيب قائمة الانتظار</string>
+    <string name="player_subtitles_minus_100ms">−١٠٠ ملي ثانية</string>
+    <string name="player_subtitles_plus_100ms">+١٠٠ ملي ثانية</string>
+    <string name="player_subtitles_offset_ms">%1$d ملي ثانية</string>
+    <string name="player_screenshot">التقاط لقطة</string>
+    <string name="player_screenshot_detail">حفظ الإطار الحالي للفيديو</string>
+    <string name="player_screenshot_saved">حُفظت %1$d لقطة</string>
+    <string name="player_screenshot_failed">فشل التقاط اللقطة</string>
+    <string name="player_pip">صورة داخل صورة</string>
+    <string name="player_pip_active">صورة داخل صورة: نشط</string>
+    <string name="player_pip_detail">متابعة المشاهدة في نافذة عائمة</string>
+    <string name="player_pip_unavailable">وضع صورة داخل صورة غير مدعوم في هذا الإصدار من أندرويد.</string>
+    <string name="player_background">تشغيل في الخلفية</string>
+    <string name="player_background_on">التشغيل في الخلفية: مُشغَّل</string>
+    <string name="player_background_detail">متابعة الصوت عند مغادرة المشغّل</string>
+    <string name="player_share_detail">إرسال هذا الفيديو إلى تطبيق آخر</string>
+    <string name="player_add_to_favourites">إضافة إلى المفضلة</string>
+    <string name="player_remove_from_favourites">إزالة من المفضلة</string>
+    <string name="player_favourite_detail">الاحتفاظ بهذا الفيديو في مجموعة المفضلة الشخصية</string>
+    <string name="player_add_to_playlist_detail">اختيار أو إنشاء قائمة تشغيل لهذا الفيديو</string>
+    <string name="player_trim_detail">إنشاء نسخة أقصر من هذا الفيديو</string>
+    <string name="player_compress_detail">إنشاء نسخة أصغر من هذا الفيديو</string>
+    <string name="player_extract_audio_detail">إنشاء ملف صوتي من هذا الفيديو</string>
+    <string name="player_delete_detail">حذف هذا الفيديو نهائيًا بعد التأكيد</string>
+    <string name="player_tuner_seek_title">التمرير بالمووالفة</string>
+    <string name="player_tuner_seek_tip">تنقل كل خطوة مووالفة التشغيل بمقدار %1$d ثانية. انتقل إلى "الأدوات السريعة" لاختيار شريط التمرير القياسي أو غيّر إعداد الموالفة لاحقًا.</string>
+    <string name="player_now_playing">قيد التشغيل الآن</string>
+    <string name="player_unknown_title">فيديو غير معروف</string>
+
+    <!-- قيم تعدادات المشغّل -->
+    <string name="video_ratio_fill">ملء</string>
+    <string name="video_ratio_original">الأصلية</string>
+    <string name="video_ratio_16_9">١٦:٩</string>
+    <string name="video_ratio_4_3">٤:٣</string>
+    <string name="video_ratio_21_9">٢١:٩</string>
+    <string name="orientation_auto">تلقائي</string>
+    <string name="orientation_portrait">عمودي</string>
+    <string name="orientation_landscape">أفقي</string>
+
+    <!-- الترجمة -->
+    <string name="subtitles_auto_sync">مزامنة تلقائية</string>
+    <string name="subtitles_find_another">البحث عن ترجمة أخرى</string>
+    <string name="subtitles_find_online">البحث عن ترجمة عبر الإنترنت</string>
+    <string name="subtitles_search_opensubtitles">البحث في OpenSubtitles عن هذا الفيديو</string>
+    <string name="subtitles_search_now">ابحث الآن</string>
+    <string name="subtitles_search_requires_internet">يتطلب اتصالًا بالإنترنت</string>
+    <string name="subtitles_searching">جارٍ البحث…</string>
+    <string name="subtitles_no_results">لم يُعثر على أي ترجمة</string>
+    <string name="subtitles_track_unknown">غير معروف</string>
+    <string name="subtitles_track_downloads">%1$d تنزيلًا</string>
+    <string name="subtitles_track_hash_match">تطابق التجزئة</string>
+    <string name="subtitles_download">تنزيل</string>
+    <string name="subtitles_downloading">جارٍ تنزيل %1$s…</string>
+    <string name="subtitles_error">خطأ: %1$s</string>
+    <string name="subtitles_error_permission_denied">رُفض الإذن</string>
+    <string name="subtitles_error_unknown">خطأ غير معروف</string>
+    <string name="subtitles_error_download_failed">فشل التنزيل</string>
+    <string name="subtitles_retry_search">إعادة محاولة البحث</string>
+    <string name="subtitles_offline">لا يوجد اتصال بالإنترنت</string>
+    <string name="subtitles_not_configured">لم يُهيَّأ مفتاح واجهة OpenSubtitles</string>
+    <string name="subtitles_not_configured_hint">اتصل بالمطور لطلب تهيئة مفتاح الواجهة</string>
+    <string name="subtitles_auth_required">مطلوب تسجيل الدخول</string>
+    <string name="subtitles_quota_exceeded">تم تجاوز حصة الواجهة. أعد المحاولة لاحقًا.</string>
+    <string name="subtitles_sync_idle">حلّل المقطع الصوتي لضبط توقيت الترجمة.</string>
+    <string name="subtitles_sync_analyzing">جارٍ التحليل…</string>
+    <string name="subtitles_sync_synchronized">تمت المزامنة.</string>
+    <string name="subtitles_sync_low_confidence">ثقة منخفضة — لم تُطبَّق أي إزاحة تلقائية. جرّب الإزاحة اليدوية.</string>
+    <string name="subtitles_sync_complex_drift">ينحرف التوقيت تدريجيًا عبر الفيديو ولا يُصحَّح بإزاحة واحدة. جرّب الإزاحة اليدوية.</string>
+    <string name="subtitles_sync_unsupported">المزامنة التلقائية غير مدعومة لهذا الملف.</string>
+    <string name="subtitles_sync_unavailable">المزامنة التلقائية غير متاحة حاليًا.</string>
+    <string name="subtitles_sync_failed">فشلت المزامنة التلقائية. أعد المحاولة.</string>
+    <string name="subtitles_controls_label">عناصر تحكم الترجمة</string>
+    <string name="subtitles_no_track">لا تتوفر أي مسارات ترجمة لهذا الفيديو.</string>
+
+    <!-- مؤقت النوم -->
+    <string name="sleep_timer_title">مؤقت النوم</string>
+    <string name="sleep_timer_detail">إيقاف التشغيل بعد الفترة المحددة</string>
+    <string name="sleep_timer_running">المؤقت نشط — متبقٍ %1$s</string>
+    <string name="sleep_cancel_timer">إلغاء المؤقت</string>
+    <string name="sleep_end_of_video">نهاية الفيديو الحالي</string>
+    <string name="sleep_end_of_folder">نهاية المجلد</string>
+    <string name="sleep_custom_time">وقت مخصص</string>
+    <string name="sleep_minutes">دقيقة</string>
+
+    <!-- قيم تعدادات الإعدادات (شدة VHS، موضع/اتجاه/لون الترجمة) -->
+    <string name="vhs_intensity_off">إيقاف</string>
+    <string name="vhs_intensity_low">منخفضة</string>
+    <string name="vhs_intensity_med">متوسطة</string>
+    <string name="vhs_intensity_high">عالية</string>
+    <string name="subtitle_position_bottom">أسفل</string>
+    <string name="subtitle_position_top">أعلى</string>
+    <string name="subtitle_direction_auto">تلقائي</string>
+    <string name="subtitle_direction_force_rtl">إجبار من اليمين إلى اليسار</string>
+    <string name="subtitle_direction_force_ltr">إجبار من اليسار إلى اليمين</string>
+    <string name="subtitle_color_white">أبيض</string>
+    <string name="subtitle_color_yellow">أصفر</string>
+    <string name="subtitle_color_cyan">سماوي</string>
+    <string name="subtitle_color_green">أخضر</string>
+    <string name="subtitle_color_coral">مرجاني</string>
+    <string name="subtitle_color_black">أسود</string>
+    <string name="subtitle_color_custom">مخصص</string>
+
+    <!-- شاشات التلفاز -->
+    <string name="tv_browse_hint">تصفّح باللوحة الاتجاهية واضغط SELECT للتشغيل.</string>
+    <string name="tv_no_videos">لا توجد فيديوهات هنا بعد</string>
+    <string name="tv_press_back">اضغط BACK للعودة إلى المكتبة.</string>
+    <string name="tv_preview_disabled">المعاينة معطّلة</string>
+    <string name="tv_select_to_play">اضغط SELECT للتشغيل</string>
+    <string name="tv_home_title">واترميلون</string>
+    <string name="tv_home_hint">تصفّح المكتبة باللوحة الاتجاهية واضغط SELECT لفتح أي عنصر.</string>
+    <string name="tv_nav_all_videos">كل الفيديوهات</string>
+    <string name="tv_nav_all_videos_detail">تصفّح كل فيديوهات مكتبتك</string>
+    <string name="tv_nav_playlists_detail">الأحدث والمفضلة وقوائم التشغيل</string>
+    <string name="tv_nav_settings_detail">المكتبة والتشغيل والترجمة والمخرجات</string>
+    <string name="tv_folders">المجلدات</string>
+    <string name="tv_folders_empty">لم يُفهرَس أي مجلد بعد. امنح إذن الوصول إلى الوسائط أو أضف فيديوهات ثم عد إلى هنا.</string>
+    <string name="tv_video_count_one">فيديو واحد</string>
+    <string name="tv_video_count_many">%1$d فيديو</string>
+    <string name="tv_folder_visibility_hint">اختر أي المجلدات المفهرسة تظهر في المكتبة.</string>
+    <string name="tv_folder_visibility_all_visible">كل المجلدات المفهرسة ظاهرة. اضغط SELECT لإخفاء مجلد.</string>
+    <string name="tv_folder_visibility_empty">لم يُفهرَس أي مجلد بعد. عد إلى المكتبة بعد منح إذن الوصول إلى الوسائط.</string>
+    <string name="tv_folder_visibility_hidden_count">مخفي %1$d</string>
+    <string name="tv_back_to_settings">العودة إلى الإعدادات</string>
+    <string name="tv_rewind_10">إرجاع ١٠ ثوانٍ</string>
+    <string name="tv_forward_10">تقديم ١٠ ثوانٍ</string>
+    <string name="tv_subtitles_minus_100ms">الترجمة −١٠٠ ملي ثانية</string>
+    <string name="tv_subtitles_plus_100ms">الترجمة +١٠٠ ملي ثانية</string>
+    <string name="tv_back_to_library">العودة إلى المكتبة</string>
+    <string name="tv_back_also_returns">زر BACK يعيد أيضًا</string>
+    <string name="tv_settings_hint">اختر إعدادًا باللوحة الاتجاهية واضغط SELECT لتغييره.</string>
+    <string name="tv_settings_manage">إدارة</string>
+    <string name="tv_settings_grid_note">للأجهزة التي تعمل باللمس؛ يحافظ التلفاز دائمًا على قائمة اللوحة الاتجاهية.</string>
+    <string name="tv_settings_previews_note">يتحكم في المعاينات داخل فهرس التلفاز.</string>
+    <string name="tv_settings_resume_note">تُحفظ مواضع الاستئناف حتى لو أُخفيت هذا الخيار.</string>
+    <string name="tv_settings_keyboard_hint">اضغط SELECT للتحرير باستخدام لوحة المفاتيح على الشاشة.</string>
+    <string name="tv_settings_custom_folders_note">تتطلب مجلدات المخرجات المخصصة أندرويد ١٠ أو أحدث على هذا الجهاز.</string>
+    <string name="tv_settings_screenshot_mode">وضع لقطة الشاشة</string>
+    <string name="tv_screenshot_burst">متتابعة (٩ إطارات)</string>
+    <string name="tv_screenshot_single">مفردة</string>
+    <string name="tv_settings_vhs_note">للمشغّل الذي يعمل باللمس؛ يبقى التشغيل على التلفاز نظيفًا.</string>
+    <string name="tv_settings_tuner_note">للمشغّل الذي يعمل باللمس؛ للتلفاز عناصر تحكم تمرير خاصة.</string>
+    <string name="tv_settings_select_to_change">اضغط SELECT للتغيير.</string>
+    <string name="tv_settings_folder_input_hint">أدخل مجلدًا نسبيًا إلى MediaStore. تُفتح لوحة مفاتيح التلفاز عند تحديد الحقل.</string>
 </resources>

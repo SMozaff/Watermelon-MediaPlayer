@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import com.watermelon.common.model.FolderNode
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.viewmodel.FolderViewModel
@@ -43,34 +45,34 @@ fun TvFolderBrowserScreen(
     ) {
         item {
             TvScreenHeader(
-                title = "Watermelon",
-                supportingText = "Browse your library with the D-pad. Press SELECT to open an item."
+                title = stringResource(R.string.tv_home_title),
+                supportingText = stringResource(R.string.tv_home_hint)
             )
         }
         item {
             TvHomeDestination(
-                label = "All videos",
-                detail = "Browse every video in your library",
+                label = stringResource(R.string.tv_nav_all_videos),
+                detail = stringResource(R.string.tv_nav_all_videos_detail),
                 onClick = onAllVideosClick
             )
         }
         item {
             TvHomeDestination(
-                label = "Playlists",
-                detail = "Recently added, favourites, and your playlists",
+                label = stringResource(R.string.nav_playlists),
+                detail = stringResource(R.string.tv_nav_playlists_detail),
                 onClick = onPlaylistsClick
             )
         }
         item {
             TvHomeDestination(
-                label = "Settings",
-                detail = "Library, playback, subtitles, and exports",
+                label = stringResource(R.string.settings_title),
+                detail = stringResource(R.string.tv_nav_settings_detail),
                 onClick = onSettingsClick
             )
         }
         item {
             Text(
-                text = "Folders",
+                text = stringResource(R.string.tv_folders),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary,
@@ -86,7 +88,7 @@ fun TvFolderBrowserScreen(
         if (folders.isEmpty()) {
             item {
                 Text(
-                    text = "No folders are indexed yet. Grant media access or add videos, then return here.",
+                    text = stringResource(R.string.tv_folders_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.xl + WatermelonSpacing.md)
@@ -157,14 +159,14 @@ private fun TvFolderRow(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${folder.itemCount} video${if (folder.itemCount == 1) "" else "s"}",
+                    text = if (folder.itemCount == 1) stringResource(R.string.tv_video_count_one, folder.itemCount) else stringResource(R.string.tv_video_count_many, folder.itemCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = WatermelonSpacing.xs)
                 )
             }
             Text(
-                text = "Open",
+                text = stringResource(R.string.action_open),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.secondary

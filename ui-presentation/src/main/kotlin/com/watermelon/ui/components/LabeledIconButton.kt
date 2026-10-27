@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -84,6 +85,13 @@ fun LabeledIconButton(
     // of each other, differing only in how the Icon was constructed, which meant any change to
     // the surface treatment had to be made twice and could silently drift apart.
     val baseModifier = modifier
+        // 48dp minimum touch target (WCAG 2.2 / Material): the icon is 24dp and the label
+        // is one short line, so a narrow caption could otherwise make the whole glass
+        // surface — and with it the clickable — smaller than the minimum. sizeIn passes
+        // minimum constraints down, so the surface, border and clickable all grow to
+        // satisfy it. Deliberately not minimumInteractiveComponentSize: that only reserves
+        // spacing around the component and leaves the clickable itself undersized.
+        .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
         // Transform before clip so the rounded corners compress along with the content rather
         // than the clip staying fixed while the contents shrink inside it.
         .graphicsLayer {

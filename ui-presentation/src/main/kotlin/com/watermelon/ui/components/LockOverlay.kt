@@ -1,5 +1,6 @@
 package com.watermelon.ui.components
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -62,7 +63,7 @@ fun LockOverlay(
     ) {
         if (showHint) {
             Text(
-                "Slide both locks up together to unlock",
+                stringResource(R.string.cd_slide_both_locks),
                 color = PlayerColors.current.textSecondary,
                 fontSize = 13.sp,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = WatermelonSpacing.xl + WatermelonSpacing.md)
@@ -113,7 +114,7 @@ private fun LockHandle(
     ) {
         Icon(
             painterResource(if (open) R.drawable.ic_lock_open else R.drawable.ic_lock),
-            contentDescription = "Slide up to unlock",
+            contentDescription = stringResource(R.string.cd_slide_up_to_unlock),
             tint = Color.Unspecified,
             modifier = Modifier.size(26.dp)
         )

@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -48,12 +50,12 @@ fun PremiumUpsellDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Premium Feature",
+                    stringResource(R.string.premium_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "Extract Audio, Trim, and Compress are premium tools. Upgrade to unlock them.",
+                    stringResource(R.string.premium_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -66,7 +68,7 @@ fun PremiumUpsellDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Got it")
+                    Text(stringResource(R.string.action_got_it))
                 }
             }
         }

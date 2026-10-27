@@ -6,6 +6,7 @@ import com.watermelon.common.model.SubtitlePosition
 import com.watermelon.common.model.SubtitleStyle
 import com.watermelon.ui.screens.ScreenshotMode
 import com.watermelon.ui.screens.SettingsState
+import com.watermelon.ui.screens.ThemeMode
 import com.watermelon.ui.screens.VhsIntensity
 
 /**
@@ -13,13 +14,37 @@ import com.watermelon.ui.screens.VhsIntensity
  * [SettingsState] default, so a fresh install (no keys written yet) or a key from an older
  * app version that doesn't exist yet both degrade to sane defaults rather than crashing.
  *
- * `pureDark` and folder visibility are deliberately NOT included here — pureDark is read/
- * written directly by MainActivity (it needs to be known before the first composition to
- * pick the initial theme), and folder visibility is a separate SQLite-backed store
- * (FolderVisibilityStoreImpl) with its own per-folder persistence, not a single flat pref.
+ * Folder visibility is deliberately NOT included here — it is a separate SQLite-backed
+ * store (FolderVisibilityStoreImpl) with its own per-folder persistence, not a single flat
+ * pref. The theme mode IS included: it is read through [readThemeMode], which performs the
+ * one-time migration from the pre-Phase-2b `pure_dark` boolean (see that function's doc).
  */
-fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsState = SettingsState(
-    pureDark = pureDark,
+internal const val KEY_THEME_MODE = "theme_mode"
+internal const val KEY_LEGACY_PURE_DARK = "pure_dark"
+
+/**
+ * Reads the persisted theme mode, migrating from the legacy `pure_dark` boolean exactly
+ * once per install: when `theme_mode` is absent, the old setting is translated into its
+ * closest equivalent (dark vs light — there was no follow-system option before), the new
+ * key is written, and the old key is removed. Subsequent reads go straight to `theme_mode`.
+ * The migration is idempotent: any failure to write leaves the pref store unchanged and
+ * this function simply returns the derived value for this session.
+ */
+internal fun readThemeMode(prefs: SharedPreferences): ThemeMode {
+    prefs.getString(KEY_THEME_MODE, null)?.let { stored ->
+        runCatching { ThemeMode.valueOf(stored) }.getOrNull()?.let { return it }
+    }
+    val legacyDark = prefs.getBoolean(KEY_LEGACY_PURE_DARK, true)
+    val migrated = if (legacyDark) ThemeMode.DARK else ThemeMode.LIGHT
+    prefs.edit()
+        .putString(KEY_THEME_MODE, migrated.name)
+        .remove(KEY_LEGACY_PURE_DARK)
+        .apply()
+    return migrated
+}
+
+fun loadSettingsState(prefs: SharedPreferences): SettingsState = SettingsState(
+    themeMode = readThemeMode(prefs),
     forcedRtl = prefs.getBoolean("forced_rtl", false),
     gridDefault = prefs.getBoolean("grid_default", false),
     tetrisViewEnabled = prefs.getBoolean("tetris_view_enabled", true),
@@ -74,13 +99,13 @@ fun loadSettingsState(prefs: SharedPreferences, pureDark: Boolean): SettingsStat
  */
 fun saveSettingsState(prefs: SharedPreferences, state: SettingsState) {
     prefs.edit()
+        .putString(KEY_THEME_MODE, state.themeMode.name)
         .putBoolean("forced_rtl", state.forcedRtl)
         .putBoolean("grid_default", state.gridDefault)
         .putBoolean("tetris_view_enabled", state.tetrisViewEnabled)
         .putBoolean("show_thumbnails", state.showThumbnails)
         .putBoolean("show_durations", state.showDurations)
         .putBoolean("show_file_size", state.showFileSize)
-        .putBoolean("vhs_enabled", state.vhsEnabled)
         .putString("vhs_intensity", state.vhsIntensity.name)
         .putBoolean("tuner_seekbar_enabled", state.tunerSeekBarEnabled)
         .putInt("tuner_seek_step_seconds", state.tunerSeekStepSeconds)

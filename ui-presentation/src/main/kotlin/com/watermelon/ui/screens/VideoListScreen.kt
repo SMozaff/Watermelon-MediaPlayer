@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,11 +24,13 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.RadioButton
 import com.watermelon.ui.components.ItemSizeSlider
 import com.watermelon.ui.components.TetrisVideoLayout
 import androidx.compose.material3.Text
@@ -48,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -72,6 +76,7 @@ import com.watermelon.ui.theme.WatermelonShapes
 import com.watermelon.ui.theme.WatermelonSpacing
 import com.watermelon.ui.theme.WatermelonTypography
 import com.watermelon.ui.viewmodel.LibraryUiState
+import com.watermelon.ui.viewmodel.DeleteError
 import com.watermelon.ui.viewmodel.VideoListViewModel
 
 // Plain enum: the display label is localized at the call site through
@@ -193,10 +198,17 @@ fun VideoListScreen(
     }
 
     LaunchedEffect(deleteError) {
-        deleteError?.let { message ->
+        deleteError?.let { error ->
+            val messageRes = when (error) {
+                DeleteError.NONE_SELECTED -> R.string.error_delete_none_selected
+                DeleteError.INVALID_URIS -> R.string.error_delete_invalid_uris
+                DeleteError.PREPARE_FAILED -> R.string.error_delete_prepare_failed
+                DeleteError.DELETE_FAILED -> R.string.error_delete_failed
+                DeleteError.PARTIAL -> R.string.error_delete_partial
+            }
             android.widget.Toast.makeText(
                 context,
-                message,
+                context.getString(messageRes),
                 android.widget.Toast.LENGTH_LONG,
             ).show()
             viewModel.clearDeleteError()
@@ -392,7 +404,7 @@ fun VideoListScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    state.message,
+                                    stringResource(R.string.library_error_body),
                                     style = WatermelonTypography.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -538,31 +550,31 @@ fun VideoListScreen(
             title = { Text(stringResource(R.string.sort_videos_title)) },
             text = {
                 Column {
+                    // Selectable rows with RadioButton semantics rather than a "✓ " text
+                    // prefix: screen readers now announce the options as a radio group with
+                    // a real selected state, and TalkBack users can navigate and activate
+                    // them with the standard pattern for single-choice lists.
                     VideoSort.values().forEach { option ->
-                        TextButton(
+                        SortOptionRow(
+                            label = option.label(),
+                            selected = option == currentSort,
                             onClick = {
                                 currentSort = option
                                 sortMenuOpen = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                text = if (option == currentSort) "✓ ${option.label()}" else option.label(),
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                    HorizontalDivider()
-                    TextButton(
-                        onClick = { ascending = !ascending },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = if (ascending) "✓ ${stringResource(R.string.sort_ascending)}"
-                            else stringResource(R.string.sort_descending),
-                            color = MaterialTheme.colorScheme.onSurface,
+                            }
                         )
                     }
+                    HorizontalDivider()
+                    SortOptionRow(
+                        label = stringResource(R.string.sort_ascending),
+                        selected = ascending,
+                        onClick = { ascending = true }
+                    )
+                    SortOptionRow(
+                        label = stringResource(R.string.sort_descending),
+                        selected = !ascending,
+                        onClick = { ascending = false }
+                    )
                 }
             },
             confirmButton = {
@@ -582,23 +594,18 @@ fun VideoListScreen(
                     VideoLayout.values()
                         .filter { it != VideoLayout.TETRIS || tetrisViewEnabled }
                         .forEach { layout ->
-                        TextButton(
-                            onClick = { currentLayout = layout },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            val layoutLabel = stringResource(
-                                when (layout) {
-                                    VideoLayout.GRID -> R.string.layout_grid
-                                    VideoLayout.TETRIS -> R.string.layout_tetris
-                                    else -> R.string.layout_list
-                                }
-                            )
-                            Text(
-                                text = if (layout == currentLayout) "✓ $layoutLabel" else layoutLabel,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            SortOptionRow(
+                                label = stringResource(
+                                    when (layout) {
+                                        VideoLayout.GRID -> R.string.layout_grid
+                                        VideoLayout.TETRIS -> R.string.layout_tetris
+                                        else -> R.string.layout_list
+                                    }
+                                ),
+                                selected = layout == currentLayout,
+                                onClick = { currentLayout = layout }
                             )
                         }
-                    }
 
                 }
             },
@@ -709,6 +716,39 @@ fun VideoListScreen(
                     Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
+        )
+    }
+}
+
+/**
+ * Single-choice option row for the sort and view-options dialogs. The whole row is the
+ * touch target with [Role.RadioButton] semantics; the RadioButton control itself is
+ * display-only (onClick = null) so it does not announce or focus as a second interactive
+ * element on top of the row.
+ */
+@Composable
+private fun SortOptionRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onClick
+            )
+            .padding(vertical = WatermelonSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(WatermelonSpacing.sm))
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

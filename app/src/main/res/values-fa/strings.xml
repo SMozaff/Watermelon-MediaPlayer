@@ -15,4 +15,28 @@
     <string name="player_delete_body">%1$s برای همیشه از دستگاه و کتابخانهٔ شما حذف می‌شود.</string>
     <string name="toast_deleted">%1$s حذف شد</string>
     <string name="toast_delete_failed">حذف ناموفق بود: %1$s</string>
+
+    <!-- کنش‌های کنترل از راه دور پنجرهٔ تصویر در تصویر -->
+    <string name="pip_action_play">پخش</string>
+    <string name="pip_action_pause">توقف</string>
+    <string name="pip_action_previous">قبلی</string>
+    <string name="pip_action_next">بعدی</string>
+    <string name="pip_action_rewind">۱۰ ثانیه عقب</string>
+    <string name="pip_action_forward">۱۰ ثانیه جلو</string>
+
+    <!-- هم‌رسانی -->
+    <string name="share_chooser_title">هم‌رسانی ویدئو</string>
+
+    <!-- پیام‌های کوتاه انتخاب‌گر فهرست پخش -->
+    <string name="toast_added_to_playlist">به %1$s افزوده شد</string>
+    <string name="toast_already_in_playlist">قبلاً در %1$s بوده است</string>
+    <string name="toast_playlist_created">%1$s ساخته شد و ویدئو به آن افزوده شد</string>
+    <string name="toast_add_to_playlist_failed">افزودن ویدئو به %1$s ناموفق بود</string>
+    <string name="toast_playlist_create_failed">ساختن %1$s ناموفق بود</string>
+
+    <!-- دلایل خطای جریان حذف -->
+    <string name="delete_error_unavailable">این ویدئو دیگر در کتابخانهٔ رسانه‌ها در دسترس نیست.</string>
+    <string name="delete_error_start_request">Android نتوانست درخواست حذف را آغاز کند.</string>
+    <string name="delete_error_failed">Watermelon نتوانست این ویدئو را حذف کند.</string>
+    <string name="delete_error_permission">Watermelon اجازهٔ حذف این ویدئو را ندارد.</string>
 </resources>

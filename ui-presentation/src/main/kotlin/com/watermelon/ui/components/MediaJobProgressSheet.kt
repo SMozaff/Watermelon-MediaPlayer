@@ -16,12 +16,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonShapes
@@ -97,11 +99,11 @@ fun MediaJobProgressSheet(
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.action_cancel))
                         }
                         onContinueInBackground?.let { continueInBackground ->
                             TextButton(onClick = continueInBackground) {
-                                Text("Continue in background")
+                                Text(stringResource(R.string.jobs_continue_background))
                             }
                         }
                     }
@@ -112,23 +114,23 @@ fun MediaJobProgressSheet(
                         // covers the simple-success case (extract audio, or after the
                         // decision has already been resolved).
                         Text(
-                            if (job.type == MediaJobType.EXTRACT_AUDIO) "MP3 ready" else "Done",
+                            if (job.type == MediaJobType.EXTRACT_AUDIO) stringResource(R.string.jobs_mp3_ready) else stringResource(R.string.jobs_done),
                             style = MaterialTheme.typography.bodyLarge,
                             color = PlayerColors.current.textPrimary
                         )
                         if (job.type == MediaJobType.EXTRACT_AUDIO && outputLocation != null) {
                             Text(
-                                text = "Saved to $outputLocation",
+                                text = stringResource(R.string.jobs_saved_to, outputLocation),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "You can change this folder in Settings › Media tools.",
+                                text = stringResource(R.string.jobs_saved_settings_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             onOpenSettings?.let { openSettings ->
-                                TextButton(onClick = openSettings) { Text("Open settings") }
+                                TextButton(onClick = openSettings) { Text(stringResource(R.string.action_open_settings)) }
                             }
                         }
                         Button(
@@ -140,16 +142,16 @@ fun MediaJobProgressSheet(
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("OK")
+                            Text(stringResource(R.string.action_ok))
                         }
                     }
 
                     is MediaJobState.Failed -> {
                         Text(
                             if (job.type == MediaJobType.EXTRACT_AUDIO) {
-                                "MP3 conversion failed"
+                                stringResource(R.string.jobs_failed_extract)
                             } else {
-                                "Couldn’t finish"
+                                stringResource(R.string.jobs_failed_generic)
                             },
                             style = MaterialTheme.typography.bodyLarge,
                             color = PlayerColors.current.textPrimary
@@ -168,7 +170,7 @@ fun MediaJobProgressSheet(
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Dismiss")
+                            Text(stringResource(R.string.action_dismiss))
                         }
                     }
 
@@ -182,14 +184,20 @@ fun MediaJobProgressSheet(
     }
 }
 
-private fun jobTypeLabel(type: MediaJobType): String = when (type) {
-    MediaJobType.EXTRACT_AUDIO -> "Converting to MP3"
-    MediaJobType.TRIM -> "Trimming Video"
-    MediaJobType.COMPRESS -> "Compressing Video"
-}
+@Composable
+private fun jobTypeLabel(type: MediaJobType): String = stringResource(
+    when (type) {
+        MediaJobType.EXTRACT_AUDIO -> R.string.jobs_type_extract
+        MediaJobType.TRIM -> R.string.jobs_type_trim
+        MediaJobType.COMPRESS -> R.string.jobs_type_compress
+    }
+)
 
-private fun jobProgressLabel(type: MediaJobType): String = when (type) {
-    MediaJobType.EXTRACT_AUDIO -> "Encoding audio"
-    MediaJobType.TRIM -> "Processing video"
-    MediaJobType.COMPRESS -> "Compressing video"
-}
+@Composable
+private fun jobProgressLabel(type: MediaJobType): String = stringResource(
+    when (type) {
+        MediaJobType.EXTRACT_AUDIO -> R.string.jobs_progress_label_extract
+        MediaJobType.TRIM -> R.string.jobs_progress_label_trim
+        MediaJobType.COMPRESS -> R.string.jobs_progress_label_compress
+    }
+)

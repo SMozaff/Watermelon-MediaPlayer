@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -98,7 +100,7 @@ fun VelocityGuardImage(
             )
             ThumbnailResult.Failed -> WatermelonGlyph(
                 icon = com.watermelon.ui.WatermelonIcons.VideoUnavailable,
-                contentDescription = "Thumbnail unavailable",
+                contentDescription = stringResource(R.string.cd_thumbnail_unavailable),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(28.dp)
             )
