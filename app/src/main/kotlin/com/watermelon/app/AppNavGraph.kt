@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
@@ -102,7 +103,12 @@ internal fun AppNavGraph(
         modifier = modifier
     ) {
         composable(Routes.FOLDERS) {
-            val vm = remember {
+            // viewModel() (scoped to this NavBackStackEntry) rather than remember{}: the
+            // ViewModel survives configuration changes, is restored across process death,
+            // and is properly cleared — viewModelScope cancelled, collect jobs stopped —
+            // the moment this entry is popped. remember-constructed ViewModels were never
+            // cleared, so their viewModelScope coroutines ran until process death.
+            val vm = viewModel {
                 com.watermelon.ui.viewmodel.FolderViewModel(
                     deps.folderRepository, deps.mediaRepository, deps.playlistRepository, deps.settingsStore
                 )
@@ -145,7 +151,7 @@ internal fun AppNavGraph(
             }
         }
         composable(Routes.ALL_VIDEOS) {
-            val vm = remember {
+            val vm = viewModel {
                 com.watermelon.ui.viewmodel.VideoListViewModel(
                     mediaRepository = deps.mediaRepository,
                     folderPath = "",
@@ -202,7 +208,7 @@ internal fun AppNavGraph(
             }
         }
         composable(Routes.PLAYLISTS) {
-            val vm = remember { com.watermelon.ui.viewmodel.PlaylistViewModel(deps.playlistRepository) }
+            val vm = viewModel { com.watermelon.ui.viewmodel.PlaylistViewModel(deps.playlistRepository) }
             val isTelevision = remember {
                 com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(activity)
             }
@@ -243,7 +249,10 @@ internal fun AppNavGraph(
         ) { backStackEntry ->
             val folderPath = Uri.decode(backStackEntry.arguments?.getString("folderPath").orEmpty())
             val isPlaylist = backStackEntry.arguments?.getBoolean("isPlaylist") ?: false
-            val vm = remember(folderPath) {
+            // Keyed by folderPath: each folder/playlist entry gets its own store anyway,
+            // but the key keeps instances distinct even if a future navigation change ever
+            // shares one store across argument variants.
+            val vm = viewModel(key = folderPath) {
                 com.watermelon.ui.viewmodel.VideoListViewModel(
                     deps.mediaRepository, folderPath, deps.playlistRepository, isPlaylist
                 )
@@ -312,6 +321,12 @@ internal fun AppNavGraph(
                     Text(stringResource(R.string.connecting), style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
+                // PlayerViewModel stays keyed to the live MediaController instance rather
+                // than back-stack-scoped: the controller is released and recreated by the
+                // Activity when playback stops, and a retained ViewModel would keep a stale
+                // controller alive across that boundary. The same session-scoping rationale
+                // keeps Trim/Compress ViewModels remember-constructed — each belongs to a
+                // single job on a single file, not to the destination.
                 val vm = remember(pbController) {
                     com.watermelon.ui.viewmodel.PlayerViewModel(pbController)
                 }
@@ -717,7 +732,7 @@ internal fun AppNavGraph(
             }
         }
         composable(Routes.FOLDER_VISIBILITY) {
-            val vm = remember {
+            val vm = viewModel {
                 com.watermelon.ui.viewmodel.FolderViewModel(
                     deps.folderRepository, deps.mediaRepository, deps.playlistRepository, deps.settingsStore
                 )
