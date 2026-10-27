@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">بطيخ</string>
+
+    <!-- Permission flow -->
+    <string name="permission_rationale">يحتاج Watermelon إلى الوصول إلى فيديوهاتك لإنشاء المكتبة.</string>
+    <string name="permission_grant">منح الوصول</string>
+    <string name="permission_permanently_denied_hint">تم رفض الوصول إلى الفيديو نهائيًا. لاستخدام Watermelon، فعّل الوصول إلى الفيديو في الإعدادات.</string>
+    <string name="permission_open_settings">فتح الإعدادات</string>
+    <string name="toast_deletion_cancelled">تم إلغاء الحذف</string>
+
+    <!-- Player and connection states -->
+    <string name="connecting">جارٍ الاتصال…</string>
+    <string name="player_delete_title">هل تريد الحذف من الجهاز؟</string>
+    <string name="player_delete_body">سيتم حذف %1$s نهائيًا من جهازك ومكتبتك.</string>
+    <string name="toast_deleted">تم حذف %1$s</string>
+    <string name="toast_delete_failed">فشل الحذف: %1$s</string>
 </resources>

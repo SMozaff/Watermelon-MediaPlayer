@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">هندوانه</string>
+
+    <!-- Permission flow -->
+    <string name="permission_rationale">Watermelon برای ساخت کتابخانه به دسترسی به ویدئوهای شما نیاز دارد.</string>
+    <string name="permission_grant">اعطای دسترسی</string>
+    <string name="permission_permanently_denied_hint">دسترسی به ویدئو برای همیشه رد شده است. برای استفاده از Watermelon، دسترسی ویدئو را در تنظیمات فعال کنید.</string>
+    <string name="permission_open_settings">باز کردن تنظیمات</string>
+    <string name="toast_deletion_cancelled">حذف لغو شد</string>
+
+    <!-- Player and connection states -->
+    <string name="connecting">در حال اتصال…</string>
+    <string name="player_delete_title">از دستگاه حذف شود؟</string>
+    <string name="player_delete_body">%1$s برای همیشه از دستگاه و کتابخانهٔ شما حذف می‌شود.</string>
+    <string name="toast_deleted">%1$s حذف شد</string>
+    <string name="toast_delete_failed">حذف ناموفق بود: %1$s</string>
 </resources>

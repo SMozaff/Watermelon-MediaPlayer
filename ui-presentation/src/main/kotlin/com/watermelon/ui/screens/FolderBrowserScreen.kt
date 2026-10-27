@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -138,7 +139,7 @@ fun FolderBrowserScreen(
 
     Column(modifier = modifier.fillMaxSize()) {
         WatermelonHeader(
-            title = "Media Library",
+            title = stringResource(R.string.library_title),
             showBackButton = false,
             showSettingsButton = true,
             onSettingsClick = onSettingsClick,
@@ -156,14 +157,17 @@ fun FolderBrowserScreen(
         ) {
             LabeledIconButton(
                 icon = IconType.DrawableIcon(WatermelonIcons.Sort),
-                label = "Sort: ${currentSort.label()}",
+                label = stringResource(R.string.toolbar_sort, currentSort.label()),
                 onClick = { sortMenuOpen = true },
             )
             LabeledIconButton(
                 icon = IconType.DrawableIcon(
                     if (isGrid) WatermelonIcons.ViewGrid else WatermelonIcons.ViewList
                 ),
-                label = "View: ${if (isGrid) "Grid" else "List"}",
+                label = stringResource(
+                    R.string.toolbar_view,
+                    stringResource(if (isGrid) R.string.layout_grid else R.string.layout_list)
+                ),
                 onClick = { viewOptionsOpen = true },
             )
             ItemSizeSlider(
@@ -196,12 +200,12 @@ fun FolderBrowserScreen(
                         ) {
                             FolderLoadingAnimation(Modifier.size(112.dp))
                             Text(
-                                "Scanning your media library",
+                                stringResource(R.string.library_scanning_folders),
                                 style = WatermelonTypography.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                "Folders will appear as indexing finishes",
+                                stringResource(R.string.library_scanning_folders_hint),
                                 style = WatermelonTypography.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -217,12 +221,12 @@ fun FolderBrowserScreen(
                             modifier = Modifier.padding(WatermelonSpacing.xl)
                         ) {
                             Text(
-                                "No media folders found",
+                                stringResource(R.string.library_empty_folders_title),
                                 style = WatermelonTypography.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                "Watermelon could not find eligible videos in your visible folders.",
+                                stringResource(R.string.library_empty_folders_body),
                                 style = WatermelonTypography.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -230,7 +234,7 @@ fun FolderBrowserScreen(
                                 onClick = viewModel::refresh,
                                 selected = true
                             ) {
-                                Text("Refresh library", color = WatermelonColors.Accent)
+                                Text(stringResource(R.string.library_refresh), color = WatermelonColors.Accent)
                             }
                         }
                     }
@@ -244,7 +248,7 @@ fun FolderBrowserScreen(
                             modifier = Modifier.padding(WatermelonSpacing.xl)
                         ) {
                             Text(
-                                "Library unavailable",
+                                stringResource(R.string.library_error_title),
                                 style = WatermelonTypography.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -257,7 +261,7 @@ fun FolderBrowserScreen(
                                 onClick = viewModel::refresh,
                                 selected = true
                             ) {
-                                Text("Try again", color = WatermelonColors.Accent)
+                                Text(stringResource(R.string.library_try_again), color = WatermelonColors.Accent)
                             }
                         }
                     }
@@ -330,7 +334,7 @@ fun FolderBrowserScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { sortMenuOpen = false },
-            title = { Text("Sort folders") },
+            title = { Text(stringResource(R.string.sort_folders_title)) },
             text = {
                 Column {
                     FolderSort.values().forEach { option ->
@@ -353,14 +357,15 @@ fun FolderBrowserScreen(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
-                            text = if (ascending) "✓ Ascending" else "Descending",
+                            text = if (ascending) "✓ ${stringResource(R.string.sort_ascending)}"
+                            else stringResource(R.string.sort_descending),
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { sortMenuOpen = false }) { Text("Done") }
+                TextButton(onClick = { sortMenuOpen = false }) { Text(stringResource(R.string.action_done)) }
             },
         )
     }
@@ -370,7 +375,7 @@ fun FolderBrowserScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { viewOptionsOpen = false },
-            title = { Text("View options") },
+            title = { Text(stringResource(R.string.view_options_title)) },
             text = {
                 Column {
                     FolderLayout.values().forEach { option ->
@@ -378,7 +383,9 @@ fun FolderBrowserScreen(
                             onClick = { currentLayout = option },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            val label = option.name.lowercase().replaceFirstChar { it.uppercase() }
+                            val label = stringResource(
+                                if (option == FolderLayout.GRID) R.string.layout_grid else R.string.layout_list
+                            )
                             Text(
                                 text = if (option == currentLayout) "✓ $label" else label,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -389,7 +396,7 @@ fun FolderBrowserScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { viewOptionsOpen = false }) { Text("Done") }
+                TextButton(onClick = { viewOptionsOpen = false }) { Text(stringResource(R.string.action_done)) }
             },
         )
     }
@@ -412,9 +419,12 @@ private fun SectionHeader(title: String) {
     )
 }
 
-private fun FolderSort.label() = when (this) {
-    FolderSort.NAME -> "Name"
-    FolderSort.SIZE -> "Size"
-    FolderSort.MODIFIED -> "Modified"
-    FolderSort.VIDEO_COUNT -> "Video Count"
-}
+@Composable
+private fun FolderSort.label(): String = stringResource(
+    when (this) {
+        FolderSort.NAME -> R.string.sort_by_name
+        FolderSort.SIZE -> R.string.sort_by_size
+        FolderSort.MODIFIED -> R.string.sort_by_modified
+        FolderSort.VIDEO_COUNT -> R.string.sort_by_video_count
+    }
+)

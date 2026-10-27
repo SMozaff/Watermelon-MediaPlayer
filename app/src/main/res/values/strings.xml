@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Watermelon</string>
+
+    <!-- Permission flow -->
+    <string name="permission_rationale">Watermelon needs access to your videos to build the library.</string>
+    <string name="permission_grant">Grant access</string>
+    <string name="permission_permanently_denied_hint">Video access was declined permanently. To use Watermelon, allow video access in Settings.</string>
+    <string name="permission_open_settings">Open Settings</string>
+    <string name="toast_deletion_cancelled">Deletion cancelled</string>
+
+    <!-- Player and connection states -->
+    <string name="connecting">Connecting…</string>
+    <string name="player_delete_title">Delete from device?</string>
+    <string name="player_delete_body">%1$s will be permanently removed from your device and library.</string>
+    <string name="toast_deleted">Deleted %1$s</string>
+    <string name="toast_delete_failed">Delete failed: %1$s</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.watermelon.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.NavigationBar
@@ -9,11 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.watermelon.ui.R
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.theme.WatermelonGlass
 import com.watermelon.ui.theme.WatermelonTypography
@@ -21,42 +24,45 @@ import com.watermelon.ui.theme.WatermelonTypography
 /**
  * Bottom navigation bar for Watermelon MediaPlayer.
  * Implements the "Bottom navigation" requirement from the UI Design System.
+ *
+ * Labels are string resources so the bar localizes with the app (fa/ar) instead of
+ * shipping English-only literals.
  */
 enum class BottomNavItem(
     val route: String,
     val icon: Int,
     val selectedIcon: Int,
-    val label: String
+    @StringRes val labelRes: Int
 ) {
     FOLDERS(
         route = "folders",
         icon = WatermelonIcons.Folder,
         selectedIcon = WatermelonIcons.FolderOpen,
-        label = "Folders"
+        labelRes = R.string.nav_folders
     ),
     VIDEOS(
         route = "all_videos",
         icon = WatermelonIcons.VideoLibrary,
         selectedIcon = WatermelonIcons.VideoLibrary,
-        label = "Videos"
+        labelRes = R.string.nav_videos
     ),
     PLAYLISTS(
         route = "playlists",
         icon = WatermelonIcons.Playlist,
         selectedIcon = WatermelonIcons.Playlist,
-        label = "Playlists"
+        labelRes = R.string.nav_playlists
     ),
     FAVORITES(
         route = "favorites",
         icon = WatermelonIcons.StarBorder,
         selectedIcon = WatermelonIcons.Star,
-        label = "Favorites"
+        labelRes = R.string.nav_favorites
     ),
     SETTINGS(
         route = "settings",
         icon = WatermelonIcons.Settings,
         selectedIcon = WatermelonIcons.Settings,
-        label = "Settings"
+        labelRes = R.string.nav_settings
     )
 }
 
@@ -104,14 +110,16 @@ fun WatermelonBottomNavigation(
                     icon = {
                         WatermelonGlyph(
                             icon = if (selected) item.selectedIcon else item.icon,
-                            contentDescription = item.label,
+                            contentDescription = stringResource(item.labelRes),
                             tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
                     label = {
                         Text(
-                            text = item.label,
-                            style = WatermelonTypography.typography.labelSmall,
+                            text = stringResource(item.labelRes),
+                            // labelMedium (12sp), not labelSmall (10sp): Material guidance for
+                            // navigation labels — 10sp falls below the minimum legibility floor.
+                            style = WatermelonTypography.typography.labelMedium,
                             color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

@@ -33,6 +33,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.Playlist
@@ -89,7 +90,7 @@ fun PlaylistsScreen(
     var menuTarget by remember { mutableStateOf<Playlist?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        WatermelonHeader(title = "Playlists")
+        WatermelonHeader(title = stringResource(R.string.nav_playlists))
 
         WatermelonGlassButton(
             onClick = { showCreateDialog = true },
@@ -105,7 +106,7 @@ fun PlaylistsScreen(
             )
             Spacer(Modifier.size(WatermelonSpacing.sm))
             Text(
-                "New playlist",
+                stringResource(R.string.playlists_new_playlist_title),
                 style = WatermelonTypography.typography.bodyLarge,
                 color = WatermelonColors.Accent
             )
@@ -125,12 +126,12 @@ fun PlaylistsScreen(
                         modifier = Modifier.padding(WatermelonSpacing.xl),
                     ) {
                     Text(
-                        "Create playlists for the videos you want to watch again.",
+                        stringResource(R.string.playlists_empty_title),
                         style = WatermelonTypography.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        "Keep favourites, trips, shows, or any group together without moving the original files.",
+                        stringResource(R.string.playlists_empty_body),
                         style = WatermelonTypography.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = WatermelonSpacing.sm),
@@ -139,7 +140,7 @@ fun PlaylistsScreen(
                             onClick = { showCreateDialog = true },
                             modifier = Modifier.padding(top = WatermelonSpacing.lg)
                         ) {
-                            Text("Create playlist", color = WatermelonColors.Accent)
+                            Text(stringResource(R.string.playlists_create_playlist), color = WatermelonColors.Accent)
                         }
                     }
                 }
@@ -193,7 +194,7 @@ fun PlaylistsScreen(
                                     WatermelonGlassIconButton(
                                         onClick = { menuTarget = playlist },
                                         icon = WatermelonIcons.MoreVert,
-                                        contentDescription = "Playlist options"
+                                        contentDescription = stringResource(R.string.playlists_options_cd)
                                     )
                                 }
                             }
@@ -205,14 +206,14 @@ fun PlaylistsScreen(
                             border = BorderStroke(1.dp, WatermelonGlass.borderFor(WatermelonGlass.Role.Popup))
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Rename") },
+                                text = { Text(stringResource(R.string.action_rename)) },
                                 onClick = {
                                     renameTarget = playlist
                                     menuTarget = null
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Delete", color = WatermelonColors.Error) },
+                                text = { Text(stringResource(R.string.action_delete), color = WatermelonColors.Error) },
                                 onClick = {
                                     deleteTarget = playlist
                                     menuTarget = null
@@ -234,12 +235,12 @@ fun PlaylistsScreen(
             onDismissRequest = { showCreateDialog = false },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("New playlist", color = MaterialTheme.colorScheme.onSurface) },
+            title = { Text(stringResource(R.string.playlists_new_playlist_title), color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    placeholder = { Text("Playlist name") },
+                    placeholder = { Text(stringResource(R.string.playlists_name_placeholder)) },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -263,11 +264,11 @@ fun PlaylistsScreen(
                             showCreateDialog = false
                         }
                     }
-                ) { Text("Create", color = WatermelonColors.Accent) }
+                ) { Text(stringResource(R.string.action_create), color = WatermelonColors.Accent) }
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
@@ -279,7 +280,7 @@ fun PlaylistsScreen(
             onDismissRequest = { renameTarget = null },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Rename playlist", color = MaterialTheme.colorScheme.onSurface) },
+            title = { Text(stringResource(R.string.playlists_rename_playlist_title), color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 TextField(
                     value = name,
@@ -305,11 +306,11 @@ fun PlaylistsScreen(
                             renameTarget = null
                         }
                     }
-                ) { Text("Save", color = WatermelonColors.Accent) }
+                ) { Text(stringResource(R.string.action_save), color = WatermelonColors.Accent) }
             },
             dismissButton = {
                 TextButton(onClick = { renameTarget = null }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
@@ -320,10 +321,10 @@ fun PlaylistsScreen(
             onDismissRequest = { deleteTarget = null },
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
-            title = { Text("Delete \"${target.name}\"?", color = MaterialTheme.colorScheme.onSurface) },
+            title = { Text(stringResource(R.string.playlists_delete_title, target.name), color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Text(
-                    "This removes the playlist. The video files themselves are not deleted.",
+                    stringResource(R.string.playlists_delete_body),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
@@ -333,11 +334,11 @@ fun PlaylistsScreen(
                         viewModel.deletePlaylist(target.id)
                         deleteTarget = null
                     }
-                ) { Text("Delete", color = WatermelonColors.Error) }
+                ) { Text(stringResource(R.string.action_delete), color = WatermelonColors.Error) }
             },
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         )
