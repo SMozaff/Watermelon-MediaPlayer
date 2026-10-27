@@ -13,7 +13,10 @@
     <!-- Appearance -->
     <string name="settings_appearance_title">ظاهر</string>
     <string name="settings_appearance_summary">پوسته و جهت خواندن</string>
-    <string name="settings_pure_dark">پوستهٔ تیرهٔ خالص</string>
+    <string name="settings_theme_mode">پوسته</string>
+    <string name="theme_mode_system">هماهنگ با سیستم</string>
+    <string name="theme_mode_dark">تیره</string>
+    <string name="theme_mode_light">روشن</string>
     <string name="settings_force_rtl">اجبار راست‌به‌چپ</string>
 
     <!-- Player -->
@@ -129,6 +132,7 @@
     <string name="library_try_again">تلاش دوباره</string>
 
     <!-- فهرست‌های پخش -->
+    <string name="playlist_title">فهرست پخش</string>
     <string name="playlists_create_playlist">ایجاد فهرست پخش</string>
     <string name="playlists_new_playlist_title">فهرست پخش جدید</string>
     <string name="playlists_rename_playlist_title">تغییر نام فهرست پخش</string>
@@ -278,6 +282,7 @@
     <string name="jobs_status_complete">%1$s کامل شد</string>
     <string name="jobs_status_failed">%1$s ناموفق بود</string>
     <string name="jobs_status_cancelled">%1$s لغو شد</string>
+    <string name="jobs_error_open_output">این خروجی روی دستگاه باز نشد.</string>
     <string name="jobs_verb_extract_audio">در حال استخراج صدا</string>
     <string name="jobs_verb_trim">در حال بریدن ویدئو</string>
     <string name="jobs_verb_compress">در حال فشرده‌سازی ویدئو</string>

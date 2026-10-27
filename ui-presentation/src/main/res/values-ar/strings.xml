@@ -13,7 +13,10 @@
     <!-- Appearance -->
     <string name="settings_appearance_title">المظهر</string>
     <string name="settings_appearance_summary">السمة واتجاه القراءة</string>
-    <string name="settings_pure_dark">سمة داكنة بالكامل</string>
+    <string name="settings_theme_mode">السمة</string>
+    <string name="theme_mode_system">حسب النظام</string>
+    <string name="theme_mode_dark">داكنة</string>
+    <string name="theme_mode_light">فاتحة</string>
     <string name="settings_force_rtl">فرض اتجاه من اليمين إلى اليسار</string>
 
     <!-- Player -->
@@ -129,6 +132,7 @@
     <string name="library_try_again">حاول مجددًا</string>
 
     <!-- قوائم التشغيل -->
+    <string name="playlist_title">قائمة التشغيل</string>
     <string name="playlists_create_playlist">إنشاء قائمة تشغيل</string>
     <string name="playlists_new_playlist_title">قائمة تشغيل جديدة</string>
     <string name="playlists_rename_playlist_title">إعادة تسمية قائمة التشغيل</string>
@@ -278,6 +282,7 @@
     <string name="jobs_status_complete">اكتمل %1$s</string>
     <string name="jobs_status_failed">فشل %1$s</string>
     <string name="jobs_status_cancelled">أُلغيت %1$s</string>
+    <string name="jobs_error_open_output">تعذّر فتح هذا الناتج على الجهاز.</string>
     <string name="jobs_verb_extract_audio">جارٍ استخراج الصوت</string>
     <string name="jobs_verb_trim">جارٍ اقتطاع الفيديو</string>
     <string name="jobs_verb_compress">جارٍ ضغط الفيديو</string>

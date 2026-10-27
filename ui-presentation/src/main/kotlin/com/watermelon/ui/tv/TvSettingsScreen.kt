@@ -28,6 +28,7 @@ import com.watermelon.common.model.SubtitlePosition
 import com.watermelon.common.model.SubtitleStyle
 import com.watermelon.ui.screens.ScreenshotMode
 import com.watermelon.ui.screens.SettingsState
+import com.watermelon.ui.screens.ThemeMode
 import com.watermelon.ui.screens.VhsIntensity
 import com.watermelon.ui.theme.WatermelonSpacing
 
@@ -60,10 +61,13 @@ fun TvSettingsScreen(
 
         item { TvSettingsSection(stringResource(R.string.settings_appearance_title)) }
         item {
-            TvToggleSetting(
-                label = stringResource(R.string.settings_pure_dark),
-                enabled = state.pureDark,
-                onClick = { onStateChange(state.copy(pureDark = !state.pureDark)) }
+            TvChoiceSetting(
+                label = stringResource(R.string.settings_theme_mode),
+                value = state.themeMode.tvLabel(),
+                options = ThemeMode.values().toList(),
+                current = state.themeMode,
+                labelFor = { it.tvLabel() },
+                onSelect = { onStateChange(state.copy(themeMode = it)) }
             )
         }
         item {
@@ -487,6 +491,13 @@ private fun updateSubtitleStyle(
     style: SubtitleStyle
 ) {
     onStateChange(state.copy(subtitleStyle = style))
+}
+
+@Composable
+private fun ThemeMode.tvLabel(): String = when (this) {
+    ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system)
+    ThemeMode.DARK -> stringResource(R.string.theme_mode_dark)
+    ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light)
 }
 
 @Composable

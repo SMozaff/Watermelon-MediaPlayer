@@ -13,10 +13,21 @@ internal fun AppearanceSection(
         title = stringResource(R.string.settings_appearance_title),
         summary = stringResource(R.string.settings_appearance_summary)
     ) {
-        ToggleRow(
-            label = stringResource(R.string.settings_pure_dark),
-            checked = state.pureDark
-        ) { onStateChange(state.copy(pureDark = it)) }
+        val themeLabels = listOf(
+            stringResource(R.string.theme_mode_system),
+            stringResource(R.string.theme_mode_dark),
+            stringResource(R.string.theme_mode_light)
+        )
+        val themeModes = ThemeMode.values().toList()
+        DropdownNavRow(
+            label = stringResource(R.string.settings_theme_mode),
+            value = themeLabels[themeModes.indexOf(state.themeMode)],
+            options = themeLabels,
+            onSelect = { label ->
+                val mode = themeModes.getOrNull(themeLabels.indexOf(label)) ?: return@DropdownNavRow
+                onStateChange(state.copy(themeMode = mode))
+            }
+        )
 
         ToggleRow(
             label = stringResource(R.string.settings_force_rtl),

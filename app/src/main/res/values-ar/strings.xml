@@ -15,4 +15,28 @@
     <string name="player_delete_body">سيتم حذف %1$s نهائيًا من جهازك ومكتبتك.</string>
     <string name="toast_deleted">تم حذف %1$s</string>
     <string name="toast_delete_failed">فشل الحذف: %1$s</string>
+
+    <!-- إجراءات التحكم البعيد في نافذة الصورة داخل الصورة -->
+    <string name="pip_action_play">تشغيل</string>
+    <string name="pip_action_pause">إيقاف مؤقت</string>
+    <string name="pip_action_previous">السابق</string>
+    <string name="pip_action_next">التالي</string>
+    <string name="pip_action_rewind">إرجاع ١٠ ثوانٍ</string>
+    <string name="pip_action_forward">تقديم ١٠ ثوانٍ</string>
+
+    <!-- المشاركة -->
+    <string name="share_chooser_title">مشاركة الفيديو</string>
+
+    <!-- رسائل قصيرة لمنتقي قوائم التشغيل -->
+    <string name="toast_added_to_playlist">أُضيف إلى %1$s</string>
+    <string name="toast_already_in_playlist">موجود بالفعل في %1$s</string>
+    <string name="toast_playlist_created">أُنشئت %1$s وأُضيف الفيديو إليها</string>
+    <string name="toast_add_to_playlist_failed">تعذّرت إضافة الفيديو إلى %1$s</string>
+    <string name="toast_playlist_create_failed">تعذّر إنشاء %1$s</string>
+
+    <!-- أسباب أخطاء مسار الحذف -->
+    <string name="delete_error_unavailable">لم يعد هذا الفيديو متاحًا في مكتبة الوسائط.</string>
+    <string name="delete_error_start_request">تعذّر على Android بدء طلب الحذف.</string>
+    <string name="delete_error_failed">تعذّر على Watermelon حذف هذا الفيديو.</string>
+    <string name="delete_error_permission">ليس لدى Watermelon إذن بحذف هذا الفيديو.</string>
 </resources>
