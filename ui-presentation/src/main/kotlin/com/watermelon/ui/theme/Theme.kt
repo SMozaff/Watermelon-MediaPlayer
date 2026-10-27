@@ -16,14 +16,15 @@ val LocalWatermelonDarkTheme = compositionLocalOf { true }
 
 /**
  * Material 3 theme with RTL-first layout overrides (Manifest §1.1, Teams §6) and a
- * dark/light toggle driven by Settings → Appearance → "Pure dark theme".
+ * dark/light scheme driven by Settings → Appearance → Theme (System / Dark / Light).
  *
  * Watermelon is RTL-native: for Persian/Arabic locales the entire layout direction is
  * inverted at the theme root, not mirrored per-widget. Pass [forceRtl] = true to force RTL
  * regardless of system locale (the "Forced RTL overrides per locale" setting).
  *
  * @param darkTheme true = dark scheme (default), false = light scheme. Bound to
- *   [com.watermelon.ui.screens.SettingsState.pureDark] by the app shell.
+ *   [com.watermelon.ui.screens.SettingsState.themeMode] by the app shell: System follows
+ *   the OS dark-mode toggle, Dark/Light are fixed.
  */
 @Composable
 fun WatermelonTheme(

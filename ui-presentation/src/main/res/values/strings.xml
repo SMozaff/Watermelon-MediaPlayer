@@ -18,7 +18,10 @@
     <!-- Appearance -->
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_summary">Theme and reading direction</string>
-    <string name="settings_pure_dark">Pure dark theme</string>
+    <string name="settings_theme_mode">Theme</string>
+    <string name="theme_mode_system">Follow system</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_light">Light</string>
     <string name="settings_force_rtl">Force RTL overrides</string>
 
     <!-- Player -->
@@ -134,6 +137,7 @@
     <string name="library_try_again">Try again</string>
 
     <!-- Playlists -->
+    <string name="playlist_title">Playlist</string>
     <string name="playlists_create_playlist">Create playlist</string>
     <string name="playlists_new_playlist_title">New playlist</string>
     <string name="playlists_rename_playlist_title">Rename playlist</string>
@@ -283,6 +287,7 @@
     <string name="jobs_status_complete">%1$s complete</string>
     <string name="jobs_status_failed">%1$s failed</string>
     <string name="jobs_status_cancelled">%1$s cancelled</string>
+    <string name="jobs_error_open_output">Could not open this output on the device.</string>
     <string name="jobs_verb_extract_audio">Extracting audio</string>
     <string name="jobs_verb_trim">Trimming video</string>
     <string name="jobs_verb_compress">Compressing video</string>

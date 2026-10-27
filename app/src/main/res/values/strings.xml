@@ -15,4 +15,28 @@
     <string name="player_delete_body">%1$s will be permanently removed from your device and library.</string>
     <string name="toast_deleted">Deleted %1$s</string>
     <string name="toast_delete_failed">Delete failed: %1$s</string>
+
+    <!-- PiP window remote actions -->
+    <string name="pip_action_play">Play</string>
+    <string name="pip_action_pause">Pause</string>
+    <string name="pip_action_previous">Previous</string>
+    <string name="pip_action_next">Next</string>
+    <string name="pip_action_rewind">Rewind 10 seconds</string>
+    <string name="pip_action_forward">Forward 10 seconds</string>
+
+    <!-- Sharing -->
+    <string name="share_chooser_title">Share video</string>
+
+    <!-- Player playlist picker toasts -->
+    <string name="toast_added_to_playlist">Added to %1$s</string>
+    <string name="toast_already_in_playlist">Already in %1$s</string>
+    <string name="toast_playlist_created">Created %1$s and added the video</string>
+    <string name="toast_add_to_playlist_failed">Could not add video to %1$s</string>
+    <string name="toast_playlist_create_failed">Could not create %1$s</string>
+
+    <!-- Delete flow error reasons -->
+    <string name="delete_error_unavailable">This video is no longer available in the media library.</string>
+    <string name="delete_error_start_request">Android could not start the delete request.</string>
+    <string name="delete_error_failed">Watermelon could not delete this video.</string>
+    <string name="delete_error_permission">Watermelon does not have permission to delete this video.</string>
 </resources>
