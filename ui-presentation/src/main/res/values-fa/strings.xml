@@ -147,4 +147,338 @@
     <string name="video_toast_deleted">ویدئوهای انتخاب‌شده حذف شدند</string>
     <string name="video_toast_deletion_cancelled">حذف لغو شد</string>
     <string name="video_share_chooser_title">هم‌رسانی ویدئوها</string>
+
+    <!-- مرحلهٔ ۲الف (رابط کاربری): استخراج کامل رشته‌ها برای ابزارهای رسانه (فشرده‌سازی/برش)،
+         کارهای رسانه، برگه‌ها و دیالوگ‌های پخش‌کننده، تایمر خواب، جست‌وجوی زیرنویس آنلاین،
+         نمایان‌بودن پوشه‌ها، سطوح تلویزیون، توضیح‌های دسترس‌پذیری و کدهای خطای ViewModel.
+         TODO(i18n): این ترجمه‌ها ماشینی هستند و هنوز توسط گویشور بومی فارسی بازبینی نشده‌اند. -->
+
+    <!-- عملکردهای رایج -->
+    <string name="action_back">بازگشت</string>
+    <string name="action_clear_selection">پاک کردن انتخاب</string>
+    <string name="action_close">بستن</string>
+    <string name="action_compress">فشرده‌سازی</string>
+    <string name="action_continue_editing">ادامهٔ ویرایش</string>
+    <string name="action_delete_from_device">حذف از دستگاه</string>
+    <string name="action_discard_changes">دور انداختن تغییرات</string>
+    <string name="action_dismiss">نادیده گرفتن</string>
+    <string name="action_extract_audio">استخراج صدا</string>
+    <string name="action_got_it">متوجه شدم</string>
+    <string name="action_keep_running">ادامهٔ اجرا</string>
+    <string name="action_ok">تأیید</string>
+    <string name="action_off">خاموش</string>
+    <string name="action_on">روشن</string>
+    <string name="action_open">باز کردن</string>
+    <string name="action_open_settings">باز کردن تنظیمات</string>
+    <string name="action_set">تنظیم</string>
+    <string name="action_share">هم‌رسانی</string>
+    <string name="action_stay">ماندن</string>
+    <string name="action_trim">برش</string>
+
+    <!-- وضعیت کتابخانه و خطاهای حذف (بازخوانده از کدهای ViewModel) -->
+    <string name="browser_header_playlists">فهرست‌های پخش ویدئوی من</string>
+    <string name="browser_header_storage">حافظهٔ اصلی</string>
+    <string name="library_error_body">کتابخانهٔ رسانهٔ شما تازه‌سازی نشد. دسترسی را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="error_delete_none_selected">هیچ فایلی انتخاب نشده است.</string>
+    <string name="error_delete_invalid_uris">برخی از فایل‌های انتخاب‌شده نشانی رسانهٔ نامعتبر دارند.</string>
+    <string name="error_delete_prepare_failed">واتمرلون نتوانست فایل‌های انتخاب‌شده را برای حذف آماده کند.</string>
+    <string name="error_delete_failed">واتمرلون نتوانست فایل‌های انتخاب‌شده را حذف کند.</string>
+    <string name="error_delete_partial">برخی از فایل‌ها حذف نشدند.</string>
+    <string name="selection_count_selected">%1$d انتخاب شد</string>
+    <string name="folder_visibility_hint">پوشه‌های پنهان از نمایهٔ کتابخانه کنار گذاشته می‌شوند.</string>
+    <string name="folder_visibility_empty">هنوز پوشه‌ای نمایه نشده است.</string>
+
+    <!-- توضیح‌های دسترس‌پذیری -->
+    <string name="cd_app_logo">واتمرلون مدیاپلیر</string>
+    <string name="cd_back">بازگشت</string>
+    <string name="cd_brightness">روشنایی</string>
+    <string name="cd_close_player">بستن پخش‌کننده</string>
+    <string name="cd_favorite">علاقه‌مندی</string>
+    <string name="cd_item_size">اندازهٔ آیتم: %1$s</string>
+    <string name="cd_larger_items">آیتم‌های بزرگ‌تر</string>
+    <string name="cd_lock">قفل</string>
+    <string name="cd_menu">منو</string>
+    <string name="cd_more_options">گزینه‌های بیشتر</string>
+    <string name="cd_new">جدید</string>
+    <string name="cd_next">بعدی</string>
+    <string name="cd_next_track">قطعهٔ بعدی</string>
+    <string name="cd_open_full_player">باز کردن پخش‌کنندهٔ کامل برای %1$s</string>
+    <string name="cd_pause">توقف</string>
+    <string name="cd_play">پخش</string>
+    <string name="cd_previous">قبلی</string>
+    <string name="cd_previous_track">قطعهٔ قبلی</string>
+    <string name="cd_seek_bar">نوار پیمایش، %1$s از %2$s</string>
+    <string name="cd_seek_tuner">تیونر پیمایش، %1$s از %2$s</string>
+    <string name="cd_selection_active">حالت انتخاب فعال است</string>
+    <string name="cd_settings">تنظیمات</string>
+    <string name="cd_slide_both_locks">برای باز کردن، هر دو قفل را با هم بالا بکشید</string>
+    <string name="cd_slide_up_to_unlock">برای باز کردن، بالا بکشید</string>
+    <string name="cd_smaller_items">آیتم‌های کوچک‌تر</string>
+    <string name="cd_thumbnail_for">تصویر بندانگشتی %1$s</string>
+    <string name="cd_thumbnail_unavailable">تصویر بندانگشتی در دسترس نیست</string>
+    <string name="cd_trim_range">بازهٔ برش، شروع %1$s، پایان %2$s</string>
+    <string name="cd_video_preview_at">پیش‌نمایش ویدئو در %1$s</string>
+    <string name="cd_volume">بلندی صدا</string>
+
+    <!-- ابزار فشرده‌سازی -->
+    <string name="compress_title">فشرده‌سازی</string>
+    <string name="compress_headline">فشرده‌سازی ویدئو</string>
+    <string name="compress_intro">یک پیش‌تنظیم هوشمند انتخاب کنید، یا وقتی خروجی باید زیر حجم مشخصی بماند، حجم هدف تعیین کنید.</string>
+    <string name="compress_with_preset">فشرده‌سازی با پیش‌تنظیم</string>
+    <string name="compress_custom_target_label">حجم هدف سفارشی (مگابایت)</string>
+    <string name="compress_bitrate_hint">واتمرلون نرخ بیتی را از مدت‌زمان محاسبه و سپس حجم نهایی را اعتبارسنجی می‌کند.</string>
+    <string name="compress_error_whole_number">عددی صحیح بر حسب مگابایت وارد کنید.</string>
+    <string name="compress_error_min_size">حداقل ۲ مگابایت انتخاب کنید تا ویدئو و صدا به‌طور قابل اعتماد کدگذاری شوند.</string>
+    <string name="compress_to_target">فشرده‌سازی به حجم هدف</string>
+    <string name="compress_discard_title">تغییرات فشرده‌سازی دور انداخته شود؟</string>
+    <string name="compress_discard_body">پیش‌تنظیم یا حجم هدفِ انتخابی شما هنوز استفاده نشده است. می‌توانید ویرایش را ادامه دهید یا آن را دور بیندازید و بازگردید.</string>
+    <string name="compress_continue_title">فشرده‌سازی ادامه می‌یابد</string>
+    <string name="compress_continue_body">این فشرده‌سازی همچنان در پس‌زمینه در حال اجراست. برای دیدن پیشرفت آن می‌توانید فشرده‌سازی را از «عملکردهای فایل» دوباره باز کنید.</string>
+    <string name="compress_estimate">تخمین: حدود %1$.1f مگابایت · تا %2$d پیکسل</string>
+    <string name="compress_estimate_unavailable">تخمین خروجی برای این ویدئو در دسترس نیست.</string>
+    <string name="compress_preset_best_quality">بهترین کیفیت</string>
+    <string name="compress_preset_best_quality_desc">فشرده‌سازی ملایم؛ وقتی منبع خوب است جزئیات را حفظ می‌کند.</string>
+    <string name="compress_preset_balanced">متعادل</string>
+    <string name="compress_preset_balanced_desc">کاهش حجم مناسب روزمره بدون پایین آمدن کیفیت محسوس فایل.</string>
+    <string name="compress_preset_small_file">فایل کوچک</string>
+    <string name="compress_preset_small_file_desc">فشرده‌سازی قوی ۴۸۰p برای صرفه‌جویی در حافظه.</string>
+    <string name="compress_preset_share_ready">آمادهٔ هم‌رسانی</string>
+    <string name="compress_preset_share_ready_desc">خروجی بسیار کوچک برای پیام‌رسانی و بارگذاری سریع.</string>
+
+    <!-- ابزار برش -->
+    <string name="trim_title">برش</string>
+    <string name="trim_action">برش</string>
+    <string name="trim_discard_title">تغییرات برش دور انداخته شود؟</string>
+    <string name="trim_discard_body">بازهٔ برشِ انتخابی شما هنوز ذخیره نشده است. می‌توانید ویرایش را ادامه دهید یا آن را دور بیندازید و بازگردید.</string>
+    <string name="trim_continue_title">برش ادامه می‌یابد</string>
+    <string name="trim_continue_body">این برش همچنان در پس‌زمینه در حال اجراست. برای دیدن پیشرفت آن می‌توانید برش را از «عملکردهای فایل» دوباره باز کنید.</string>
+
+    <!-- کارهای رسانه -->
+    <string name="jobs_view">مشاهدهٔ کارها</string>
+    <string name="jobs_title">کارهای رسانه</string>
+    <string name="jobs_empty">در این نشست کاری از ابزارهای رسانه آغاز نشده است.</string>
+    <string name="jobs_section_active">فعال</string>
+    <string name="jobs_section_recent">اخیر</string>
+    <string name="jobs_queued">در صف</string>
+    <string name="jobs_progress_percent">%1$d%% کامل شد</string>
+    <string name="jobs_output_name">خروجی: %1$s</string>
+    <string name="jobs_source_fallback">فایل رسانه</string>
+    <string name="jobs_output_fallback">خروجی رسانه</string>
+    <string name="jobs_review_original">بازبینی نسخهٔ اصلی</string>
+    <string name="jobs_open_result">باز کردن نتیجه</string>
+    <string name="jobs_media_tool_settings">تنظیمات ابزارهای رسانه</string>
+    <string name="jobs_change_settings">تغییر تنظیمات</string>
+    <string name="jobs_continue_background">ادامه در پس‌زمینه</string>
+    <string name="jobs_mp3_ready">ام‌پی‌تری آماده است</string>
+    <string name="jobs_done">انجام شد</string>
+    <string name="jobs_saved_to">در %1$s ذخیره شد</string>
+    <string name="jobs_saved_settings_hint">می‌توانید این پوشه را در «تنظیمات › ابزارهای رسانه» تغییر دهید.</string>
+    <string name="jobs_failed_extract">تبدیل ام‌پی‌تری ناموفق بود</string>
+    <string name="jobs_failed_generic">کار کامل نشد</string>
+    <string name="jobs_status_complete">%1$s کامل شد</string>
+    <string name="jobs_status_failed">%1$s ناموفق بود</string>
+    <string name="jobs_status_cancelled">%1$s لغو شد</string>
+    <string name="jobs_verb_extract_audio">در حال استخراج صدا</string>
+    <string name="jobs_verb_trim">در حال بریدن ویدئو</string>
+    <string name="jobs_verb_compress">در حال فشرده‌سازی ویدئو</string>
+    <string name="jobs_past_extract_audio">استخراج صدا</string>
+    <string name="jobs_past_trim">برش</string>
+    <string name="jobs_past_compress">فشرده‌سازی</string>
+    <string name="jobs_type_extract">در حال تبدیل به ام‌پی‌تری</string>
+    <string name="jobs_type_trim">در حال بریدن ویدئو</string>
+    <string name="jobs_type_compress">در حال فشرده‌سازی ویدئو</string>
+    <string name="jobs_progress_label_extract">در حال کدگذاری صدا</string>
+    <string name="jobs_progress_label_trim">در حال پردازش ویدئو</string>
+    <string name="jobs_progress_label_compress">در حال فشرده‌سازی ویدئو</string>
+
+    <!-- دیالوگ نگه‌داشتن یا حذف نسخهٔ اصلی -->
+    <string name="keep_original_title">نسخهٔ اصلی نگه داشته شود؟</string>
+    <string name="keep_original_body_trim">نسخهٔ اصلی %1$s در کنار نسخهٔ بریده‌شدهٔ %2$s نگه داشته شود، یا اصلی حذف شود؟</string>
+    <string name="keep_original_body_compress">نسخهٔ اصلی %1$s در کنار نسخهٔ فشرده‌شدهٔ %2$s نگه داشته شود، یا اصلی حذف شود؟</string>
+    <string name="keep_original_trim_range">بازهٔ واقعی برش: %1$s – %2$s</string>
+    <string name="keep_original_size_summary">اصلی %1$s → فشرده‌شده %2$s · %3$d%% ذخیره شد</string>
+    <string name="keep_original_waiting">در انتظار تأیید…</string>
+    <string name="keep_original_keep">نگه داشتن نسخهٔ اصلی</string>
+    <string name="keep_original_delete">حذف نسخهٔ اصلی</string>
+
+    <!-- ارتقا به نسخهٔ ویژه -->
+    <string name="premium_title">قابلیت ویژه</string>
+    <string name="premium_body">استخراج صدا، برش و فشرده‌سازی ابزارهای ویژه هستند. برای فعال‌سازی ارتقا دهید.</string>
+
+    <!-- فهرست‌های پخش (انتخاب‌کنندهٔ پخش‌کننده) -->
+    <string name="playlists_create_and_add">ایجاد و افزودن</string>
+    <string name="playlists_create_new">ایجاد فهرست پخش جدید</string>
+    <string name="playlists_empty_hint">برای سازمان‌دهی ویدئوی فعلی، نخستین فهرست پخش خود را بسازید.</string>
+    <string name="playlists_remove_from_this">حذف از این فهرست پخش</string>
+
+    <!-- برگه‌های پخش‌کننده -->
+    <string name="player_actions_title">عملکردهای پخش‌کننده</string>
+    <string name="player_quick_tools">ابزارهای سریع</string>
+    <string name="player_quick_tools_detail">سرعت، زیرنویس، نسبت تصویر، تایمر خواب، عکس فوری، تصویر در تصویر و پخش در پس‌زمینه</string>
+    <string name="player_file_actions">عملکردهای فایل</string>
+    <string name="player_file_actions_detail">علاقه‌مندی، فهرست پخش، هم‌رسانی، ابزارهای رسانه و حذف از دستگاه</string>
+    <string name="player_section_speed">سرعت پخش</string>
+    <string name="player_section_aspect">نسبت تصویر</string>
+    <string name="player_section_orientation">جهت نمایش</string>
+    <string name="player_section_seeking">پیمایش</string>
+    <string name="player_section_subtitle_timing">زمان‌بندی زیرنویس</string>
+    <string name="player_section_subtitles">زیرنویس</string>
+    <string name="player_section_media_tools">ابزارهای رسانه</string>
+    <string name="player_use_standard_seekbar">استفاده از نوار پیمایش استاندارد</string>
+    <string name="player_use_standard_seekbar_detail">رفتن به نوار پیشرفت معمولی با جای‌گذاری مستقیم.</string>
+    <string name="player_use_tuner_seek">استفاده از پیمایش تیونری</string>
+    <string name="player_use_tuner_seek_detail">رفتن به دیال تیونری با گام‌های %1$d ثانیه‌ای.</string>
+    <string name="player_mute">بی‌صدا</string>
+    <string name="player_unmute">باصدا</string>
+    <string name="player_mute_detail">تغییر بلندی صدای رسانهٔ دستگاه</string>
+    <string name="player_repeat_label">تکرار: %1$s</string>
+    <string name="repeat_mode_none">هیچ</string>
+    <string name="repeat_mode_one">تک‌قطعه</string>
+    <string name="repeat_mode_all">همه</string>
+    <string name="player_repeat_detail">تغییر حالت تکرار</string>
+    <string name="player_shuffle_on">بُر زدن: روشن</string>
+    <string name="player_shuffle_off">بُر زدن: خاموش</string>
+    <string name="player_shuffle_detail">تغییر ترتیب صف</string>
+    <string name="player_subtitles_minus_100ms">−۱۰۰ میلی‌ثانیه</string>
+    <string name="player_subtitles_plus_100ms">+۱۰۰ میلی‌ثانیه</string>
+    <string name="player_subtitles_offset_ms">%1$d میلی‌ثانیه</string>
+    <string name="player_screenshot">گرفتن عکس فوری</string>
+    <string name="player_screenshot_detail">ذخیرهٔ فریم فعلی ویدئو</string>
+    <string name="player_screenshot_saved">%1$d عکس فوری ذخیره شد</string>
+    <string name="player_screenshot_failed">عکس فوری ناموفق بود</string>
+    <string name="player_pip">تصویر در تصویر</string>
+    <string name="player_pip_active">تصویر در تصویر: فعال</string>
+    <string name="player_pip_detail">ادامهٔ تماشا در پنجرهٔ شناور</string>
+    <string name="player_pip_unavailable">تصویر در تصویر در این نسخهٔ اندروید پشتیبانی نمی‌شود.</string>
+    <string name="player_background">پخش در پس‌زمینه</string>
+    <string name="player_background_on">پخش در پس‌زمینه: روشن</string>
+    <string name="player_background_detail">ادامهٔ صدا هنگام ترک پخش‌کننده</string>
+    <string name="player_share_detail">ارسال این ویدئو به برنامه‌ای دیگر</string>
+    <string name="player_add_to_favourites">افزودن به علاقه‌مندی‌ها</string>
+    <string name="player_remove_from_favourites">حذف از علاقه‌مندی‌ها</string>
+    <string name="player_favourite_detail">نگه داشتن این ویدئو در مجموعهٔ علاقه‌مندی‌های شخصی شما</string>
+    <string name="player_add_to_playlist_detail">انتخاب یا ایجاد فهرست پخش برای این ویدئو</string>
+    <string name="player_trim_detail">ساخت نسخهٔ کوتاه‌تر از این ویدئو</string>
+    <string name="player_compress_detail">ساخت رونوشت کوچک‌تر از این ویدئو</string>
+    <string name="player_extract_audio_detail">ساخت فایل صوتی از این ویدئو</string>
+    <string name="player_delete_detail">حذف همیشگی این ویدئو پس از تأیید</string>
+    <string name="player_tuner_seek_title">پیمایش تیونری</string>
+    <string name="player_tuner_seek_tip">هر گام تیونر، پخش را %1$d ثانیه جابه‌جا می‌کند. برای انتخاب نوار پیمایش استاندارد به «ابزارهای سریع» بروید یا بعداً تنظیم تیونر را تغییر دهید.</string>
+    <string name="player_now_playing">در حال پخش</string>
+    <string name="player_unknown_title">ویدئوی ناشناس</string>
+
+    <!-- مقادیر شمارشی پخش‌کننده -->
+    <string name="video_ratio_fill">پرکردن</string>
+    <string name="video_ratio_original">اصلی</string>
+    <string name="video_ratio_16_9">۱۶:۹</string>
+    <string name="video_ratio_4_3">۴:۳</string>
+    <string name="video_ratio_21_9">۲۱:۹</string>
+    <string name="orientation_auto">خودکار</string>
+    <string name="orientation_portrait">عمودی</string>
+    <string name="orientation_landscape">افقی</string>
+
+    <!-- زیرنویس -->
+    <string name="subtitles_auto_sync">هم‌زمان‌سازی خودکار</string>
+    <string name="subtitles_find_another">یافتن زیرنویسی دیگر</string>
+    <string name="subtitles_find_online">یافتن زیرنویس آنلاین</string>
+    <string name="subtitles_search_opensubtitles">جست‌وجوی OpenSubtitles برای این ویدئو</string>
+    <string name="subtitles_search_now">جست‌وجوی همین حالا</string>
+    <string name="subtitles_search_requires_internet">نیازمند اتصال به اینترنت</string>
+    <string name="subtitles_searching">در حال جست‌وجو…</string>
+    <string name="subtitles_no_results">زیرنویسی پیدا نشد</string>
+    <string name="subtitles_track_unknown">ناشناس</string>
+    <string name="subtitles_track_downloads">%1$d بارگیری</string>
+    <string name="subtitles_track_hash_match">تطبیق هش</string>
+    <string name="subtitles_download">بارگیری</string>
+    <string name="subtitles_downloading">در حال بارگیری %1$s…</string>
+    <string name="subtitles_error">خطا: %1$s</string>
+    <string name="subtitles_error_permission_denied">اجازه داده نشد</string>
+    <string name="subtitles_error_unknown">خطای ناشناخته</string>
+    <string name="subtitles_error_download_failed">بارگیری ناموفق بود</string>
+    <string name="subtitles_retry_search">تلاش دوباره برای جست‌وجو</string>
+    <string name="subtitles_offline">اتصال به اینترنت برقرار نیست</string>
+    <string name="subtitles_not_configured">کلید API سرویس OpenSubtitles پیکربندی نشده است</string>
+    <string name="subtitles_not_configured_hint">برای درخواست پیکربندی کلید API با توسعه‌دهنده تماس بگیرید</string>
+    <string name="subtitles_auth_required">احراز هویت لازم است</string>
+    <string name="subtitles_quota_exceeded">سهمیهٔ API پر شده است. بعداً دوباره تلاش کنید.</string>
+    <string name="subtitles_sync_idle">برای اصلاح زمان‌بندی زیرنویس، قطعهٔ صوتی تحلیل شود.</string>
+    <string name="subtitles_sync_analyzing">در حال تحلیل…</string>
+    <string name="subtitles_sync_synchronized">هم‌زمان شد.</string>
+    <string name="subtitles_sync_low_confidence">اطمینان کم — تغییری خودکار اعمال نشد. جابه‌جایی دستی را امتحان کنید.</string>
+    <string name="subtitles_sync_complex_drift">زمان‌بندی در طول ویدئو منحرف می‌شود و با یک آفست واحد اصلاح نمی‌شود. جابه‌جایی دستی را امتحان کنید.</string>
+    <string name="subtitles_sync_unsupported">هم‌زمان‌سازی خودکار برای این فایل پشتیبانی نمی‌شود.</string>
+    <string name="subtitles_sync_unavailable">هم‌زمان‌سازی خودکار در حال حاضر در دسترس نیست.</string>
+    <string name="subtitles_sync_failed">هم‌زمان‌سازی خودکار ناموفق بود. دوباره تلاش کنید.</string>
+    <string name="subtitles_controls_label">کنترل‌های زیرنویس</string>
+    <string name="subtitles_no_track">هیچ قطعهٔ زیرنویسی برای این ویدئو در دسترس نیست.</string>
+
+    <!-- تایمر خواب -->
+    <string name="sleep_timer_title">تایمر خواب</string>
+    <string name="sleep_timer_detail">توقف پخش پس از بازهٔ انتخابی</string>
+    <string name="sleep_timer_running">تایمر فعال — %1$s مانده</string>
+    <string name="sleep_cancel_timer">لغو تایمر</string>
+    <string name="sleep_end_of_video">پایان ویدئوی فعلی</string>
+    <string name="sleep_end_of_folder">پایان پوشه</string>
+    <string name="sleep_custom_time">زمان دلخواه</string>
+    <string name="sleep_minutes">دقیقه</string>
+
+    <!-- مقادیر شمارشی تنظیمات (شدت وی‌اچ‌اس، موقعیت/جهت/رنگ زیرنویس) -->
+    <string name="vhs_intensity_off">خاموش</string>
+    <string name="vhs_intensity_low">کم</string>
+    <string name="vhs_intensity_med">متوسط</string>
+    <string name="vhs_intensity_high">زیاد</string>
+    <string name="subtitle_position_bottom">پایین</string>
+    <string name="subtitle_position_top">بالا</string>
+    <string name="subtitle_direction_auto">خودکار</string>
+    <string name="subtitle_direction_force_rtl">اجبار راست‌به‌چپ</string>
+    <string name="subtitle_direction_force_ltr">اجبار چپ‌به‌راست</string>
+    <string name="subtitle_color_white">سفید</string>
+    <string name="subtitle_color_yellow">زرد</string>
+    <string name="subtitle_color_cyan">فیروزه‌ای</string>
+    <string name="subtitle_color_green">سبز</string>
+    <string name="subtitle_color_coral">مرجانی</string>
+    <string name="subtitle_color_black">سیاه</string>
+    <string name="subtitle_color_custom">سفارشی</string>
+
+    <!-- سطوح تلویزیون -->
+    <string name="tv_browse_hint">با دی‌پد مرور کنید. برای پخش، SELECT را فشار دهید.</string>
+    <string name="tv_no_videos">هنوز ویدئویی اینجا نیست</string>
+    <string name="tv_press_back">برای بازگشت به کتابخانه، BACK را فشار دهید.</string>
+    <string name="tv_preview_disabled">پیش‌نمایش غیرفعال است</string>
+    <string name="tv_select_to_play">برای پخش، SELECT</string>
+    <string name="tv_home_title">واتمرلون</string>
+    <string name="tv_home_hint">با دی‌پد در کتابخانه بگردید. برای باز کردن هر آیتم، SELECT را فشار دهید.</string>
+    <string name="tv_nav_all_videos">همهٔ ویدئوها</string>
+    <string name="tv_nav_all_videos_detail">مرور همهٔ ویدئوهای کتابخانهٔ شما</string>
+    <string name="tv_nav_playlists_detail">تازه‌ها، علاقه‌مندی‌ها و فهرست‌های پخش شما</string>
+    <string name="tv_nav_settings_detail">کتابخانه، پخش، زیرنویس و خروجی‌ها</string>
+    <string name="tv_folders">پوشه‌ها</string>
+    <string name="tv_folders_empty">هنوز پوشه‌ای نمایه نشده است. اجازهٔ دسترسی به رسانه را بدهید یا ویدئو اضافه کنید و به اینجا بازگردید.</string>
+    <string name="tv_video_count_one">%1$d ویدئو</string>
+    <string name="tv_video_count_many">%1$d ویدئو</string>
+    <string name="tv_folder_visibility_hint">انتخاب کنید کدام پوشه‌های نمایه‌شده در کتابخانه دیده شوند.</string>
+    <string name="tv_folder_visibility_all_visible">همهٔ پوشه‌های نمایه‌شده نمایان‌اند. برای پنهان‌کردن پوشه‌ای، SELECT را فشار دهید.</string>
+    <string name="tv_folder_visibility_empty">هنوز پوشه‌ای نمایه نشده است. پس از دادن اجازهٔ دسترسی به رسانه به کتابخانه بازگردید.</string>
+    <string name="tv_folder_visibility_hidden_count">%1$d پنهان</string>
+    <string name="tv_back_to_settings">بازگشت به تنظیمات</string>
+    <string name="tv_rewind_10">۱۰ ثانیه عقب</string>
+    <string name="tv_forward_10">۱۰ ثانیه جلو</string>
+    <string name="tv_subtitles_minus_100ms">زیرنویس −۱۰۰ میلی‌ثانیه</string>
+    <string name="tv_subtitles_plus_100ms">زیرنویس +۱۰۰ میلی‌ثانیه</string>
+    <string name="tv_back_to_library">بازگشت به کتابخانه</string>
+    <string name="tv_back_also_returns">BACK هم بازمی‌گرداند</string>
+    <string name="tv_settings_hint">با دی‌پد تنظیم را انتخاب کنید. برای تغییر، SELECT را فشار دهید.</string>
+    <string name="tv_settings_manage">مدیریت</string>
+    <string name="tv_settings_grid_note">برای دستگاه‌های لمسی است؛ تلویزیون همیشه فهرست دی‌پدی دارد.</string>
+    <string name="tv_settings_previews_note">پیش‌نمایش‌ها در کاتالوگ تلویزیون را کنترل می‌کند.</string>
+    <string name="tv_settings_resume_note">با پنهان شدن این گزینه، موقعیت‌های از سرگیری حفظ می‌شوند.</string>
+    <string name="tv_settings_keyboard_hint">برای ویرایش با صفحه‌کلید روی صفحه، SELECT را فشار دهید.</string>
+    <string name="tv_settings_custom_folders_note">پوشه‌های خروجی سفارشی به اندروید ۱۰ یا جدیدتر در این دستگاه نیاز دارند.</string>
+    <string name="tv_settings_screenshot_mode">حالت عکس فوری</string>
+    <string name="tv_screenshot_burst">پیاپی (۹ فریم)</string>
+    <string name="tv_screenshot_single">تکی</string>
+    <string name="tv_settings_vhs_note">برای پخش‌کنندهٔ لمسی است؛ پخش تلویزیونی تمیز و مستقیم می‌ماند.</string>
+    <string name="tv_settings_tuner_note">برای پخش‌کنندهٔ لمسی است؛ تلویزیون کنترل‌های پیمایش اختصاصی دارد.</string>
+    <string name="tv_settings_select_to_change">برای تغییر، SELECT را فشار دهید.</string>
+    <string name="tv_settings_folder_input_hint">پوشه‌ای نسبت به MediaStore وارد کنید. با انتخاب شدن فیلد، صفحه‌کلید تلویزیون باز می‌شود.</string>
 </resources>

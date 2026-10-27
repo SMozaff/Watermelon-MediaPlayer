@@ -24,6 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.watermelon.common.model.MediaItem
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import com.watermelon.ui.WatermelonIcons
 import com.watermelon.ui.components.VelocityGuardImage
 import com.watermelon.ui.components.WatermelonGlyph
@@ -52,7 +54,7 @@ fun TvVideoListScreen(
     Column(modifier = modifier.fillMaxSize()) {
         TvScreenHeader(
             title = title,
-            supportingText = "Use the D-pad to browse. Press SELECT to play."
+            supportingText = stringResource(R.string.tv_browse_hint)
         )
 
         if (videos.isEmpty()) {
@@ -63,12 +65,12 @@ fun TvVideoListScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "No videos here yet",
+                    text = stringResource(R.string.tv_no_videos),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Press BACK to return to the library.",
+                    text = stringResource(R.string.tv_press_back),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = WatermelonSpacing.xs)
@@ -164,17 +166,20 @@ private fun TvVideoRow(
     }
 }
 
+@Composable
 private fun buildTvVideoDetail(
     item: MediaItem,
     showThumbnails: Boolean,
     showDurations: Boolean,
     showFileSize: Boolean
 ): String {
+    val previewDisabledText = stringResource(R.string.tv_preview_disabled)
+    val selectToPlayText = stringResource(R.string.tv_select_to_play)
     val details = buildList {
         if (showDurations) add(formatTvDuration(item.durationMs))
         if (showFileSize && item.fileSize > 0L) add(formatTvFileSize(item.fileSize))
-        if (!showThumbnails) add("Preview disabled")
-        add("SELECT to play")
+        if (!showThumbnails) add(previewDisabledText)
+        add(selectToPlayText)
     }
     return details.joinToString(" · ")
 }

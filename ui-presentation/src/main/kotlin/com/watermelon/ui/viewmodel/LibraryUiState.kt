@@ -15,8 +15,10 @@ sealed interface LibraryUiState {
     /** The current library context contains one or more media items. */
     data object Content : LibraryUiState
 
-    /** Refresh/indexing failed and the user needs a recovery action. */
-    data class Error(val message: String) : LibraryUiState
+    /** Refresh/indexing failed and the user needs a recovery action. The localized message is
+     *  resolved by the UI layer ([com.watermelon.ui.R.string.library_error_body]) so ViewModels
+     *  stay free of hardcoded, locale-dependent text. */
+    data object Error : LibraryUiState
 }
 
 internal sealed interface LibraryRefreshState {

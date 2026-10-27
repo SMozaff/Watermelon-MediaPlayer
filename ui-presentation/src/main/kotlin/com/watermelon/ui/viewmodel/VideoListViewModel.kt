@@ -22,6 +22,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/** User-facing deletion failure kinds. The localized message is resolved by the UI
+ *  layer, so this ViewModel never hardcodes locale-dependent text. */
+enum class DeleteError {
+    NONE_SELECTED, INVALID_URIS, PREPARE_FAILED, DELETE_FAILED, PARTIAL
+}
+
 class VideoListViewModel(
     private val mediaRepository: MediaRepository,
     private val folderPath: String,
@@ -41,9 +47,9 @@ class VideoListViewModel(
 
     private val _isShuffled   = MutableStateFlow(false)
     private val _selection    = MutableStateFlow(SelectionState())
-    private val _deleteError = MutableStateFlow<String?>(null)
+    private val _deleteError = MutableStateFlow<DeleteError?>(null)
 
-    val deleteError: StateFlow<String?> = _deleteError.asStateFlow()
+    val deleteError: StateFlow<DeleteError?> = _deleteError.asStateFlow()
 
     val isShuffled: StateFlow<Boolean>       = _isShuffled.asStateFlow()
     val selection: StateFlow<SelectionState> = _selection.asStateFlow()
@@ -97,9 +103,7 @@ class VideoListViewModel(
         mediaRepository.observeIndexingState()
     ) { currentVideos, indexingState ->
         when {
-            indexingState == IndexingState.FAILED -> LibraryUiState.Error(
-                "We couldn't refresh your media library. Check access and try again."
-            )
+            indexingState == IndexingState.FAILED -> LibraryUiState.Error
             currentVideos.isNotEmpty() -> LibraryUiState.Content
             indexingState == IndexingState.SWEEPING || indexingState == IndexingState.EXTRACTING ||
                 indexingState == IndexingState.IDLE -> LibraryUiState.Loading
@@ -206,7 +210,7 @@ class VideoListViewModel(
         _deleteError.value = null
         val rawUris = _selection.value.selectedUris
         if (rawUris.isEmpty()) {
-            _deleteError.value = "No files are selected."
+            _deleteError.value = DeleteError.NONE_SELECTED
             return null
         }
 
@@ -216,7 +220,7 @@ class VideoListViewModel(
                 ?.takeIf { it.scheme == "content" }
         }
         if (uris.size != rawUris.size) {
-            _deleteError.value = "Some selected files have invalid media URIs."
+            _deleteError.value = DeleteError.INVALID_URIS
             return null
         }
 
@@ -232,7 +236,7 @@ class VideoListViewModel(
                     "Delete",
                     "createDeleteRequest failed: ${error.message ?: error::class.java.simpleName}"
                 )
-                _deleteError.value = "Watermelon could not prepare the selected files for deletion."
+                _deleteError.value = DeleteError.PREPARE_FAILED
             }.getOrNull()
         } else {
             viewModelScope.launch(Dispatchers.IO) {
@@ -255,9 +259,9 @@ class VideoListViewModel(
                 } else {
                     _deleteError.value =
                         if (failed == uris.size) {
-                            "Watermelon could not delete the selected files."
+                            DeleteError.DELETE_FAILED
                         } else {
-                            "Some files could not be deleted."
+                            DeleteError.PARTIAL
                         }
                     runCatching { mediaRepository.refreshIndex() }
                 }

@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -55,8 +57,6 @@ fun KeepOrDeleteOriginalDialog(
     actualTrimRangeMs: Pair<Long, Long>? = null,
     compressionSizeBytes: Pair<Long, Long>? = null,
 ) {
-    val actionWord = if (isTrim) "trimmed" else "compressed"
-
     Dialog(
         onDismissRequest = { /* no dismiss-by-scrim -- user must pick one of the two options */ },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -75,13 +75,16 @@ fun KeepOrDeleteOriginalDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Keep the original video?",
+                    stringResource(R.string.keep_original_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "\"$originalFileName\" has been $actionWord and saved as \"$outputFileName\". " +
-                        "Keep the original video too, or delete it?",
+                    stringResource(
+                        if (isTrim) R.string.keep_original_body_trim else R.string.keep_original_body_compress,
+                        originalFileName,
+                        outputFileName
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -89,8 +92,11 @@ fun KeepOrDeleteOriginalDialog(
                 if (isTrim && actualTrimRangeMs != null) {
                     val (actualStart, actualEnd) = actualTrimRangeMs
                     Text(
-                        "Actual trimmed range: ${formatMsForDialog(actualStart)} – ${formatMsForDialog(actualEnd)} " +
-                            "(cut points snap to the nearest keyframe, so this may differ slightly from your selection)",
+                        stringResource(
+                            R.string.keep_original_trim_range,
+                            formatMsForDialog(actualStart),
+                            formatMsForDialog(actualEnd)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -102,7 +108,12 @@ fun KeepOrDeleteOriginalDialog(
                         (((originalSize - compressedSize).coerceAtLeast(0L) * 100L) / originalSize).toInt()
                     } else 0
                     Text(
-                        "Original ${formatBytes(originalSize)} → compressed ${formatBytes(compressedSize)} · saved $savedPercent%",
+                        stringResource(
+                            R.string.keep_original_size_summary,
+                            formatBytes(originalSize),
+                            formatBytes(compressedSize),
+                            savedPercent
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -111,7 +122,7 @@ fun KeepOrDeleteOriginalDialog(
                 if (isPendingSystemConsent) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Text(
-                        "Waiting for confirmation...",
+                        stringResource(R.string.keep_original_waiting),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -129,7 +140,7 @@ fun KeepOrDeleteOriginalDialog(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Keep Original")
+                            Text(stringResource(R.string.keep_original_keep))
                         }
                         Button(
                             onClick = onDeleteOriginal,
@@ -140,7 +151,7 @@ fun KeepOrDeleteOriginalDialog(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Delete Original")
+                            Text(stringResource(R.string.keep_original_delete))
                         }
                     }
                 }

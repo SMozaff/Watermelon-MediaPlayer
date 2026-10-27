@@ -25,10 +25,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.watermelon.ui.theme.WatermelonGlass
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import com.watermelon.ui.R
 import com.watermelon.common.model.PlaybackState
 import com.watermelon.common.model.UserIntent
 import com.watermelon.mediatools.job.MediaJob
@@ -128,10 +130,10 @@ fun TrimScreen(
         verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.md)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = requestExit) { Text("Back") }
+            TextButton(onClick = requestExit) { Text(stringResource(R.string.action_back)) }
             Spacer(Modifier.weight(1f))
             Text(
-                text = "Trim",
+                text = stringResource(R.string.trim_title),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(vertical = WatermelonSpacing.sm),
             )
@@ -177,7 +179,7 @@ fun TrimScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Trim")
+            Text(stringResource(R.string.trim_action))
         }
     }
 
@@ -243,16 +245,16 @@ fun TrimScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showDiscardChangesDialog = false },
-            title = { Text("Discard trim changes?") },
-            text = { Text("Your selected trim range has not been saved. You can continue editing or discard it and return.") },
+            title = { Text(stringResource(R.string.trim_discard_title)) },
+            text = { Text(stringResource(R.string.trim_discard_body)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDiscardChangesDialog = false
                     onBack()
-                }) { Text("Discard changes") }
+                }) { Text(stringResource(R.string.action_discard_changes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDiscardChangesDialog = false }) { Text("Continue editing") }
+                TextButton(onClick = { showDiscardChangesDialog = false }) { Text(stringResource(R.string.action_continue_editing)) }
             },
         )
     }
@@ -262,10 +264,10 @@ fun TrimScreen(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { showBackgroundExitDialog = false },
-            title = { Text("Trim will continue") },
+            title = { Text(stringResource(R.string.trim_continue_title)) },
             text = {
                 Text(
-                    "This trim is still running in the background. You can reopen Trim from File actions to inspect its progress."
+                    stringResource(R.string.trim_continue_body)
                 )
             },
             confirmButton = {
@@ -273,10 +275,10 @@ fun TrimScreen(
                     showBackgroundExitDialog = false
                     activeJobId = null
                     onBack()
-                }) { Text("Keep running") }
+                }) { Text(stringResource(R.string.action_keep_running)) }
             },
             dismissButton = {
-                TextButton(onClick = { showBackgroundExitDialog = false }) { Text("Stay") }
+                TextButton(onClick = { showBackgroundExitDialog = false }) { Text(stringResource(R.string.action_stay)) }
             },
         )
     }

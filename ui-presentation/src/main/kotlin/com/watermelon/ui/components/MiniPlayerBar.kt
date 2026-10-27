@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -74,6 +76,7 @@ fun MiniPlayerBar(
         BoxWithConstraints {
             val fontScale = LocalConfiguration.current.fontScale
             val compact = maxWidth <= CompactMiniPlayerWidth || fontScale >= 1.3f
+            val openFullPlayerDescription = stringResource(R.string.cd_open_full_player, title)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,7 +87,7 @@ fun MiniPlayerBar(
                         WatermelonGlass.borderColor(),
                         RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp)
                     )
-                    .semantics { contentDescription = "Open full player for $title" }
+                    .semantics { contentDescription = openFullPlayerDescription }
                     .clickable(onClick = onRestore),
             ) {
                 Row(
@@ -119,7 +122,7 @@ fun MiniPlayerBar(
                         IconButton(onClick = onPrevious, enabled = hasPrevious) {
                             WatermelonGlyph(
                                 WatermelonIcons.SkipPrevious,
-                                contentDescription = "Previous",
+                                contentDescription = stringResource(R.string.cd_previous),
                                 tint = if (hasPrevious) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             )
@@ -128,14 +131,14 @@ fun MiniPlayerBar(
                     IconButton(onClick = onPlayPause) {
                         WatermelonGlyph(
                             if (isPlaying) WatermelonIcons.Pause else WatermelonIcons.Play,
-                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            contentDescription = if (isPlaying) stringResource(R.string.cd_pause) else stringResource(R.string.cd_play),
                         )
                     }
                     if (!compact) {
                         IconButton(onClick = onNext, enabled = hasNext) {
                             WatermelonGlyph(
                                 WatermelonIcons.SkipNext,
-                                contentDescription = "Next",
+                                contentDescription = stringResource(R.string.cd_next),
                                 tint = if (hasNext) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             )
@@ -143,12 +146,12 @@ fun MiniPlayerBar(
                         IconButton(onClick = onMuteToggle) {
                             WatermelonGlyph(
                                 if (isMuted) WatermelonIcons.VolumeMute else WatermelonIcons.VolumeHigh,
-                                contentDescription = if (isMuted) "Unmute" else "Mute",
+                                contentDescription = if (isMuted) stringResource(R.string.player_unmute) else stringResource(R.string.player_mute),
                             )
                         }
                     }
                     IconButton(onClick = onClose) {
-                        WatermelonGlyph(WatermelonIcons.Close, contentDescription = "Close player")
+                        WatermelonGlyph(WatermelonIcons.Close, contentDescription = stringResource(R.string.cd_close_player))
                     }
                 }
 

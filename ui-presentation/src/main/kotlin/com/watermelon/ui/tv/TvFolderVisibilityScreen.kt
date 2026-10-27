@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import com.watermelon.ui.theme.WatermelonSpacing
 
 /**
@@ -33,16 +35,16 @@ fun TvFolderVisibilityScreen(
     ) {
         item {
             TvScreenHeader(
-                title = "Folder visibility",
-                supportingText = "Choose which indexed folders appear in your library."
+                title = stringResource(R.string.settings_folder_visibility),
+                supportingText = stringResource(R.string.tv_folder_visibility_hint)
             )
         }
         item {
             Text(
                 text = if (hiddenCount == 0) {
-                    "All indexed folders are visible. Press SELECT to hide a folder."
+                    stringResource(R.string.tv_folder_visibility_all_visible)
                 } else {
-                    "$hiddenCount hidden. Press SELECT to show or hide a folder."
+                    stringResource(R.string.tv_folder_visibility_hidden_count, hiddenCount)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -57,7 +59,7 @@ fun TvFolderVisibilityScreen(
         if (sortedFolders.isEmpty()) {
             item {
                 Text(
-                    text = "No folders are indexed yet. Return to the library after granting media access.",
+                    text = stringResource(R.string.tv_folder_visibility_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = WatermelonSpacing.xl + WatermelonSpacing.md)
@@ -85,7 +87,7 @@ fun TvFolderVisibilityScreen(
                 )
             ) {
                 Text(
-                    text = "Back to settings",
+                    text = stringResource(R.string.tv_back_to_settings),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(WatermelonSpacing.md)
                 )

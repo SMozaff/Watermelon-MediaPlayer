@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -44,10 +46,13 @@ fun ItemSizeSlider(
     ) {
         Icon(
             painter = androidx.compose.ui.res.painterResource(leadingIcon),
-            contentDescription = "Smaller items",
+            contentDescription = stringResource(R.string.cd_smaller_items),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
         )
+        val itemSizeDescription = valueDescription?.let {
+            stringResource(R.string.cd_item_size, it)
+        }
         Slider(
             value = value.coerceIn(0, 4).toFloat(),
             onValueChange = { onValueChange(it.toInt().coerceIn(0, 4)) },
@@ -56,14 +61,14 @@ fun ItemSizeSlider(
             modifier = Modifier
                 .weight(1f)
                 .then(
-                    if (valueDescription != null) {
-                        Modifier.semantics { contentDescription = "Item size: $valueDescription" }
-                    } else Modifier
+                    itemSizeDescription?.let { description ->
+                        Modifier.semantics { contentDescription = description }
+                    } ?: Modifier
                 )
         )
         Icon(
             painter = androidx.compose.ui.res.painterResource(trailingIcon),
-            contentDescription = "Larger items",
+            contentDescription = stringResource(R.string.cd_larger_items),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(26.dp)
         )

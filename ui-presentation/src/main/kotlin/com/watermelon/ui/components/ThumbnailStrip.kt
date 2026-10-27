@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 
@@ -57,7 +59,7 @@ fun ThumbnailStrip(
             ) {
                 Image(
                     painter = painterResource(android.R.drawable.ic_media_play),
-                    contentDescription = "Thumbnail for ${video.displayName}",
+                    contentDescription = stringResource(R.string.cd_thumbnail_for, video.displayName),
                     modifier = Modifier
                         .size(48.dp)
                         .clip(WatermelonShapes.small),

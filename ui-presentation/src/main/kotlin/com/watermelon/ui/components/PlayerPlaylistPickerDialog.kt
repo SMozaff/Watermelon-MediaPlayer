@@ -16,9 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.watermelon.common.model.Playlist
 import com.watermelon.common.model.PlaylistType
+import com.watermelon.ui.R
 import com.watermelon.ui.theme.WatermelonGlass
 
 /**
@@ -40,14 +42,14 @@ fun PlayerPlaylistPickerDialog(
         onDismissRequest = onDismiss,
         containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
         tonalElevation = 0.dp,
-        title = { Text("Add to playlist") },
+        title = { Text(stringResource(R.string.video_add_to_playlist_title)) },
         text = {
             Column {
                 if (isCreating) {
                     TextField(
                         value = newPlaylistName,
                         onValueChange = { newPlaylistName = it },
-                        placeholder = { Text("Playlist name") },
+                        placeholder = { Text(stringResource(R.string.playlists_name_placeholder)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
@@ -64,7 +66,7 @@ fun PlayerPlaylistPickerDialog(
                             isCreating = false
                             newPlaylistName = ""
                         }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.action_cancel))
                         }
                         TextButton(
                             onClick = {
@@ -72,7 +74,7 @@ fun PlayerPlaylistPickerDialog(
                                 if (name.isNotEmpty()) onCreate(name)
                             }
                         ) {
-                            Text("Create and add")
+                            Text(stringResource(R.string.playlists_create_and_add))
                         }
                     }
                 } else {
@@ -80,7 +82,7 @@ fun PlayerPlaylistPickerDialog(
                         onClick = { isCreating = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Create new playlist")
+                        Text(stringResource(R.string.playlists_create_new))
                     }
                 }
 
@@ -99,7 +101,7 @@ fun PlayerPlaylistPickerDialog(
                     }
                 } else if (!isCreating) {
                     Text(
-                        text = "Create your first playlist to organise the current video.",
+                        text = stringResource(R.string.playlists_empty_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -108,7 +110,7 @@ fun PlayerPlaylistPickerDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }

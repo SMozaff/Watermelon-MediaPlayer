@@ -253,7 +253,7 @@ fun FolderBrowserScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                state.message,
+                                stringResource(R.string.library_error_body),
                                 style = WatermelonTypography.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -279,8 +279,8 @@ fun FolderBrowserScreen(
             ) {
                 rows.forEach { row ->
                     when (row) {
-                        is BrowserRow.Header -> item(key = "hdr-${row.title}") {
-                            SectionHeader(row.title)
+                        is BrowserRow.Header -> item(key = "hdr-${row.titleRes}") {
+                            SectionHeader(stringResource(row.titleRes))
                         }
                         is BrowserRow.Folder -> item(key = row.node.path) {
                             FolderListItem(
@@ -307,9 +307,9 @@ fun FolderBrowserScreen(
                 rows.forEach { row ->
                     when (row) {
                         is BrowserRow.Header -> item(
-                            key = "hdr-${row.title}",
+                            key = "hdr-${row.titleRes}",
                             span = { GridItemSpan(maxLineSpan) }
-                        ) { SectionHeader(row.title) }
+                        ) { SectionHeader(stringResource(row.titleRes)) }
                         is BrowserRow.Folder -> gridItems(
                             listOf(row.node), key = { it.path }
                         ) { folder ->

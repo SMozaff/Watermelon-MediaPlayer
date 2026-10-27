@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -84,6 +86,7 @@ fun TrimRangeScrubber(
 
     val startFraction = if (durationMs > 0) (startMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
     val endFraction = if (durationMs > 0) (endMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
+    val trimRangeDescription = stringResource(R.string.cd_trim_range, formatMs(startMs), formatMs(endMs))
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (filmstripFrames.isNotEmpty()) {
@@ -95,7 +98,7 @@ fun TrimRangeScrubber(
                 .fillMaxWidth()
                 .height(maxOf(handleRadius * 2 + 8.dp, 48.dp))
                 .semantics {
-                    contentDescription = "Trim range, start ${formatMs(startMs)}, end ${formatMs(endMs)}"
+                    contentDescription = trimRangeDescription
                 }
                 .pointerInput(durationMs, startMs, endMs, keyframeTimestampsMs) {
                     detectHorizontalDragGestures(

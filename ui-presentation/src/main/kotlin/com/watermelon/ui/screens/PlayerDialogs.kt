@@ -5,11 +5,13 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import com.watermelon.common.model.SleepTimerMode
+import com.watermelon.ui.R
 import com.watermelon.ui.components.SleepTimerDialog
 import com.watermelon.ui.theme.PlayerColors
 import com.watermelon.ui.theme.WatermelonGlass
@@ -41,11 +43,10 @@ fun PlayerDialogs(
                     .apply()
                 state.showTunerSeekTip = false
             },
-            title = { Text("Tuner seek") },
+            title = { Text(stringResource(R.string.player_tuner_seek_title)) },
             text = {
                 Text(
-                    "Each tuner detent moves playback by $tunerSeekStepSeconds seconds. " +
-                        "Use Quick tools to choose a standard seek bar, or change the tuner setting later."
+                    stringResource(R.string.player_tuner_seek_tip, tunerSeekStepSeconds)
                 )
             },
             confirmButton = {
@@ -55,7 +56,7 @@ fun PlayerDialogs(
                         .putBoolean("tuner_seek_tip_seen", true)
                         .apply()
                     state.showTunerSeekTip = false
-                }) { Text("Got it") }
+                }) { Text(stringResource(R.string.action_got_it)) }
             },
         )
     }
@@ -65,11 +66,11 @@ fun PlayerDialogs(
             containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
             tonalElevation = 0.dp,
             onDismissRequest = { state.showMediaInfo = false },
-            title = { Text("Now playing") },
+            title = { Text(stringResource(R.string.player_now_playing)) },
             text = {
                 androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(WatermelonSpacing.xs)) {
                     Text(
-                        text = mediaTitle.ifBlank { "Unknown video" },
+                        text = mediaTitle.ifBlank { stringResource(R.string.player_unknown_title) },
                         color = PlayerColors.current.textPrimary,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     )
@@ -82,7 +83,7 @@ fun PlayerDialogs(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { state.showMediaInfo = false }) { Text("Close") }
+                TextButton(onClick = { state.showMediaInfo = false }) { Text(stringResource(R.string.action_close)) }
             },
         )
     }

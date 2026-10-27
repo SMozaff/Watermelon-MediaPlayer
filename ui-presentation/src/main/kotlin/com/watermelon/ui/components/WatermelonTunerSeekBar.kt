@@ -1,5 +1,7 @@
 package com.watermelon.ui.components
 
+import com.watermelon.ui.R
+import androidx.compose.ui.res.stringResource
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import androidx.compose.foundation.Image
@@ -93,6 +95,11 @@ fun WatermelonTunerSeekBar(
     val displayPositionMs = if (scrubbing) scrubPositionMs else livePositionMs
     val colors = PlayerColors.current
     val stepMs = secondsPerTick.coerceIn(1, 20) * 1000L
+    val seekTunerDescription = stringResource(
+        R.string.cd_seek_tuner,
+        formatTunerTimeForA11y(livePositionMs),
+        formatTunerTimeForA11y(durationMs)
+    )
 
     // Visual tick spacing. Seeking itself is continuous and uses the actual dial width as
     // the travel distance for one full-duration sweep.
@@ -103,8 +110,7 @@ fun WatermelonTunerSeekBar(
             .width(dialWidth)
             .height(dialHeight)
             .semantics {
-                contentDescription =
-                    "Seek tuner, ${formatTunerTimeForA11y(livePositionMs)} of ${formatTunerTimeForA11y(durationMs)}"
+                contentDescription = seekTunerDescription
                 progressBarRangeInfo = ProgressBarRangeInfo(
                     current = if (durationMs > 0) (livePositionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f,
                     range = 0f..1f
@@ -295,7 +301,7 @@ fun TunerFramePreview(
         bitmap?.let {
             Image(
                 bitmap = it.asImageBitmap(),
-                contentDescription = "Video preview at " + formatTunerTime(positionMs),
+                contentDescription = stringResource(R.string.cd_video_preview_at, formatTunerTime(positionMs)),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop,
             )

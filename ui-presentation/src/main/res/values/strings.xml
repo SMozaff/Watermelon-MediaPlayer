@@ -152,4 +152,338 @@
     <string name="video_toast_deleted">Deleted selected videos</string>
     <string name="video_toast_deletion_cancelled">Deletion cancelled</string>
     <string name="video_share_chooser_title">Share videos</string>
+
+    <!-- Phase 2a (UI/UX): complete string extraction for media tools (compress/trim),
+         media jobs, player sheets and dialogs, sleep timer, online subtitle search,
+         folder visibility, TV surfaces, accessibility descriptions, and ViewModel
+         error codes. fa/ar translations are machine-authored; native review pending. -->
+
+    <!-- Common actions -->
+    <string name="action_back">Back</string>
+    <string name="action_clear_selection">Clear selection</string>
+    <string name="action_close">Close</string>
+    <string name="action_compress">Compress</string>
+    <string name="action_continue_editing">Continue editing</string>
+    <string name="action_delete_from_device">Delete from device</string>
+    <string name="action_discard_changes">Discard changes</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_extract_audio">Extract Audio</string>
+    <string name="action_got_it">Got it</string>
+    <string name="action_keep_running">Keep running</string>
+    <string name="action_ok">OK</string>
+    <string name="action_off">Off</string>
+    <string name="action_on">On</string>
+    <string name="action_open">Open</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="action_set">Set</string>
+    <string name="action_share">Share</string>
+    <string name="action_stay">Stay</string>
+    <string name="action_trim">Trim</string>
+
+    <!-- Library state and deletion errors (resolved from ViewModel codes) -->
+    <string name="browser_header_playlists">My Video Playlists</string>
+    <string name="browser_header_storage">Main Storage</string>
+    <string name="library_error_body">We couldn\'t refresh your media library. Check access and try again.</string>
+    <string name="error_delete_none_selected">No files are selected.</string>
+    <string name="error_delete_invalid_uris">Some selected files have invalid media URIs.</string>
+    <string name="error_delete_prepare_failed">Watermelon could not prepare the selected files for deletion.</string>
+    <string name="error_delete_failed">Watermelon could not delete the selected files.</string>
+    <string name="error_delete_partial">Some files could not be deleted.</string>
+    <string name="selection_count_selected">%1$d selected</string>
+    <string name="folder_visibility_hint">Hidden folders are excluded from the library index.</string>
+    <string name="folder_visibility_empty">No folders indexed yet.</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="cd_app_logo">Watermelon MediaPlayer</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_brightness">Brightness</string>
+    <string name="cd_close_player">Close player</string>
+    <string name="cd_favorite">Favorite</string>
+    <string name="cd_item_size">Item size: %1$s</string>
+    <string name="cd_larger_items">Larger items</string>
+    <string name="cd_lock">Lock</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_new">New</string>
+    <string name="cd_next">Next</string>
+    <string name="cd_next_track">Next track</string>
+    <string name="cd_open_full_player">Open full player for %1$s</string>
+    <string name="cd_pause">Pause</string>
+    <string name="cd_play">Play</string>
+    <string name="cd_previous">Previous</string>
+    <string name="cd_previous_track">Previous track</string>
+    <string name="cd_seek_bar">Seek bar, %1$s of %2$s</string>
+    <string name="cd_seek_tuner">Seek tuner, %1$s of %2$s</string>
+    <string name="cd_selection_active">Selection active</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_slide_both_locks">Slide both locks up together to unlock</string>
+    <string name="cd_slide_up_to_unlock">Slide up to unlock</string>
+    <string name="cd_smaller_items">Smaller items</string>
+    <string name="cd_thumbnail_for">Thumbnail for %1$s</string>
+    <string name="cd_thumbnail_unavailable">Thumbnail unavailable</string>
+    <string name="cd_trim_range">Trim range, start %1$s, end %2$s</string>
+    <string name="cd_video_preview_at">Video preview at %1$s</string>
+    <string name="cd_volume">Volume</string>
+
+    <!-- Compress tool -->
+    <string name="compress_title">Compress</string>
+    <string name="compress_headline">Compress video</string>
+    <string name="compress_intro">Choose a smart preset, or set a target size when you need the output under a specific MB.</string>
+    <string name="compress_with_preset">Compress with preset</string>
+    <string name="compress_custom_target_label">Custom target size (MB)</string>
+    <string name="compress_bitrate_hint">Watermelon calculates bitrate from duration, then validates the final size.</string>
+    <string name="compress_error_whole_number">Enter a whole number of MB.</string>
+    <string name="compress_error_min_size">Choose at least 2 MB so video and audio can be encoded reliably.</string>
+    <string name="compress_to_target">Compress to target size</string>
+    <string name="compress_discard_title">Discard compression changes?</string>
+    <string name="compress_discard_body">Your selected preset or target size has not been used yet. You can continue editing or discard it and return.</string>
+    <string name="compress_continue_title">Compression will continue</string>
+    <string name="compress_continue_body">This compression is still running in the background. You can reopen Compress from File actions to inspect its progress.</string>
+    <string name="compress_estimate">Estimate: about %1$.1f MB · up to %2$dp</string>
+    <string name="compress_estimate_unavailable">Estimated output is unavailable for this video.</string>
+    <string name="compress_preset_best_quality">Best Quality</string>
+    <string name="compress_preset_best_quality_desc">Gentle compression, keeps detail when the source is already good.</string>
+    <string name="compress_preset_balanced">Balanced</string>
+    <string name="compress_preset_balanced_desc">Good everyday size reduction without making the file look cheap.</string>
+    <string name="compress_preset_small_file">Small File</string>
+    <string name="compress_preset_small_file_desc">Aggressive 480p compression for storage saving.</string>
+    <string name="compress_preset_share_ready">Share Ready</string>
+    <string name="compress_preset_share_ready_desc">Very small output for quick messaging and upload.</string>
+
+    <!-- Trim tool -->
+    <string name="trim_title">Trim</string>
+    <string name="trim_action">Trim</string>
+    <string name="trim_discard_title">Discard trim changes?</string>
+    <string name="trim_discard_body">Your selected trim range has not been saved. You can continue editing or discard it and return.</string>
+    <string name="trim_continue_title">Trim will continue</string>
+    <string name="trim_continue_body">This trim is still running in the background. You can reopen Trim from File actions to inspect its progress.</string>
+
+    <!-- Media jobs -->
+    <string name="jobs_view">View jobs</string>
+    <string name="jobs_title">Media jobs</string>
+    <string name="jobs_empty">No media jobs have started in this session.</string>
+    <string name="jobs_section_active">Active</string>
+    <string name="jobs_section_recent">Recent</string>
+    <string name="jobs_queued">Queued</string>
+    <string name="jobs_progress_percent">%1$d%% complete</string>
+    <string name="jobs_output_name">Output: %1$s</string>
+    <string name="jobs_source_fallback">Media file</string>
+    <string name="jobs_output_fallback">Media output</string>
+    <string name="jobs_review_original">Review original</string>
+    <string name="jobs_open_result">Open result</string>
+    <string name="jobs_media_tool_settings">Media tool settings</string>
+    <string name="jobs_change_settings">Change settings</string>
+    <string name="jobs_continue_background">Continue in background</string>
+    <string name="jobs_mp3_ready">MP3 ready</string>
+    <string name="jobs_done">Done</string>
+    <string name="jobs_saved_to">Saved to %1$s</string>
+    <string name="jobs_saved_settings_hint">You can change this folder in Settings › Media tools.</string>
+    <string name="jobs_failed_extract">MP3 conversion failed</string>
+    <string name="jobs_failed_generic">Couldn’t finish</string>
+    <string name="jobs_status_complete">%1$s complete</string>
+    <string name="jobs_status_failed">%1$s failed</string>
+    <string name="jobs_status_cancelled">%1$s cancelled</string>
+    <string name="jobs_verb_extract_audio">Extracting audio</string>
+    <string name="jobs_verb_trim">Trimming video</string>
+    <string name="jobs_verb_compress">Compressing video</string>
+    <string name="jobs_past_extract_audio">Audio extraction</string>
+    <string name="jobs_past_trim">Trim</string>
+    <string name="jobs_past_compress">Compression</string>
+    <string name="jobs_type_extract">Converting to MP3</string>
+    <string name="jobs_type_trim">Trimming Video</string>
+    <string name="jobs_type_compress">Compressing Video</string>
+    <string name="jobs_progress_label_extract">Encoding audio</string>
+    <string name="jobs_progress_label_trim">Processing video</string>
+    <string name="jobs_progress_label_compress">Compressing video</string>
+
+    <!-- Keep-or-delete original dialog -->
+    <string name="keep_original_title">Keep the original video?</string>
+    <string name="keep_original_body_trim">Keep the original %1$s alongside the trimmed %2$s, or delete the original?</string>
+    <string name="keep_original_body_compress">Keep the original %1$s alongside the compressed %2$s, or delete the original?</string>
+    <string name="keep_original_trim_range">Actual trimmed range: %1$s – %2$s</string>
+    <string name="keep_original_size_summary">Original %1$s → compressed %2$s · saved %3$d%%</string>
+    <string name="keep_original_waiting">Waiting for confirmation...</string>
+    <string name="keep_original_keep">Keep Original</string>
+    <string name="keep_original_delete">Delete Original</string>
+
+    <!-- Premium upsell -->
+    <string name="premium_title">Premium Feature</string>
+    <string name="premium_body">Extract Audio, Trim, and Compress are premium tools. Upgrade to unlock them.</string>
+
+    <!-- Playlists (player picker) -->
+    <string name="playlists_create_and_add">Create and add</string>
+    <string name="playlists_create_new">Create new playlist</string>
+    <string name="playlists_empty_hint">Create your first playlist to organise the current video.</string>
+    <string name="playlists_remove_from_this">Remove from this playlist</string>
+
+    <!-- Player sheets -->
+    <string name="player_actions_title">Player actions</string>
+    <string name="player_quick_tools">Quick tools</string>
+    <string name="player_quick_tools_detail">Speed, subtitles, aspect ratio, sleep timer, screenshot, PiP, and background play</string>
+    <string name="player_file_actions">File actions</string>
+    <string name="player_file_actions_detail">Favourite, playlist, share, media tools, and device deletion</string>
+    <string name="player_section_speed">Playback speed</string>
+    <string name="player_section_aspect">Aspect ratio</string>
+    <string name="player_section_orientation">Orientation</string>
+    <string name="player_section_seeking">Seeking</string>
+    <string name="player_section_subtitle_timing">Subtitle timing</string>
+    <string name="player_section_subtitles">Subtitles</string>
+    <string name="player_section_media_tools">Media tools</string>
+    <string name="player_use_standard_seekbar">Use standard seek bar</string>
+    <string name="player_use_standard_seekbar_detail">Switch to a conventional progress bar with direct positioning.</string>
+    <string name="player_use_tuner_seek">Use tuner seek</string>
+    <string name="player_use_tuner_seek_detail">Switch to the tuner dial using %1$d second detents.</string>
+    <string name="player_mute">Mute</string>
+    <string name="player_unmute">Unmute</string>
+    <string name="player_mute_detail">Toggle device media volume</string>
+    <string name="player_repeat_label">Repeat: %1$s</string>
+    <string name="repeat_mode_none">None</string>
+    <string name="repeat_mode_one">One</string>
+    <string name="repeat_mode_all">All</string>
+    <string name="player_repeat_detail">Change repeat mode</string>
+    <string name="player_shuffle_on">Shuffle: on</string>
+    <string name="player_shuffle_off">Shuffle: off</string>
+    <string name="player_shuffle_detail">Change queue order</string>
+    <string name="player_subtitles_minus_100ms">−100 ms</string>
+    <string name="player_subtitles_plus_100ms">+100 ms</string>
+    <string name="player_subtitles_offset_ms">%1$d ms</string>
+    <string name="player_screenshot">Take screenshot</string>
+    <string name="player_screenshot_detail">Save the current video frame</string>
+    <string name="player_screenshot_saved">Saved %1$d screenshot(s)</string>
+    <string name="player_screenshot_failed">Screenshot failed</string>
+    <string name="player_pip">Picture in picture</string>
+    <string name="player_pip_active">Picture in picture: active</string>
+    <string name="player_pip_detail">Continue watching in a floating window</string>
+    <string name="player_pip_unavailable">Picture in picture is not supported on this Android version.</string>
+    <string name="player_background">Background play</string>
+    <string name="player_background_on">Background play: on</string>
+    <string name="player_background_detail">Continue audio when leaving the player</string>
+    <string name="player_share_detail">Send this video to another app</string>
+    <string name="player_add_to_favourites">Add to favourites</string>
+    <string name="player_remove_from_favourites">Remove from favourites</string>
+    <string name="player_favourite_detail">Keep this video in your personal favourites collection</string>
+    <string name="player_add_to_playlist_detail">Choose or create a playlist for this video</string>
+    <string name="player_trim_detail">Create a shorter version of this video</string>
+    <string name="player_compress_detail">Create a smaller copy of this video</string>
+    <string name="player_extract_audio_detail">Create an audio file from this video</string>
+    <string name="player_delete_detail">Permanently remove this video after confirmation</string>
+    <string name="player_tuner_seek_title">Tuner seek</string>
+    <string name="player_tuner_seek_tip">Each tuner detent moves playback by %1$d seconds. Use Quick tools to choose a standard seek bar, or change the tuner setting later.</string>
+    <string name="player_now_playing">Now playing</string>
+    <string name="player_unknown_title">Unknown video</string>
+
+    <!-- Player enums -->
+    <string name="video_ratio_fill">Fill</string>
+    <string name="video_ratio_original">Original</string>
+    <string name="video_ratio_16_9">16:9</string>
+    <string name="video_ratio_4_3">4:3</string>
+    <string name="video_ratio_21_9">21:9</string>
+    <string name="orientation_auto">Auto</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_landscape">Landscape</string>
+
+    <!-- Subtitles -->
+    <string name="subtitles_auto_sync">Auto Sync</string>
+    <string name="subtitles_find_another">Find another subtitle</string>
+    <string name="subtitles_find_online">Find online subtitles</string>
+    <string name="subtitles_search_opensubtitles">Search OpenSubtitles for this video</string>
+    <string name="subtitles_search_now">Search now</string>
+    <string name="subtitles_search_requires_internet">Requires internet connection</string>
+    <string name="subtitles_searching">Searching...</string>
+    <string name="subtitles_no_results">No subtitles found</string>
+    <string name="subtitles_track_unknown">Unknown</string>
+    <string name="subtitles_track_downloads">%1$d downloads</string>
+    <string name="subtitles_track_hash_match">Hash match</string>
+    <string name="subtitles_download">Download</string>
+    <string name="subtitles_downloading">Downloading %1$s...</string>
+    <string name="subtitles_error">Error: %1$s</string>
+    <string name="subtitles_error_permission_denied">Permission denied</string>
+    <string name="subtitles_error_unknown">Unknown error</string>
+    <string name="subtitles_error_download_failed">Download failed</string>
+    <string name="subtitles_retry_search">Retry the search</string>
+    <string name="subtitles_offline">No internet connection</string>
+    <string name="subtitles_not_configured">OpenSubtitles API key not configured</string>
+    <string name="subtitles_not_configured_hint">Contact the developer to request API key configuration</string>
+    <string name="subtitles_auth_required">Authentication required</string>
+    <string name="subtitles_quota_exceeded">API quota exceeded. Try again later.</string>
+    <string name="subtitles_sync_idle">Analyze the audio track to correct subtitle timing.</string>
+    <string name="subtitles_sync_analyzing">Analyzing…</string>
+    <string name="subtitles_sync_synchronized">Synchronized.</string>
+    <string name="subtitles_sync_low_confidence">Low confidence — no automatic change applied. Try the manual nudge instead.</string>
+    <string name="subtitles_sync_complex_drift">Timing drifts over the video and can\'t be fixed with a single offset. Try the manual nudge instead.</string>
+    <string name="subtitles_sync_unsupported">Auto Sync is unsupported for this file.</string>
+    <string name="subtitles_sync_unavailable">Auto Sync is unavailable right now.</string>
+    <string name="subtitles_sync_failed">Auto Sync failed. Try again.</string>
+    <string name="subtitles_controls_label">Subtitle controls</string>
+    <string name="subtitles_no_track">No subtitle track is available for this video.</string>
+
+    <!-- Sleep timer -->
+    <string name="sleep_timer_title">Sleep Timer</string>
+    <string name="sleep_timer_detail">Pause playback after a selected interval</string>
+    <string name="sleep_timer_running">Timer running — %1$s left</string>
+    <string name="sleep_cancel_timer">Cancel timer</string>
+    <string name="sleep_end_of_video">End of current video</string>
+    <string name="sleep_end_of_folder">End of folder</string>
+    <string name="sleep_custom_time">Custom time</string>
+    <string name="sleep_minutes">Minutes</string>
+
+    <!-- Settings enums (VHS intensity, subtitle position/direction/color) -->
+    <string name="vhs_intensity_off">Off</string>
+    <string name="vhs_intensity_low">Low</string>
+    <string name="vhs_intensity_med">Medium</string>
+    <string name="vhs_intensity_high">High</string>
+    <string name="subtitle_position_bottom">Bottom</string>
+    <string name="subtitle_position_top">Top</string>
+    <string name="subtitle_direction_auto">Auto</string>
+    <string name="subtitle_direction_force_rtl">Force RTL</string>
+    <string name="subtitle_direction_force_ltr">Force LTR</string>
+    <string name="subtitle_color_white">White</string>
+    <string name="subtitle_color_yellow">Yellow</string>
+    <string name="subtitle_color_cyan">Cyan</string>
+    <string name="subtitle_color_green">Green</string>
+    <string name="subtitle_color_coral">Coral</string>
+    <string name="subtitle_color_black">Black</string>
+    <string name="subtitle_color_custom">Custom</string>
+
+    <!-- TV surfaces -->
+    <string name="tv_browse_hint">Use the D-pad to browse. Press SELECT to play.</string>
+    <string name="tv_no_videos">No videos here yet</string>
+    <string name="tv_press_back">Press BACK to return to the library.</string>
+    <string name="tv_preview_disabled">Preview disabled</string>
+    <string name="tv_select_to_play">SELECT to play</string>
+    <string name="tv_home_title">Watermelon</string>
+    <string name="tv_home_hint">Browse your library with the D-pad. Press SELECT to open an item.</string>
+    <string name="tv_nav_all_videos">All videos</string>
+    <string name="tv_nav_all_videos_detail">Browse every video in your library</string>
+    <string name="tv_nav_playlists_detail">Recently added, favourites, and your playlists</string>
+    <string name="tv_nav_settings_detail">Library, playback, subtitles, and exports</string>
+    <string name="tv_folders">Folders</string>
+    <string name="tv_folders_empty">No folders are indexed yet. Grant media access or add videos, then return here.</string>
+    <string name="tv_video_count_one">%1$d video</string>
+    <string name="tv_video_count_many">%1$d videos</string>
+    <string name="tv_folder_visibility_hint">Choose which indexed folders appear in your library.</string>
+    <string name="tv_folder_visibility_all_visible">All indexed folders are visible. Press SELECT to hide a folder.</string>
+    <string name="tv_folder_visibility_empty">No folders are indexed yet. Return to the library after granting media access.</string>
+    <string name="tv_folder_visibility_hidden_count">%1$d hidden</string>
+    <string name="tv_back_to_settings">Back to settings</string>
+    <string name="tv_rewind_10">Rewind 10 sec</string>
+    <string name="tv_forward_10">Forward 10 sec</string>
+    <string name="tv_subtitles_minus_100ms">Subtitles −100 ms</string>
+    <string name="tv_subtitles_plus_100ms">Subtitles +100 ms</string>
+    <string name="tv_back_to_library">Back to library</string>
+    <string name="tv_back_also_returns">BACK also returns</string>
+    <string name="tv_settings_hint">Use the D-pad to choose a setting. Press SELECT to change it.</string>
+    <string name="tv_settings_manage">Manage</string>
+    <string name="tv_settings_grid_note">Used on touch devices; TV always uses a D-pad list.</string>
+    <string name="tv_settings_previews_note">Controls previews in the TV catalogue.</string>
+    <string name="tv_settings_resume_note">Resume positions remain stored when this is hidden.</string>
+    <string name="tv_settings_keyboard_hint">Press SELECT to edit using the on-screen keyboard.</string>
+    <string name="tv_settings_custom_folders_note">Custom output folders require Android 10 or later on this device.</string>
+    <string name="tv_settings_screenshot_mode">Screenshot mode</string>
+    <string name="tv_screenshot_burst">Burst (9 frames)</string>
+    <string name="tv_screenshot_single">Single</string>
+    <string name="tv_settings_vhs_note">Applies to the touch player; TV playback stays clean and direct.</string>
+    <string name="tv_settings_tuner_note">Applies to the touch player; TV uses dedicated seek controls.</string>
+    <string name="tv_settings_select_to_change">Press SELECT to change.</string>
+    <string name="tv_settings_folder_input_hint">Enter a MediaStore-relative folder. The TV keyboard opens when the field is selected.</string>
 </resources>
