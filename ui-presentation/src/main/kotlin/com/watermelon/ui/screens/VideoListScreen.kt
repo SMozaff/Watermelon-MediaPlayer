@@ -144,6 +144,17 @@ fun VideoListScreen(
     val libraryState by viewModel.libraryState.collectAsStateWithLifecycle()
     val selection by viewModel.selection.collectAsStateWithLifecycle()
     val deleteError by viewModel.deleteError.collectAsStateWithLifecycle()
+    val deletedToastMessage = stringResource(R.string.video_toast_deleted)
+    val deleteCancelledToastMessage = stringResource(R.string.video_toast_deletion_cancelled)
+    val deleteErrorMessage = when (deleteError) {
+        null -> null
+        DeleteError.NONE_SELECTED -> stringResource(R.string.error_delete_none_selected)
+        DeleteError.INVALID_URIS -> stringResource(R.string.error_delete_invalid_uris)
+        DeleteError.PREPARE_FAILED -> stringResource(R.string.error_delete_prepare_failed)
+        DeleteError.DELETE_FAILED -> stringResource(R.string.error_delete_failed)
+        DeleteError.PARTIAL -> stringResource(R.string.error_delete_partial)
+    }
+    val shareChooserTitle = stringResource(R.string.video_share_chooser_title)
 
     // Recently Added is a computed chronological feed. Users may select another sort later,
     // but its first render must preserve the repository's newest-first order.
@@ -177,14 +188,14 @@ fun VideoListScreen(
             viewModel.onDeleteConfirmed()
             android.widget.Toast.makeText(
                 context,
-                context.getString(R.string.video_toast_deleted),
+                deletedToastMessage,
                 android.widget.Toast.LENGTH_SHORT,
             ).show()
         } else {
             viewModel.onDeleteCancelled()
             android.widget.Toast.makeText(
                 context,
-                context.getString(R.string.video_toast_deletion_cancelled),
+                deleteCancelledToastMessage,
                 android.widget.Toast.LENGTH_SHORT,
             ).show()
         }
@@ -198,17 +209,10 @@ fun VideoListScreen(
     }
 
     LaunchedEffect(deleteError) {
-        deleteError?.let { error ->
-            val messageRes = when (error) {
-                DeleteError.NONE_SELECTED -> R.string.error_delete_none_selected
-                DeleteError.INVALID_URIS -> R.string.error_delete_invalid_uris
-                DeleteError.PREPARE_FAILED -> R.string.error_delete_prepare_failed
-                DeleteError.DELETE_FAILED -> R.string.error_delete_failed
-                DeleteError.PARTIAL -> R.string.error_delete_partial
-            }
+        deleteErrorMessage?.let { message ->
             android.widget.Toast.makeText(
                 context,
-                context.getString(messageRes),
+                message,
                 android.widget.Toast.LENGTH_LONG,
             ).show()
             viewModel.clearDeleteError()
@@ -282,7 +286,7 @@ fun VideoListScreen(
                 onShare = {
                     val intent = viewModel.buildShareIntent()
                     context.startActivity(
-                        Intent.createChooser(intent, context.getString(R.string.video_share_chooser_title))
+                        Intent.createChooser(intent, shareChooserTitle)
                     )
                 },
                 visible = selection.isActive,
