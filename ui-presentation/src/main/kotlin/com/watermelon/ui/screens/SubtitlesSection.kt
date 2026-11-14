@@ -1,7 +1,6 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.watermelon.common.model.SubtitleDirection
 import com.watermelon.common.model.SubtitlePosition
@@ -13,7 +12,15 @@ internal fun SubtitlesSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    val context = LocalContext.current
+    val subtitleColorOptions = SUBTITLE_COLORS.map { color ->
+        color.first to stringResource(color.second)
+    }
+    val positionOptions = SubtitlePosition.values().map { position ->
+        position to stringResource(position.labelRes())
+    }
+    val directionOptions = SubtitleDirection.values().map { direction ->
+        direction to stringResource(direction.labelRes())
+    }
     SettingsGroup(
         title = stringResource(R.string.settings_subtitles_title),
         summary = stringResource(R.string.settings_subtitles_summary)
@@ -38,18 +45,18 @@ internal fun SubtitlesSection(
         DropdownNavRow(
             label = stringResource(R.string.settings_subtitle_text_color),
             value = subtitleColorName(st.textColorArgb),
-            options = SUBTITLE_COLORS.map { context.getString(it.second) }
+            options = subtitleColorOptions.map { it.second }
         ) { selected ->
-            val argb = SUBTITLE_COLORS.first { context.getString(it.second) == selected }.first
+            val argb = subtitleColorOptions.first { it.second == selected }.first
             up(st.copy(textColorArgb = argb))
         }
 
         DropdownNavRow(
             label = stringResource(R.string.settings_subtitle_position),
             value = stringResource(st.position.labelRes()),
-            options = SubtitlePosition.values().map { context.getString(it.labelRes()) }
+            options = positionOptions.map { it.second }
         ) { selected ->
-            val next = SubtitlePosition.values().first { context.getString(it.labelRes()) == selected }
+            val next = positionOptions.first { it.second == selected }.first
             up(st.copy(position = next))
         }
 
@@ -60,9 +67,9 @@ internal fun SubtitlesSection(
         DropdownNavRow(
             label = stringResource(R.string.settings_subtitle_direction),
             value = stringResource(st.direction.labelRes()),
-            options = SubtitleDirection.values().map { context.getString(it.labelRes()) }
+            options = directionOptions.map { it.second }
         ) { selected ->
-            val next = SubtitleDirection.values().first { context.getString(it.labelRes()) == selected }
+            val next = directionOptions.first { it.second == selected }.first
             up(st.copy(direction = next))
         }
 
