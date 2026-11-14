@@ -76,9 +76,9 @@ internal fun SubtitlesSection(
         DropdownNavRow(
             label = stringResource(R.string.settings_subtitle_second_direction),
             value = stringResource(st.secondaryDirection.labelRes()),
-            options = SubtitleDirection.values().map { context.getString(it.labelRes()) }
+            options = directionOptions.map { it.second }
         ) { selected ->
-            val next = SubtitleDirection.values().first { context.getString(it.labelRes()) == selected }
+            val next = directionOptions.first { it.second == selected }.first
             up(st.copy(secondaryDirection = next))
         }
     }
