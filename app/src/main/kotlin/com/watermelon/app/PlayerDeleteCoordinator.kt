@@ -1,7 +1,7 @@
 package com.watermelon.app
 
 import android.content.ContentUris
-import android.content.IntentSenderRequest
+import androidx.activity.result.IntentSenderRequest
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
