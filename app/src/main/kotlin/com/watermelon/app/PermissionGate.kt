@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat
  * which fires no launcher callback at all).
  */
 internal class PermissionGate(
-    activity: ComponentActivity,
+    private val activity: ComponentActivity,
     private val onGranted: () -> Unit
 ) {
     var granted by mutableStateOf(false)

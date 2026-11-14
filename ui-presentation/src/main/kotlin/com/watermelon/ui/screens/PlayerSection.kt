@@ -1,7 +1,6 @@
 package com.watermelon.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.watermelon.ui.R
 
@@ -10,7 +9,9 @@ internal fun PlayerSection(
     state: SettingsState,
     onStateChange: (SettingsState) -> Unit
 ) {
-    val context = LocalContext.current
+    val intensityOptions = VhsIntensity.values().map { intensity ->
+        intensity to stringResource(intensity.labelRes())
+    }
     SettingsGroup(
         title = stringResource(R.string.settings_player_title),
         summary = stringResource(R.string.settings_player_summary)
@@ -32,9 +33,9 @@ internal fun PlayerSection(
         DropdownNavRow(
             label = stringResource(R.string.settings_vhs_intensity),
             value = stringResource(state.vhsIntensity.labelRes()),
-            options = VhsIntensity.values().map { context.getString(it.labelRes()) }
+            options = intensityOptions.map { it.second }
         ) { selected ->
-            val next = VhsIntensity.values().first { context.getString(it.labelRes()) == selected }
+            val next = intensityOptions.first { it.second == selected }.first
             onStateChange(state.copy(vhsIntensity = next))
         }
 
