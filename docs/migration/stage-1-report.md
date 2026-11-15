@@ -10,7 +10,7 @@
 
 Completed the repository hygiene edits on the Stage 1 branch, removed 16 tracked stale build-output files, read and documented the twelve candidate Kotlin files and associated contracts/supporting code, documented the actual interface-check script behavior and direct-test gaps, added opt-in JVM benchmark tests without adding dependencies, and added a characterization test for a suspected Bidi comment/implementation mismatch.
 
-No production Kotlin logic, Gradle dependency versions, build scripts, CI workflows, app files, UI, playback or storage logic were changed. The requested Gradle tests and benchmark harness could not be run because this workspace has no local repository checkout or Gradle installation. A clone attempt failed because the execution environment could not resolve github.com. No passing build or timing result is claimed.
+No production Kotlin logic, Gradle dependency versions, build scripts, CI workflows, app files, UI, playback or storage logic were changed. The local wrapper command could not run because the workspace has no repository checkout and a clone attempt failed on DNS resolution for github.com. Subsequent pull-request CI successfully executed the relevant debug build/unit-test tasks, lint, migration-ladder emulator tests and player UI emulator tests. The benchmark harness itself remained default-off in CI, so no raw benchmark timings are claimed.
 
 The uploaded Stage 1 brief did not specify a literal branch name. A dedicated branch was created from the audited `main` commit using the Stage 1 title as its name.
 
@@ -118,10 +118,10 @@ The branch was created from `main`; changes were committed without force-push or
 | B: interface script naming rule and allow-list | **PASS** | Script source read; filename-derived matching rule documented. No allow-list exists. |
 | B: test coverage and direct gaps | **PASS** | All three named test files read and their current direct/indirect coverage documented. |
 | C1: opt-in benchmark harness, no extra dependency | **PASS** | Two JUnit benchmark test classes added; both use a default-off system-property assumption and 5 warm-ups / 20 timed iterations. |
-| C1: harness compiles and is skipped in CI | **UNVERIFIED** | The exact Gradle test command could not run in this environment. |
+| C1: harness compiles and is skipped by default in CI | **PASS** | Both owning module unit-test tasks completed successfully in PR CI; the tests are guarded by a default-off JUnit assumption. |
 | C2: baseline measurements recorded | **UNVERIFIED** | No execution environment with the wrapper/Gradle was available; no raw values are invented. |
 | C2: ART-on-device caveat and device timing proposal | **PASS** | Included in `docs/migration/baseline-benchmarks.md`. |
-| D: requested Gradle tasks pass | **UNVERIFIED** | `./gradlew` was absent; clone failed on DNS; system Gradle is not installed. |
+| D: requested module test tasks pass | **PASS** | PR CI ran `:common-interfaces:test`, `:subtitle-engine:testDebugUnitTest` and `:media-tools:testDebugUnitTest` in its expanded debug unit-test task set; local wrapper invocation remains unavailable. |
 | No production behavior change | **PASS** | The branch additions/removals are limited to `.gitignore`, tracked stale build artifacts, test sources and migration documentation. No `src/main` file, app source, Gradle dependency, build script or CI workflow was changed. |
 
 ## Suspected defects
@@ -133,7 +133,7 @@ No other production defect was changed or inferred during this stage.
 ## Open questions for the owner
 
 1. The text reference audit found no stale-root references, but the binary `Docs/Subtitle_System_Blueprint.docx` and `Docs/WatermelonPlayer UI.png` were not text-extracted. Should those assets be inspected before treating the stale-root reference scan as fully exhaustive?
-2. Benchmark compilation and actual JVM numbers remain pending a Gradle-capable checkout or the repository's pull-request CI. The numbers must be reviewed on a consistent machine before using them as a Gate G0 decision.
+2. Raw benchmark measurements remain pending a deliberate opt-in run from a Gradle-capable checkout. CI compiled the harness but left it default-off. The numbers must be reviewed on a consistent machine before using them as a Gate G0 decision.
 3. Should the suspected Bidi mismatch be corrected in a separate behavior-change task, or should the current behavior remain as-is for the migration parity baseline?
 4. The existing `verify_interfaces.py` does not scan the subtitle-sync contracts directory. Should its scope be expanded in a later, separately authorized task? It was not modified in Stage 1.
 5. The direct test gaps listed in `kotlin-signatures.md` remain open; in particular parser/Bidi/hasher golden cases and the `SubtitleProbeSelectorImpl` / time-mapper tests should be considered before Rust parity work begins.
