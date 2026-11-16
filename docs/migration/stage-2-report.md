@@ -85,7 +85,7 @@ The source repository says the algorithm requires at least 131,072 bytes. Curren
 | A3: decimal string and raw IEEE-754 bits | **UNVERIFIED** | No generated vectors to inspect. |
 | A4: deterministic output and two-run checksum proof | **UNVERIFIED** | Generator could not be run. |
 | A5: requested synthetic corpus coverage | **FAIL** | Characterization tests cover a subset; no full golden corpus exists. |
-| A6: corpus under 5 MB | **PASS** | Current golden corpus is absent (0 bytes); size limit is not yet tested against generated data. |
+| A6: corpus under 5 MB | **UNVERIFIED** | No generated corpus exists, so its eventual size cannot be measured. |
 | B: SRT parser characterization tests exist | **PASS** | Direct tests added; execution UNVERIFIED. |
 | B: Bidi formatter characterization tests exist | **PASS** | Direct tests added; execution UNVERIFIED. |
 | B: OpenSubtitles hasher characterization tests exist | **PASS** | Direct synthetic tests added; execution UNVERIFIED. |
@@ -111,3 +111,16 @@ The source repository says the algorithm requires at least 131,072 bytes. Curren
 4. Stage 1 benchmark timings were never recorded. Should G0 wait for a deliberate opt-in JVM benchmark run before D-1 is decided?
 
 **Stage boundary:** Stage 2 only. No Rust implementation, production changes, dependency changes, CI changes or Stage 3 work has started.
+
+## Follow-up execution note (2026-11-16)
+
+A fresh attempt to obtain a runnable checkout used:
+
+\`\`\`text
+ git clone --depth 1 --branch migration/stage-2-golden-vectors-test-gap-closure https://github.com/SMozaff/Watermelon-MediaPlayer.git /tmp/watermelon-stage2
+ fatal: unable to access 'https://github.com/SMozaff/Watermelon-MediaPlayer.git/': Could not resolve host: github.com
+ EXIT_CODE=128
+\`\`\`
+
+The execution container reports OpenJDK 21.0.12.1, but `gradle --version` returns `gradle: command not found`. The repository wrapper is not present because clone failed. GitHub API writes and reads are available, but no GitHub Actions dispatch operation is exposed by the connected GitHub tools, and the commit workflow-run lookup returned no PR-triggered runs for the latest Stage 2 commit. Consequently the generator cannot be run or verified in this session. The earlier A6 PASS label was corrected to UNVERIFIED because an absent corpus does not prove the generated corpus will be below 5 MB.
+
