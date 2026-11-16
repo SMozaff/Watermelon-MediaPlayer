@@ -30,7 +30,7 @@ class BidiFormatterCharacterizationTest {
     @Test
     fun neutralPunctuationAndDigitsAttachAccordingToTheCurrentRunLoop() {
         assertEquals("سلام \u2068123!\u2069", BidiFormatter.format("سلام 123!", baseRtl = true))
-        assertEquals("\u2068سلام!\u2069 123", BidiFormatter.format("سلام! 123", baseRtl = false))
+        assertEquals("\u2068سلام! \u2069" + "123", BidiFormatter.format("سلام! 123", baseRtl = false))
     }
 
     @Test
