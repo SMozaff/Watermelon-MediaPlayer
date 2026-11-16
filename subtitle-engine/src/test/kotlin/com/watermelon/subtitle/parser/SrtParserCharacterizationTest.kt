@@ -81,14 +81,14 @@ class SrtParserCharacterizationTest {
         val parsed = SrtParser.parse(
             "00:00:01,000 --> 00:00:02,000\nسلام دنیا\n\n" +
                 "00:00:03,000 --> 00:00:04,000\nمرحبا بالعالم\n\n" +
-                "00:00:05,000 --> 00:00:06,000\nسلام hello"
+                "00:00:05,000 --> 00:00:06,000\nسلام abc"
         )
         assertEquals(3, parsed.cues.size)
         assertTrue(parsed.cues[0].baseRtl)
         assertTrue(parsed.cues[1].baseRtl)
         assertTrue(parsed.cues[2].baseRtl)
-        assertEquals("سلام hello", parsed.cues[2].rawText)
-        assertTrue(parsed.cues[2].displayText.contains("\u2068hello\u2069"))
+        assertEquals("سلام abc", parsed.cues[2].rawText)
+        assertTrue(parsed.cues[2].displayText.contains("\u2068abc\u2069"))
     }
 
     @Test
