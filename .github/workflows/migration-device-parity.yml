@@ -81,11 +81,9 @@ jobs:
           emulator-boot-timeout: 1200
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            ./gradlew :app:connectedAndroidTest --rerun --stacktrace \
-              -Pwatermelon.useRustCore=true \
-              -Pwatermelon.rustShadowMode=true \
-              -Pwatermelon.rustDebugLogging=true
+          # Keep this on one line: the action invokes the script through /usr/bin/sh, where
+          # backslash continuations were passed through as a literal '\' task (run 45082914674).
+          script: ./gradlew :app:connectedAndroidTest --rerun --stacktrace -Pwatermelon.useRustCore=true -Pwatermelon.rustShadowMode=true -Pwatermelon.rustDebugLogging=true
 
       - name: Upload device parity results
         if: always()

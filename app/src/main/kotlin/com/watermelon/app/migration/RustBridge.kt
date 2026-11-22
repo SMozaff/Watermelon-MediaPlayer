@@ -1,12 +1,12 @@
 package com.watermelon.app.migration
 
 /**
- * The minimum UniFFI surface a future native bridge would implement. The generated Kotlin API
- * lives in the `uniffi.watermelon_ffi` package and requires JNA plus a packaged `.so`; neither is
- * enabled by this migration stage.
+ * The minimum UniFFI surface used by the D-4 local shadow comparator. The generated Kotlin API
+ * lives in the `uniffi.watermelon_ffi` package and requires JNA plus a packaged `.so`; both are
+ * present, but native calls happen only under the opt-in shadow flags.
  *
- * Keeping the seam here means the shadow comparator can be reviewed and tested without changing
- * production behavior, and no Kotlin call site currently depends on Rust.
+ * Keeping the seam here means the comparator can be reviewed and tested without changing
+ * production behavior; `RustCutover` is the separate Stage 5 path that can return Rust results.
  */
 internal interface RustBridge {
     fun bidiIsRtl(text: String): Boolean
@@ -14,7 +14,7 @@ internal interface RustBridge {
     fun srtParseJson(content: String, language: String?): String
 }
 
-/** Default bridge: Rust is not packaged, so every comparison is explicitly unavailable. */
+/** Fallback bridge for tests or builds without native artifacts: every comparison is unavailable. */
 internal object UnavailableRustBridge : RustBridge {
     override fun bidiIsRtl(text: String): Boolean = unavailable("bidi_is_rtl")
 
