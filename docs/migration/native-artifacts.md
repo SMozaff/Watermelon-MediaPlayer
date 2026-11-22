@@ -15,6 +15,8 @@ All three `.so` files are ELF shared objects for Android 24, built by NDK r27d (
 with `rustc 1.100.0`. They must be regenerated whenever `rust/crates/ffi` or the UniFFI version
 changes; CI verifies the rebuild but does not write to the repository.
 
-The JNA dependency is pinned to `5.19.1` in `gradle/libs.versions.toml` and is only used by these
-generated bindings. It adds no network surface: JNA is a local FFI shim, and the D-4 logging seam
-performs no upload.
+The JNA dependency is pinned to `5.19.1` in `gradle/libs.versions.toml` and is selected with
+`@aar` in `app/build.gradle.kts` (Gradle version catalogs reject an `ext` key). Its AAR and POM
+SHA-256 values are pinned in `gradle/verification-metadata.xml`, so strict dependency verification
+still passes. JNA is only used by these generated bindings, adds no network surface and the D-4
+logging seam performs no upload.

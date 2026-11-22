@@ -103,7 +103,8 @@ GitHub Actions.
 - **Rejected:** arm64 only (no emulator) or all four ABIs (unused 32-bit x86 binary).
 - **Rationale:** arm64/armeabi-v7a cover Android devices; x86_64 covers the reproducible CI
   emulator. Adding x86 has no consumer and would increase APK size.
-- **Consequence:** the device workflow pins `abi: x86_64`.
+- **Consequence:** the device workflow pins `arch: x86_64` (the runner input is named `arch`, not
+  `abi`; run `45081064131` proved the wrong name fails immediately).
 
 ## DD-9 — CI truthfulness
 
@@ -123,3 +124,17 @@ GitHub Actions.
 - **Rationale:** reviewers need the current scope; a CLI deprecation error is not a reason to leave
   inaccurate review material.
 - **Consequence:** the PR body and the migration docs now agree on stage status and evidence.
+
+## DD-11 — Dependency verification and emulator infrastructure
+
+- **Chosen:** pin the JNA `5.19.1` AAR and POM SHA-256 values in `gradle/verification-metadata.xml`
+  (downloaded over HTTPS from `repo1.maven.org` and locally checksummed) rather than disabling
+  Gradle dependency verification; enable KVM udev rules before the emulator action and widen the
+  boot timeout to 1200 seconds.
+- **Rejected:** `--dependency-verification=lenient`/off, or treating the emulator timeout as proof
+  that device testing is impossible.
+- **Rationale:** strict verification is an existing security control and must keep working with the
+  new dependency (CI run `45082470876` exposed the missing checksums via the lint step). The x86_64
+  emulator needs KVM; run `45081607445` failed with "Timeout waiting for emulator to boot" after
+  11m14s because the udev rules were missing.
+- **Consequence:** the dependency gate is unchanged and the ART gate is reproducible in CI.

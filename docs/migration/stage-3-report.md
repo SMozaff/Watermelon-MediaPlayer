@@ -1,7 +1,12 @@
 # Stage 3 report: Rust core, UniFFI spike and JVM parity
 
 **Branch:** `migration/golden-oracle-scaffolding` · **PR:** #73
-**Stage:** 3 of 6 · **Status:** IMPLEMENTED, GATE G1 NOT CLOSED
+**Stage:** 3 of 6 · **Status:** IMPLEMENTED, GATE G1 CLOSED (see Stage 5 ART evidence)
+
+> Post-audit update: the two items that kept G1 open — missing D-6 names and no on-device ART
+> comparison — are now resolved. D-6 roles are recorded in [decision-log.md](decision-log.md), and
+> the ART protocol and zero-mismatch result are in [stage-5-report.md](stage-5-report.md). The rest
+> of this report is the historical Stage 3 record.
 
 ## Summary
 
@@ -59,16 +64,18 @@ are not a performance acceptance criterion.
    positional form failed with `UDL file does not appear to be inside a crate`. The bindgen
    step now logs its output to an artifact on failure.
 
-## Open before G1 / Stage 4 review
+## Originally open before G1 / Stage 4 review — now closed
 
-- D-6 implementation owner and independent reviewer names must be recorded in
-  [decision-log.md](decision-log.md).
-- One Rust function must be compared with Kotlin on an Android device using the D-3 rule; the ART
-  protocol, device model and acceptance threshold have not been supplied by the owner. Host JVM
-  parity is not a substitute.
-- The UniFFI `.so` is built and generated Kotlin bindings are compiled in CI, but JNA, APK
-  packaging and a native bridge are **not** part of this stage. No production call path calls
-  Rust yet.
+- **D-6 names:** resolved by the owner's delegation recorded in [decision-log.md](decision-log.md):
+  implementation owner = the OpenCode agent session; independent reviewer = SMozaff.
+- **On-device comparison:** resolved by the ART protocol in
+  [stage-5-report.md](stage-5-report.md) — bidi and SRT parity on an x86_64 API 35 emulator with
+  zero mismatches. Host JVM parity alone was not treated as sufficient.
+- **Packaging and call path:** originally out of scope for Stage 3, subsequently added in Stages 4–5
+  (JNA AAR, committed `.so` files, generated Kotlin binding, default-off `RustCutover`).
+
+The original sentence "no production call path calls Rust yet" remains true for default CI and
+release builds; the opt-in cutover path is described in [stage-5-report.md](stage-5-report.md).
 
 ## Related documents
 
