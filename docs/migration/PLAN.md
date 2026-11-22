@@ -14,10 +14,30 @@ reports remain the evidence of what actually ran.
 |---|---|---|---|---|
 | 1 — Hygiene, discovery, baseline harness | Remove stale outputs; inventory the twelve candidates; add opt-in JVM benchmarks | Signature inventory complete; harness compiles; build/tests green in CI | None (entry) | **Done.** PR #71 merged, CI green. JVM baselines recorded in CI run `45075503837` on a named `ubuntu-latest` runner; no ART/device baseline. |
 | 2 — Golden vectors and test-gap closure | Generate the Kotlin behavior oracle; close direct-test gaps | Generator + 10 JSON files + Kotlin self-check + two-run checksum proof; corpus < 5 MB; target tests pass | **G0 / D-1** continue or stop | **Gate passed.** PR #72 merged as PARTIAL; the post-audit branch closed the generator, 39 cases in 10 files, self-check and byte-identical two-run proof (CI run `45074382455`), and full CI is green (`45075903852`). D-1 approved 2026-11-23; owner schema confirmation and official OSHash media vector remain open. |
-| 3 — Rust core + binding spike | Decide binding tool and tolerance; port one component end-to-end; measure FFI/copy cost | D-2 and D-3 approved; one function runs on device with bit/decimal comparison; NDK toolchain in CI | **G1** (proposed) | Not started. No Rust/Cargo/NDK files. |
-| 4 — Remaining ports + shadow mode | Port remaining candidates behind approved seams; run Kotlin and Rust side by side locally | All ten vectors pass against Rust; D-4 logging policy approved; no user-visible behavior change | **G2** (proposed) | Not started. |
-| 5 — Cutover | Switch runtime calls to Rust behind a flag; validate on device | Device parity on representative media; rollback criteria met; D-5/D-6 approved | **G3** (proposed) | Not started. |
-| 6 — Cleanup | Remove superseded Kotlin implementations and migration scaffolding | No orphaned interfaces; `verify_interfaces.py` updated; docs archived | Done criteria (proposed) | Not started. |
+| 3 — Rust core + binding spike | Decide binding tool and tolerance; port one component end-to-end; measure FFI/copy cost | D-2 and D-3 approved; one function runs on device with bit/decimal comparison; NDK toolchain in CI | **G1** (proposed) | **Implemented, gate open.** Rust core + UniFFI spike + NDK cross-compile in CI; 39/39 JVM parity (run `45079683879`), generated Kotlin bindings (run `45079293229`). No on-device comparison and no D-6 names, so G1 is not closed. See [stage-3-report.md](stage-3-report.md). |
+| 4 — Remaining ports + shadow mode | Port remaining candidates behind approved seams; run Kotlin and Rust side by side locally | All ten vectors pass against Rust; D-4 logging policy approved; no user-visible behavior change | **G2** (proposed) | **Scaffolding only.** All ten vectors pass on the JVM, but native packaging/bridge and D-4 local comparison are not active; no user-visible behavior change. G2 not claimed. |
+| 5 — Cutover | Switch runtime calls to Rust behind a flag; validate on device | Device parity on representative media; rollback criteria met; D-5/D-6 approved | **G3** (proposed) | **Blocked.** D-5 approved; D-6 names and device protocol/threshold missing. Build flags default to Kotlin; no cutover performed. |
+| 6 — Cleanup | Remove superseded Kotlin implementations and migration scaffolding | No orphaned interfaces; `verify_interfaces.py` updated; docs archived | Done criteria (proposed) | **Blocked.** Kotlin implementations remain authoritative; no interfaces removed, so the interface guard is unchanged. |
+
+## Cutover and rollback design (scaffolding, not activated)
+
+The app composition root now has three compile-time flags in `app/build.gradle.kts`, all defaulting
+to `false`: `watermelon.useRustCore`, `watermelon.rustShadowMode` and
+`watermelon.rustDebugLogging`. `MigrationFlags`, `RustMigrationLog`, `RustBridge` and
+`MigrationDiagnostics` provide the D-4 seam. `AppDependencies.migrationDiagnostics` is deliberately
+wired to `UnavailableRustBridge`, so no production path calls Rust and no APK change is implied.
+
+Rollback triggers to apply before any flag is enabled in a non-local build:
+
+1. Any non-numeric mismatch under the D-3 tolerance, or any integer/Long/hash mismatch, in the
+   39-case JVM corpus → revert to the Kotlin implementation and stop.
+2. Any mismatch on the owner-approved on-device protocol → revert and record the device, media
+   and raw outputs before changing code.
+3. A native-library load failure, missing ABI, or exception from the bridge → revert; shadow mode
+   must never turn into a user-visible crash.
+4. Any new telemetry, upload or non-debug logging → revert; D-4 permits local opt-in logging only.
+5. A new dependency (for example JNA for UniFFI-generated Kotlin) or APK packaging change must be
+   reviewed and approved before Stage 5; it is not covered by D-1–D-6.
 
 ## Rules that apply at every stage
 
@@ -67,7 +87,7 @@ decision (D-3) can be applied later without regenerating the corpus. Generation 
 
 ## Related documents
 
-- [Stage 1 report](stage-1-report.md) · [Stage 2 report](stage-2-report.md)
+- [Stage 1 report](stage-1-report.md) · [Stage 2 report](stage-2-report.md) · [Stage 3 report](stage-3-report.md)
 - [G0 report](g0-report.md) · [Decision log](decision-log.md)
 - [Kotlin signature inventory](kotlin-signatures.md) · [Baseline benchmarks](baseline-benchmarks.md)
 - [Migration process audit](migration-process-audit.md)

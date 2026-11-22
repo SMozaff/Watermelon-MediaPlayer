@@ -30,6 +30,14 @@ internal class AppDependencies(
     val database by lazy { com.watermelon.storage.db.WatermelonDatabase(appContext) }
     val settingsStore by lazy { com.watermelon.storage.prefs.FolderVisibilityStoreImpl(appContext) }
 
+    // D-4 shadow-mode seam. No production call path uses this yet: Rust is not packaged in the
+    // APK, and cutover requires the G1 device gate plus named D-6 owner/reviewer. See PLAN.md.
+    val migrationDiagnostics by lazy {
+        com.watermelon.app.migration.MigrationDiagnostics(
+            com.watermelon.app.migration.UnavailableRustBridge
+        )
+    }
+
     // media-tools: reuse the singleton MediaJobManager/OutputFileStore owned by
     // WatermelonApplication (see that class's doc). OutputFileStore reads the same
     // watermelon_prefs keys written by SettingsPersistence, so exports use the
