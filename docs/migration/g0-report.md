@@ -3,7 +3,9 @@
 **Repository:** `SMozaff/Watermelon-MediaPlayer`  
 **Stage branch:** `migration/stage-2-golden-vectors-test-gap-closure`  
 **Kotlin source baseline:** `07b7aa557f11e8f810bb05d4e9ae6a602448e7e3`  
-**Status:** INCOMPLETE. The golden-vector generator has not been run and no generated corpus is committed.
+**Status at the time of writing:** INCOMPLETE. The golden-vector generator has not been run and no generated corpus is committed.
+
+**Current status (2026-11-23):** see [Post-audit execution update](#post-audit-execution-update-2026-11-23) below; the oracle was generated and verified in CI.
 
 ## Corpus counts and size
 
@@ -57,3 +59,26 @@ The GitHub repository contents API was available for source inspection and commi
 - Supply the official `breakdance.avi` reference asset through an approved test-data channel if the official published vector must be executed locally; do not commit copyrighted media.
 - Supply real-derived signatures only if desired. Synthetic-only data remains the current scope.
 - Decide D-1 only after the generated corpus and benchmark evidence are available.
+
+## Post-audit execution update (2026-11-23)
+
+This section records later evidence without rewriting the original report above. All execution
+ran in GitHub Actions on branch `migration/golden-oracle-scaffolding`; nothing was run or
+installed in a local workspace.
+
+- **Corpus:** 10 JSON files under `testdata/golden/`, 39 cases total, 111,890 bytes (limit 5 MB).
+  `sha256sum -c SHA256SUMS` passes locally as a static check of the committed files.
+- **Generator:** workflow run
+  [`45074382455`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45074382455)
+  generated the corpus twice into separate directories, compared SHA-256 sets (`diff -u` passed),
+  and ran both structural self-checks. Generator commit: `bf9af08`.
+- **Regression:** full CI run
+  [`45074866004`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45074866004)
+  passed all five jobs on the final commit.
+- **Behavior changes before freezing:** the bidi trailing-neutral and OSHash 128 KiB defects were
+  fixed in Kotlin before generation; see [defect-fixes.md](defect-fixes.md). The generated vectors
+  therefore encode corrected behavior, not the defects described in the "Characterization
+  findings" section above.
+- **G0 assessment:** the behavior-oracle half of G0 is met. The performance half is described in
+  [baseline-benchmarks.md](baseline-benchmarks.md). D-1 remains blank and is not inferred from
+  this evidence.

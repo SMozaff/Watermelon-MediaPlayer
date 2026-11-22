@@ -124,3 +124,27 @@ A fresh attempt to obtain a runnable checkout used:
 
 The execution container reports OpenJDK 21.0.12.1, but `gradle --version` returns `gradle: command not found`. The repository wrapper is not present because clone failed. GitHub API writes and reads are available, but no GitHub Actions dispatch operation is exposed by the connected GitHub tools, and the commit workflow-run lookup returned no PR-triggered runs for the latest Stage 2 commit. Consequently the generator cannot be run or verified in this session. The earlier A6 PASS label was corrected to UNVERIFIED because an absent corpus does not prove the generated corpus will be below 5 MB.
 
+## Post-audit execution update (2026-11-23)
+
+This section supersedes the execution limitations above without rewriting the original record. After
+the process audit, the work continued on branch `migration/golden-oracle-scaffolding` and all
+execution was done in GitHub Actions.
+
+| Acceptance item | Updated result | Evidence |
+|---|---|---|
+| A1: deterministic Kotlin generator | **PASS** | Generator tests in `subtitle-engine` and `media-tools`; two independent invocations produced identical checksums in run `45074382455`. |
+| A2: all ten golden JSON files and schema | **PASS** | `testdata/golden/` contains all ten files, 39 cases; generated, never hand-edited. Schema confirmation is still an owner input. |
+| A3: decimal string and raw IEEE-754 bits | **PASS** | `GoldenJson.kt` writes both representations for every float/double; structural self-check validates them. |
+| A4: deterministic output and two-run proof | **PASS** | Workflow run `45074382455`: `diff -u golden-1.sha256 golden-2.sha256` passed after forcing test re-execution with `--rerun`. |
+| A5: synthetic corpus coverage | **PASS** | Ten component generators plus boundary tests added for probe selection, time mapping, drift correction, config validation and `isRtl`. |
+| A6: corpus under 5 MB | **PASS** | 111,890 bytes measured in the workflow. |
+| C: Kotlin self-check loads all ten files | **PASS** | Both self-check tests passed in run `45074382455`. |
+| No production behavior change | **SUPERSEDED** | The bidi trailing-neutral and OSHash 128 KiB defects were deliberately fixed in Kotlin before freezing the oracle; see [defect-fixes.md](defect-fixes.md). |
+| No CI changes | **SUPERSEDED** | Two opt-in workflows were added: `migration-golden-vectors.yml` and `migration-baseline-benchmarks.yml`. Normal CI behavior is unchanged. |
+| Official reference vector test | **STILL OPEN** | The official `breakdance.avi` media was not supplied; no copyrighted media was committed. |
+
+Full CI on the final commit passed all jobs: run
+[`45074866004`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45074866004).
+Stage 2 execution is complete; owner confirmation of the reconstructed schema and of D-1 remains
+outstanding.
+
