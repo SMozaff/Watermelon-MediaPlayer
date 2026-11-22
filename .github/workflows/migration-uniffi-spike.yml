@@ -1,0 +1,118 @@
+name: Migration UniFFI spike
+
+# D-2 time-boxed spike. Runs entirely on ubuntu-latest: compiles the Rust core and
+# UniFFI boundary, measures the PCM byte-buffer copy cost, and generates Kotlin
+# bindings from the compiled library. No local Rust/NDK toolchain is required.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spike:
+    name: Generate UniFFI bindings and measure PCM copy cost
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # stable
+        with:
+          toolchain: stable
+
+      - name: Generate lockfile
+        working-directory: rust
+        run: cargo generate-lockfile
+
+      - name: Compile Rust core, FFI spike and bindgen
+        working-directory: rust
+        run: |
+          set +e
+          cargo test --workspace --all-targets --locked > compile.log 2>&1
+          status=$?
+          set -e
+          cat compile.log
+          echo "cargo_exit=$status" >> compile.log
+          exit $status
+
+      - name: Build UniFFI shared library
+        working-directory: rust
+        run: cargo build -p watermelon-ffi --locked
+
+      - name: Record spike host metadata
+        run: |
+          mkdir -p migration-uniffi
+          {
+            echo "captured_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "git_commit=$(git rev-parse HEAD)"
+            echo "workflow_run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "runner_os=$RUNNER_OS"
+            echo "runner_arch=$RUNNER_ARCH"
+            echo "runner_image=${ImageVersion:-unknown}"
+            echo "kernel=$(uname -sr)"
+            echo "os=$(. /etc/os-release && echo "$PRETTY_NAME")"
+            echo "cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | xargs)"
+            echo "cpu_count=$(nproc)"
+            echo "rust_version=$(rustc --version)"
+          } > migration-uniffi/metadata.txt
+          cat migration-uniffi/metadata.txt
+
+      - name: Measure PCM byte-buffer copy cost
+        working-directory: rust
+        run: |
+          set -o pipefail
+          cargo run -p watermelon-core --bin pcm_copy_benchmark --locked -- \
+            --sample-count=128000 --samples=20 | tee ../migration-uniffi/pcm-copy-report.txt
+
+      - name: Validate raw nanosecond samples
+        run: |
+          pattern='BENCH name=[^[:space:]]+ warmup=[0-9]+ timed=[0-9]+ raw_ns=[0-9,]+ median_ns=[0-9]+ mean_ns=[0-9]+ checksum=-?[0-9]+'
+          grep -hoE "$pattern" migration-uniffi/pcm-copy-report.txt > migration-uniffi/raw-samples.txt
+          cat migration-uniffi/raw-samples.txt
+          python3 - <<'PY'
+          import re
+          lines = [line.strip() for line in open('migration-uniffi/raw-samples.txt') if line.strip()]
+          assert len(lines) == 2, f'expected 2 copy-cost workloads, found {len(lines)}'
+          names = set()
+          for line in lines:
+              name = re.search(r'name=(\S+)', line)
+              raw = re.search(r'raw_ns=([\d,]+)', line)
+              assert name and raw, line
+              assert name.group(1) not in names, f'duplicate workload: {name.group(1)}'
+              names.add(name.group(1))
+              samples = raw.group(1).split(',')
+              assert len(samples) == 20 and all(sample.isdigit() for sample in samples), line
+          print(f'validated {len(lines)} workloads, 20 raw samples each')
+          PY
+
+      - name: Generate Kotlin bindings from compiled library
+        working-directory: rust
+        run: |
+          mkdir -p ../build/uniffi-kotlin
+          cargo run -p uniffi-bindgen --locked -- \
+            generate target/debug/libwatermelon_ffi.so \
+            --language kotlin \
+            --out-dir ../build/uniffi-kotlin
+          find ../build/uniffi-kotlin -type f -name '*.kt' -print
+          test -n "$(find ../build/uniffi-kotlin -type f -name '*.kt' -print -quit)"
+
+      - name: Publish PCM copy-cost medians to job summary
+        run: |
+          echo '## PCM copy-cost spike (ns)' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Host microbenchmark on ubuntu-latest; not ART/device numbers.' >> "$GITHUB_STEP_SUMMARY"
+          sed -n 's/^\(BENCH name=[^ ]*\).*median_ns=\([0-9]*\).*$/\1 \2/p' \
+            migration-uniffi/raw-samples.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload spike artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: migration-uniffi-spike
+          path: |
+            migration-uniffi/
+            build/uniffi-kotlin/
+            rust/compile.log
+          if-no-files-found: warn

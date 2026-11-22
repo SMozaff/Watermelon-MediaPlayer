@@ -1,3 +1,8 @@
+use std::hint::black_box;
+use std::time::Instant;
+
+use serde_json::{json, Value};
+
 use crate::contracts::ActivitySignature;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -265,4 +270,65 @@ pub fn synthesize_golden_pcm(sample_rate: i32, sample_count: i64, encoding: PcmS
         }
     }
     bytes
+}
+
+const PCM_SPIKE_WARMUP: u32 = 3;
+
+/// D-2 spike: compare a borrowed PCM byte slice with an owned `Vec<u8>` copy at the
+/// same boundary UniFFI uses for Kotlin `ByteArray`. Both paths run the identical
+/// parity-tested accumulator so the only difference is the buffer boundary.
+pub fn measure_pcm_copy_cost(sample_count: i64, samples: u32) -> Value {
+    let sample_count = sample_count.max(1) as usize;
+    let samples = samples.max(1);
+    let bytes = synthesize_golden_pcm(16_000, sample_count as i64, PcmSampleEncoding::Pcm16);
+
+    let mut borrowed_ns = Vec::with_capacity(samples as usize);
+    let mut owned_copy_ns = Vec::with_capacity(samples as usize);
+    for _ in 0..PCM_SPIKE_WARMUP {
+        black_box(consume_pcm_borrowed(&bytes));
+        black_box(consume_pcm_with_copy(&bytes));
+    }
+    for _ in 0..samples {
+        let start = Instant::now();
+        let checksum = consume_pcm_borrowed(&bytes);
+        borrowed_ns.push(start.elapsed().as_nanos() as u64);
+        black_box(checksum);
+    }
+    for _ in 0..samples {
+        let start = Instant::now();
+        let checksum = consume_pcm_with_copy(&bytes);
+        owned_copy_ns.push(start.elapsed().as_nanos() as u64);
+        black_box(checksum);
+    }
+
+    json!({
+        "workload": "speech_pcm_byte_buffer",
+        "sampleRate": 16_000,
+        "sampleCount": sample_count,
+        "bytes": bytes.len(),
+        "warmup": PCM_SPIKE_WARMUP,
+        "borrowed_ns": borrowed_ns,
+        "owned_copy_ns": owned_copy_ns,
+    })
+}
+
+fn consume_pcm_borrowed(bytes: &[u8]) -> u64 {
+    let mut accumulator = SpeechLikelihoodAccumulator::new(0, 8_000, 40);
+    accumulator.consume(bytes, 0, bytes.len(), 0, 16_000, 1, PcmSampleEncoding::Pcm16);
+    signature_checksum(&accumulator.finish())
+}
+
+fn consume_pcm_with_copy(bytes: &[u8]) -> u64 {
+    let owned = bytes.to_vec();
+    let mut accumulator = SpeechLikelihoodAccumulator::new(0, 8_000, 40);
+    accumulator.consume(&owned, 0, owned.len(), 0, 16_000, 1, PcmSampleEncoding::Pcm16);
+    signature_checksum(&accumulator.finish())
+}
+
+fn signature_checksum(signature: &ActivitySignature) -> u64 {
+    signature
+        .occupancy
+        .iter()
+        .chain(signature.onsets.iter())
+        .fold(0u64, |sum, value| sum.wrapping_add(value.to_bits() as u64))
 }
