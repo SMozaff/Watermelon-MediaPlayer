@@ -135,9 +135,10 @@ impl SpeechLikelihoodAccumulator {
             if n <= 0 {
                 continue;
             }
+            let denominator = (n - 1).max(1);
             rms[i] = (self.sum_squares[i] / n as f64).sqrt();
-            diff_rms[i] = (self.diff_squares[i] / n.max(1) as f64).sqrt();
-            zcr[i] = self.zero_crossings[i] as f64 / n.max(1) as f64;
+            diff_rms[i] = (self.diff_squares[i] / denominator as f64).sqrt();
+            zcr[i] = self.zero_crossings[i] as f64 / denominator as f64;
         }
 
         let mut valid_rms: Vec<f64> = (0..self.bucket_count)

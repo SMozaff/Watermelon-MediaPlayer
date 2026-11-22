@@ -38,7 +38,9 @@ jobs:
           exit $status
 
       - name: Compare Rust core with golden vectors
-        run: cargo run --manifest-path rust/Cargo.toml -p watermelon-core --bin parity -- testdata/golden | tee parity-report.txt
+        run: |
+          set -o pipefail
+          cargo run --manifest-path rust/Cargo.toml -p watermelon-core --bin parity -- testdata/golden | tee parity-report.txt
 
       - name: Upload parity report
         if: always()
