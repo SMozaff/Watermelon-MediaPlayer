@@ -56,8 +56,9 @@ Ten component files under `testdata/golden/`:
 Generation is implemented by the generator tests in `subtitle-engine` and `media-tools` and is
 driven by `.github/workflows/migration-golden-vectors.yml` (`workflow_dispatch`). The workflow
 proves two runs are byte-identical, checks the 10-file corpus is under 5 MB, runs the structural
-self-check, and uploads the corpus as an artifact. The owner reviews that artifact and commits
-it to `testdata/golden/`; the workflow does not write to the repository.
+self-check, and uploads the corpus as an artifact. Run `45074382455` passed all of these and the
+verified corpus is committed under `testdata/golden/` with `SHA256SUMS` and provenance notes. The
+workflow does not write to the repository; regenerate and recommit when behavior changes.
 
 Each file contains a deterministic, sorted list of cases. Every floating-point result is
 recorded twice: as a decimal string and as raw IEEE-754 bits (`f32`/`f64`) so that a tolerance

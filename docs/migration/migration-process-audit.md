@@ -208,7 +208,7 @@ execution through GitHub Actions rather than the agent workspace.
 | Recommendation | Action | Status |
 |---|---|---|
 | F-1 stage labeling | `PLAN.md` defines stage/gate order and states that a merged PR is not stage completion; owner note still needed on PR #72 | Partial |
-| F-2 parity oracle | Generator, structural self-check and `workflow_dispatch` workflow added; 10 files and checksum proof still need a CI run and owner commit | Scaffolding done, not executed |
+| F-2 parity oracle | Generator, self-check and workflow added; run `45074382455` generated 10 files (111,890 bytes), proved two byte-identical runs and passed self-check; corpus committed under `testdata/golden/` | Executed; owner schema confirmation still open |
 | F-3 benchmark evidence | No run possible locally; the existing opt-in harness remains the mechanism. Still outstanding | Open |
 | F-4 suspected defects | Both fixed in Kotlin with tests; see [defect-fixes.md](defect-fixes.md) | Done |
 | F-5 test gaps | Direct boundary tests added for probe selector, time mapper, drift corrector, config and `isRtl` | Done |
@@ -219,6 +219,8 @@ execution through GitHub Actions rather than the agent workspace.
 | F-10 plan and interface guard | `PLAN.md` added; interface-script seam change still depends on the D-2 decision | Partial |
 
 **Execution note:** no local tests were run and no toolchains were installed. Local Gradle cannot
-resolve AGP 9.4.0 from this network (Google Maven returns 404), and the available GitHub token is
-invalid, so the workflow has not been dispatched. All compile/test evidence must come from
-GitHub Actions after the changes are pushed.
+resolve AGP 9.4.0 from this network (Google Maven returns 404). All execution evidence comes from
+GitHub Actions on branch `migration/golden-oracle-scaffolding`: oracle run `45074382455` passed;
+full CI run `45074017608` found one stale Bidi test expectation, fixed before the final run.
+The initial `GH_TOKEN` was invalid; a working credential became available later and pushed the
+work over SSH (the OAuth token lacks `workflow` scope).

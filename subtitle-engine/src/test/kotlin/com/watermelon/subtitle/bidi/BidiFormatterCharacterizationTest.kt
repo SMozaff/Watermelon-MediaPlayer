@@ -31,7 +31,7 @@ class BidiFormatterCharacterizationTest {
     fun neutralPunctuationAndDigitsAttachAccordingToTheCurrentRunLoop() {
         // A trailing neutral is moved after PDI, so "!" is no longer trapped in the isolate.
         assertEquals("سلام \u2068123\u2069!", BidiFormatter.format("سلام 123!", baseRtl = true))
-        assertEquals("\u2068سلام!\u2069 123", BidiFormatter.format("سلام! 123", baseRtl = false))
+        assertEquals("\u2068سلام\u2069! 123", BidiFormatter.format("سلام! 123", baseRtl = false))
     }
 
     @Test
