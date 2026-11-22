@@ -10,6 +10,7 @@ android {
         applicationId = "com.watermelon.mediaplayer"
         minSdk = 24
         targetSdk = 35
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // First version bump off the initial 1 / "1.0" placeholders (see remediation plan
         // item 2) -- still a debug-signed build until real release signing is provisioned.
         versionCode = 2
@@ -105,4 +106,12 @@ dependencies {
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.media3.ui)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    // UniFFI-generated Kotlin bindings use JNA. The native libraries are committed under
+    // src/main/jniLibs and are produced by the NDK job in migration-uniffi-spike.yml.
+    implementation(libs.jna.android)
+
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }

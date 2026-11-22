@@ -16,6 +16,7 @@ espresso = "3.7.0"
 junit-ext = "1.3.0"
 uiautomator = "2.4.0"
 lottie = "6.7.1"
+jna = "5.19.1"              # UniFFI-generated Kotlin bindings use JNA; Android AAR artifact
 
 
 
@@ -67,6 +68,7 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark-macro" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+jna-android = { module = "net.java.dev.jna:jna", version.ref = "jna", ext = "aar" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
