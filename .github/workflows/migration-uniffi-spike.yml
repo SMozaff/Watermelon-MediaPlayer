@@ -169,20 +169,29 @@ jobs:
       - name: Build arm64 and armv7 shared libraries
         working-directory: rust
         run: |
-          set -euo pipefail
-          ndk_home="${ANDROID_NDK_HOME:-$ANDROID_NDK_ROOT}"
-          toolchain=$(find "$ndk_home/toolchains/llvm" -maxdepth 1 -mindepth 1 -type d | head -1)
-          test -x "$toolchain/bin/llvm-ar"
+          set +e
+          {
+            set -euo pipefail
+            ndk_home="${ANDROID_NDK_HOME:-$ANDROID_NDK_ROOT}"
+            toolchain="$ndk_home/toolchains/llvm/prebuilt/linux-x86_64"
+            test -x "$toolchain/bin/llvm-ar"
+            echo "toolchain=$toolchain"
+            ls "$toolchain/bin" | grep -E '^(aarch64-linux-android24-clang|armv7a-linux-androideabi24-clang|llvm-ar)$'
 
-          export CC_aarch64_linux_android="$toolchain/bin/aarch64-linux-android24-clang"
-          export AR_aarch64_linux_android="$toolchain/bin/llvm-ar"
-          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$CC_aarch64_linux_android"
-          cargo build -p watermelon-ffi --target aarch64-linux-android --release --locked
+            export CC_aarch64_linux_android="$toolchain/bin/aarch64-linux-android24-clang"
+            export AR_aarch64_linux_android="$toolchain/bin/llvm-ar"
+            export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$CC_aarch64_linux_android"
+            cargo build -p watermelon-ffi --target aarch64-linux-android --release --locked
 
-          export CC_armv7_linux_androideabi="$toolchain/bin/armv7a-linux-androideabi24-clang"
-          export AR_armv7_linux_androideabi="$toolchain/bin/llvm-ar"
-          export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$CC_armv7_linux_androideabi"
-          cargo build -p watermelon-ffi --target armv7-linux-androideabi --release --locked
+            export CC_armv7_linux_androideabi="$toolchain/bin/armv7a-linux-androideabi24-clang"
+            export AR_armv7_linux_androideabi="$toolchain/bin/llvm-ar"
+            export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$CC_armv7_linux_androideabi"
+            cargo build -p watermelon-ffi --target armv7-linux-androideabi --release --locked
+          } > ../migration-ndk/build.log 2>&1
+          status=$?
+          set -e
+          cat ../migration-ndk/build.log
+          exit $status
 
       - name: Verify Android library ABIs
         working-directory: rust
