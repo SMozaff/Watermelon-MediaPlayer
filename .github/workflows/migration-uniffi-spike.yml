@@ -95,13 +95,23 @@ jobs:
       - name: Generate Kotlin bindings from compiled library
         working-directory: rust
         run: |
-          mkdir -p ../build/uniffi-kotlin
-          cargo run -p uniffi-bindgen --locked -- \
-            generate target/debug/libwatermelon_ffi.so \
-            --language kotlin \
-            --out-dir ../build/uniffi-kotlin
-          find ../build/uniffi-kotlin -type f -name '*.kt' -print
-          test -n "$(find ../build/uniffi-kotlin -type f -name '*.kt' -print -quit)"
+          set +e
+          {
+            echo "pwd=$(pwd)"
+            echo "shared libraries:"
+            ls -l target/debug/*.so || true
+            mkdir -p ../build/uniffi-kotlin
+            cargo run -p uniffi-bindgen --locked -- \
+              generate target/debug/libwatermelon_ffi.so \
+              --language kotlin \
+              --out-dir ../build/uniffi-kotlin
+            find ../build/uniffi-kotlin -type f -name '*.kt' -print
+            test -n "$(find ../build/uniffi-kotlin -type f -name '*.kt' -print -quit)"
+          } > ../migration-uniffi/bindgen.log 2>&1
+          status=$?
+          set -e
+          cat ../migration-uniffi/bindgen.log
+          exit $status
 
       - name: Publish PCM copy-cost medians to job summary
         run: |

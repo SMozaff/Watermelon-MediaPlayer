@@ -21,6 +21,19 @@ android {
             .orElse("")
         val apiKeyValue = openSubtitlesApiKey.get().replace("\"", "\\\"")
         buildConfigField("String", "OPEN_SUBTITLES_API_KEY", "\"$apiKeyValue\"")
+
+        // Kotlin-to-Rust migration flags. All default to false, so CI and release builds keep
+        // the Kotlin behavior. Local debug builds can opt in with -P flags; no user-facing
+        // setting or network telemetry is introduced. See docs/migration/PLAN.md.
+        val useRustCore = project.providers.gradleProperty("watermelon.useRustCore")
+            .orNull?.toBoolean() ?: false
+        val rustShadowMode = project.providers.gradleProperty("watermelon.rustShadowMode")
+            .orNull?.toBoolean() ?: false
+        val rustDebugLogging = project.providers.gradleProperty("watermelon.rustDebugLogging")
+            .orNull?.toBoolean() ?: false
+        buildConfigField("boolean", "USE_RUST_CORE", useRustCore.toString())
+        buildConfigField("boolean", "RUST_SHADOW_MODE", rustShadowMode.toString())
+        buildConfigField("boolean", "RUST_DEBUG_LOGGING", rustDebugLogging.toString())
     }
     buildFeatures {
         compose = true
