@@ -77,7 +77,21 @@ jobs:
       # :app:assembleDebug transitively compiles every production module used by the app;
       # benchmarks remain a separate gate below because com.android.test owns its own variant.
       - name: Assemble debug application graph
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: |
+          set +e
+          ./gradlew :app:assembleDebug --stacktrace > assemble-debug.log 2>&1
+          status=$?
+          set -e
+          cat assemble-debug.log
+          exit $status
+
+      - name: Upload assemble log on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: assemble-debug-log
+          path: assemble-debug.log
+          if-no-files-found: warn
 
       # Keep unit coverage debug-scoped as well; do not invoke aggregate `test`/`build` tasks
       # that also configure or execute release variants.
