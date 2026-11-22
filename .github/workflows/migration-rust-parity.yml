@@ -28,7 +28,14 @@ jobs:
         run: cargo generate-lockfile --manifest-path rust/Cargo.toml
 
       - name: Compile Rust workspace and tests
-        run: cargo test --manifest-path rust/Cargo.toml --workspace --all-targets --locked
+        run: |
+          set +e
+          cargo test --manifest-path rust/Cargo.toml --workspace --all-targets --locked > compile.log 2>&1
+          status=$?
+          set -e
+          cat compile.log
+          echo "cargo_exit=$status" >> compile.log
+          exit $status
 
       - name: Compare Rust core with golden vectors
         run: cargo run --manifest-path rust/Cargo.toml -p watermelon-core --bin parity -- testdata/golden | tee parity-report.txt
@@ -38,5 +45,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-parity-report
-          path: parity-report.txt
+          path: |
+            compile.log
+            parity-report.txt
           if-no-files-found: warn
