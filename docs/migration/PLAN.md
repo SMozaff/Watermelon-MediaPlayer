@@ -1,8 +1,9 @@
 # Kotlin-to-Rust migration plan (working definition)
 
-**Status:** Working document, not owner-approved. The migration brief that defined "six stages"
-was not committed to this repository; the stage and gate names below are reconstructed from the
-stage reports and must be confirmed by the owner before they are treated as authoritative.
+**Status:** Working document. The migration brief that defined "six stages" was not committed to
+this repository; the stage and gate names below are reconstructed from the stage reports. The owner
+approved the D-1…D-6 proposals on 2026-11-23, which authorizes Stage 3 onward; the reconstructed
+schema in this file is still awaiting explicit confirmation.
 
 This file is the single place to check stage order, exit criteria and decision owners. Individual
 reports remain the evidence of what actually ran.
@@ -12,7 +13,7 @@ reports remain the evidence of what actually ran.
 | Stage | Purpose | Exit criteria | Gate / decision | Current state |
 |---|---|---|---|---|
 | 1 — Hygiene, discovery, baseline harness | Remove stale outputs; inventory the twelve candidates; add opt-in JVM benchmarks | Signature inventory complete; harness compiles; build/tests green in CI | None (entry) | **Done.** PR #71 merged, CI green. JVM baselines recorded in CI run `45075503837` on a named `ubuntu-latest` runner; no ART/device baseline. |
-| 2 — Golden vectors and test-gap closure | Generate the Kotlin behavior oracle; close direct-test gaps | Generator + 10 JSON files + Kotlin self-check + two-run checksum proof; corpus < 5 MB; target tests pass | **G0 / D-1** continue or stop | **Execution complete, owner gate open.** PR #72 merged as PARTIAL; the post-audit branch closed the generator, 39 cases in 10 files, self-check and byte-identical two-run proof (CI run `45074382455`), and full CI is green (`45074866004`). Owner schema confirmation and official OSHash media vector remain open; D-1 is still blank. |
+| 2 — Golden vectors and test-gap closure | Generate the Kotlin behavior oracle; close direct-test gaps | Generator + 10 JSON files + Kotlin self-check + two-run checksum proof; corpus < 5 MB; target tests pass | **G0 / D-1** continue or stop | **Gate passed.** PR #72 merged as PARTIAL; the post-audit branch closed the generator, 39 cases in 10 files, self-check and byte-identical two-run proof (CI run `45074382455`), and full CI is green (`45075903852`). D-1 approved 2026-11-23; owner schema confirmation and official OSHash media vector remain open. |
 | 3 — Rust core + binding spike | Decide binding tool and tolerance; port one component end-to-end; measure FFI/copy cost | D-2 and D-3 approved; one function runs on device with bit/decimal comparison; NDK toolchain in CI | **G1** (proposed) | Not started. No Rust/Cargo/NDK files. |
 | 4 — Remaining ports + shadow mode | Port remaining candidates behind approved seams; run Kotlin and Rust side by side locally | All ten vectors pass against Rust; D-4 logging policy approved; no user-visible behavior change | **G2** (proposed) | Not started. |
 | 5 — Cutover | Switch runtime calls to Rust behind a flag; validate on device | Device parity on representative media; rollback criteria met; D-5/D-6 approved | **G3** (proposed) | Not started. |
@@ -34,16 +35,15 @@ reports remain the evidence of what actually ran.
 
 | Decision | Owner | Required by | State |
 |---|---|---|---|
-| D-1 Continue past G0 | Repository owner | Start of Stage 3 | Blank |
-| D-2 Binding tool | Repository owner | Stage 3 spike | Blank |
-| D-3 Float tolerance | Repository owner | Stage 3 spike | Blank |
-| D-4 Shadow-mode logging | Repository owner | Stage 4 | Blank |
-| D-5 MP3 encoder | Repository owner | Stage 5 | Blank |
-| D-6 Migration owner and reviewer | Repository owner | Before Stage 3 | Blank |
+| D-1 Continue past G0 | Repository owner | Start of Stage 3 | Approved 2026-11-23 (continue) |
+| D-2 Binding tool | Repository owner | Stage 3 spike | Approved 2026-11-23 (UniFFI + spike) |
+| D-3 Float tolerance | Repository owner | Stage 3 spike | Approved 2026-11-23 (1e-6 floats, exact ints/hashes) |
+| D-4 Shadow-mode logging | Repository owner | Stage 4 | Approved 2026-11-23 (local only) |
+| D-5 MP3 encoder | Repository owner | Stage 5 | Approved 2026-11-23 (keep pure-Java encoder) |
+| D-6 Migration owner and reviewer | Repository owner | Before Stage 3 | Approved 2026-11-23; names still to be supplied |
 
-Recommendations for each blank decision are collected in
-[proposed-decisions.md](proposed-decisions.md). That file is input for the owner; it is not a
-decision record.
+The rationale for each decision is in [proposed-decisions.md](proposed-decisions.md). The
+authoritative record is [decision-log.md](decision-log.md).
 
 ## Oracle contract (to be confirmed)
 

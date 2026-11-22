@@ -1,8 +1,8 @@
 # Proposed decisions for owner approval
 
-**Status:** Proposals only. `docs/migration/decision-log.md` remains blank for D-1…D-6 and is the
-only authoritative decision record. Nothing here may be copied into that log without the owner
-writing it there.
+**Status:** Approved by the repository owner on 2026-11-23. D-1 through D-6 are now recorded in
+`docs/migration/decision-log.md`, which remains the only authoritative decision record. This file
+is retained as the rationale for those decisions, not as a second decision log.
 
 Prepared 2026-11-23 from [migration-process-audit.md](migration-process-audit.md).
 
@@ -83,4 +83,6 @@ is the simplest control for the decision-heavy stages ahead.
   published vector must be executable locally. Do not commit the copyrighted asset.
 - Confirmation of the golden-vector JSON schema in [PLAN.md](PLAN.md) (the original Stage 2 brief
   is not in this repository; the file names and float encoding are reconstructed from reports).
-- A named reviewer (D-6).
+- The names of the implementation owner and independent reviewer required by D-6. The decision is
+  approved, but the names have not been supplied; Stage 3 review cannot be signed off until they
+  are recorded in [decision-log.md](decision-log.md).

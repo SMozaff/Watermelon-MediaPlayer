@@ -207,13 +207,13 @@ execution through GitHub Actions rather than the agent workspace.
 
 | Recommendation | Action | Status |
 |---|---|---|
-| F-1 stage labeling | `PLAN.md` defines stage/gate order and states that a merged PR is not stage completion; owner note still needed on PR #72 | Partial |
+| F-1 stage labeling | `PLAN.md` defines stage/gate order and states that a merged PR is not stage completion; PR #72 has a factual tracking link to #73, owner rationale note still optional | Partial |
 | F-2 parity oracle | Generator, self-check and workflow added; run `45074382455` generated 10 files (111,890 bytes), proved two byte-identical runs and passed self-check; corpus committed under `testdata/golden/` | Executed; owner schema confirmation still open |
 | F-3 benchmark evidence | Opt-in workflow `migration-baseline-benchmarks.yml` ran the harness on a named `ubuntu-latest` runner (run `45075503837`): 7 workloads × 20 raw samples with host/JVM metadata committed under `docs/migration/benchmark-results/` | Executed (JVM only; ART protocol still open) |
 | F-4 suspected defects | Both fixed in Kotlin with tests; see [defect-fixes.md](defect-fixes.md) | Done |
 | F-5 test gaps | Direct boundary tests added for probe selector, time mapper, drift corrector, config and `isRtl` | Done |
-| F-6 decisions | Proposals written in [proposed-decisions.md](proposed-decisions.md); `decision-log.md` untouched | Awaiting owner |
-| F-7 shadow mode | Design proposal only (D-4); no code | Awaiting owner |
+| F-6 decisions | Owner approved all proposals on 2026-11-23; D-1–D-6 recorded in [decision-log.md](decision-log.md) | Done (D-6 names open) |
+| F-7 shadow mode | D-4 approved (local-only debug logging); implementation pending Stage 4 | Approved, not implemented |
 | F-8 stale limitation wording | `PLAN.md` and this report record session-specific limitations; historical reports left as historical | Done |
 | F-9 post-hoc fixtures | `isRtl` boundary test added and the `abc` fixture rationale documented | Done |
 | F-10 plan and interface guard | `PLAN.md` added; interface-script seam change still depends on the D-2 decision | Partial |
