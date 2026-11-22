@@ -1,0 +1,114 @@
+name: Migration baseline benchmarks
+
+# Opt-in JVM baseline harness for the Kotlin-to-Rust migration (audit finding F-3).
+# The benchmark tests are skipped in normal CI; this workflow sets -Dwatermelon.benchmarks=true
+# on a named GitHub-hosted runner and uploads the raw nanosecond samples plus host/JVM metadata.
+# These are JVM microbenchmarks, not Android ART/device numbers.
+
+on:
+  workflow_dispatch:
+  # Temporary bootstrap trigger: GitHub only exposes workflow_dispatch for workflows that
+  # exist on the default branch. Remove this trigger once the workflow is merged to main.
+  push:
+    branches: [migration/golden-oracle-scaffolding]
+
+permissions:
+  contents: read
+
+jobs:
+  run-baseline:
+    name: Run JVM baseline benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;37.0.0
+
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Record host and runtime metadata
+        run: |
+          mkdir -p migration-benchmarks
+          {
+            echo "captured_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "git_commit=$(git rev-parse HEAD)"
+            echo "workflow_run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "runner_os=$RUNNER_OS"
+            echo "runner_arch=$RUNNER_ARCH"
+            echo "runner_image=${ImageVersion:-unknown}"
+            echo "kernel=$(uname -sr)"
+            echo "os=$(. /etc/os-release && echo "$PRETTY_NAME")"
+            echo "cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | xargs)"
+            echo "cpu_count=$(nproc)"
+            echo "java_version=$(java -version 2>&1 | head -1)"
+            echo "gradle_version=$(./gradlew --version 2>/dev/null | grep '^Gradle ' | head -1)"
+            echo "benchmark_property=watermelon.benchmarks=true"
+          } > migration-benchmarks/metadata.txt
+          cat migration-benchmarks/metadata.txt
+
+      - name: Run subtitle-engine baseline
+        env:
+          JAVA_TOOL_OPTIONS: -Dwatermelon.benchmarks=true
+        run: |
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleEngineBaselineBenchmarkTest' \
+            --no-daemon --rerun --info --stacktrace 2>&1 | tee migration-benchmarks/subtitle-engine.log
+
+      - name: Run media-tools baseline
+        env:
+          JAVA_TOOL_OPTIONS: -Dwatermelon.benchmarks=true
+        run: |
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechLikelihoodAccumulatorBenchmarkTest' \
+            --no-daemon --rerun --info --stacktrace 2>&1 | tee migration-benchmarks/media-tools.log
+
+      - name: Extract and validate raw samples
+        run: |
+          pattern='BENCH name=[^[:space:]]+ warmup=[0-9]+ timed=[0-9]+ raw_ns=[0-9,]+ median_ns=[0-9]+ mean_ns=[0-9]+ checksum=-?[0-9]+'
+          grep -hoE "$pattern" \
+            subtitle-engine/build/test-results/testDebugUnitTest/TEST-*.xml \
+            media-tools/build/test-results/testDebugUnitTest/TEST-*.xml \
+            migration-benchmarks/*.log 2>/dev/null > migration-benchmarks/raw-samples.txt || true
+          sort -u migration-benchmarks/raw-samples.txt -o migration-benchmarks/raw-samples.txt
+          cat migration-benchmarks/raw-samples.txt
+          python3 - <<'PY'
+          import re
+          lines = [l.strip() for l in open('migration-benchmarks/raw-samples.txt') if l.strip()]
+          assert len(lines) == 7, f'expected 7 benchmark workloads, found {len(lines)}'
+          names = set()
+          for line in lines:
+              name = re.search(r'name=(\S+)', line)
+              raw = re.search(r'raw_ns=([\d,]+)', line)
+              assert name and raw, line
+              assert name.group(1) not in names, f'duplicate workload: {name.group(1)}'
+              names.add(name.group(1))
+              samples = raw.group(1).split(',')
+              assert len(samples) == 20 and all(s.isdigit() for s in samples), line
+          print(f'validated {len(lines)} workloads, 20 raw samples each')
+          PY
+
+      - name: Publish medians to job summary
+        run: |
+          echo '## JVM baseline medians (ns)' >> "$GITHUB_STEP_SUMMARY"
+          echo 'JVM microbenchmarks on ubuntu-latest; not ART/device numbers.' >> "$GITHUB_STEP_SUMMARY"
+          sed -n 's/^\(BENCH name=[^ ]*\).*median_ns=\([0-9]*\).*$/\1 \2/p' \
+            migration-benchmarks/raw-samples.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw samples and metadata
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: migration-baseline-benchmarks
+          path: migration-benchmarks/
+          retention-days: 90
