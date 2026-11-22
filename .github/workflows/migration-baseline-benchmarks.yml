@@ -7,10 +7,6 @@ name: Migration baseline benchmarks
 
 on:
   workflow_dispatch:
-  # Temporary bootstrap trigger: GitHub only exposes workflow_dispatch for workflows that
-  # exist on the default branch. Remove this trigger once the workflow is merged to main.
-  push:
-    branches: [migration/golden-oracle-scaffolding]
 
 permissions:
   contents: read

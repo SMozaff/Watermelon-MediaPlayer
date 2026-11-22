@@ -79,6 +79,13 @@ installed in a local workspace.
   fixed in Kotlin before generation; see [defect-fixes.md](defect-fixes.md). The generated vectors
   therefore encode corrected behavior, not the defects described in the "Characterization
   findings" section above.
-- **G0 assessment:** the behavior-oracle half of G0 is met. The performance half is described in
-  [baseline-benchmarks.md](baseline-benchmarks.md). D-1 remains blank and is not inferred from
-  this evidence.
+- **JVM baseline:** workflow run
+  [`45075503837`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45075503837)
+  recorded 7 workloads with 20 raw samples each on a named `ubuntu-latest` runner (Temurin JDK 17,
+  Gradle 9.7.1); samples and metadata are in
+  [benchmark-results/](benchmark-results/metadata.txt) and summarized in
+  [baseline-benchmarks.md](baseline-benchmarks.md). These are JVM microbenchmarks, not ART/device
+  numbers.
+- **G0 assessment:** both the behavior-oracle half and the JVM baseline half of G0 now have
+  measured evidence. No on-device baseline exists, and the decision still belongs to the owner:
+  D-1 remains blank and is not inferred from this evidence.
