@@ -380,12 +380,12 @@ fn compare(expected: &Value, actual: &Value, path: &str, errors: &mut Vec<String
     }
 }
 
-fn parse_float(value: &Value) -> Option<f32> {
-    if let Some(decimal) = value["decimal"].as_str() {
+fn parse_float(value: &serde_json::Map<String, Value>) -> Option<f32> {
+    if let Some(decimal) = value.get("decimal").and_then(Value::as_str) {
         if let Ok(parsed) = decimal.parse::<f32>() {
             return Some(parsed);
         }
     }
-    let bits = u32::from_str_radix(value["bits"].as_str().unwrap_or(""), 16).ok()?;
+    let bits = u32::from_str_radix(value.get("bits").and_then(Value::as_str).unwrap_or(""), 16).ok()?;
     Some(f32::from_bits(bits))
 }
