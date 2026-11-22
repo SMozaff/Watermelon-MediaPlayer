@@ -102,7 +102,7 @@ jobs:
             ls -l target/debug/*.so || true
             mkdir -p ../build/uniffi-kotlin
             cargo run -p uniffi-bindgen --locked -- \
-              generate target/debug/libwatermelon_ffi.so \
+              generate --library target/debug/libwatermelon_ffi.so \
               --language kotlin \
               --out-dir ../build/uniffi-kotlin
             find ../build/uniffi-kotlin -type f -name '*.kt' -print
