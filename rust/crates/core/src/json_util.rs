@@ -32,16 +32,16 @@ pub fn cue_value(cue: &SubtitleCue) -> Value {
         "index": cue.index,
         "startMs": cue.start_ms,
         "endMs": cue.end_ms,
-        "rawText": cue.raw_text,
+        "rawText": cue.raw_text.clone(),
         "baseRtl": cue.base_rtl,
-        "displayText": cue.display_text,
+        "displayText": cue.display_text.clone(),
     })
 }
 
 pub fn subtitle_value(subtitle: &ParsedSubtitle) -> Value {
     json!({
-        "language": subtitle.language,
-        "sourceId": subtitle.source_id,
+        "language": subtitle.language.clone(),
+        "sourceId": subtitle.source_id.clone(),
         "offsetMs": subtitle.offset_ms,
         "cues": subtitle.cues.iter().map(cue_value).collect::<Vec<_>>(),
     })

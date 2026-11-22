@@ -209,7 +209,7 @@ fn run_case(component: &str, case: &GoldenCase) -> Result<Value, String> {
             let input: SrtParseInput = serde_json::from_value(case.input.clone()).map_err(fmt_err)?;
             let parsed = srt::parse(&input.content, input.language.as_deref());
             Ok(json!({
-                "language": parsed.language,
+                "language": parsed.language.clone(),
                 "cues": parsed.cues.iter().map(cue_value).collect::<Vec<_>>(),
             }))
         }
@@ -235,7 +235,7 @@ fn run_case(component: &str, case: &GoldenCase) -> Result<Value, String> {
                 Ok(json!({"cues": shifted.iter().map(|cue| json!({
                     "startMs": cue.start_ms,
                     "endMs": cue.end_ms,
-                    "text": cue.text,
+                    "text": cue.text.clone(),
                 })).collect::<Vec<_>>()}))
             } else {
                 let timestamp_ms = input.timestamp_ms.ok_or("missing timestampMs")?;
