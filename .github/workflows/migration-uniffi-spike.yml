@@ -5,6 +5,10 @@ name: Migration UniFFI spike
 # bindings from the compiled library. No local Rust/NDK toolchain is required.
 
 on:
+  # Temporary branch trigger so the spike can run before the workflow exists on main.
+  push:
+    branches:
+      - migration/golden-oracle-scaffolding
   workflow_dispatch:
 
 permissions:
