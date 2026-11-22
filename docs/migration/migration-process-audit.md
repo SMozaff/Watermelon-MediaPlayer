@@ -1,5 +1,10 @@
 # Migration process audit: Kotlin to Rust
 
+> **Historical snapshot — superseded.** This audit describes the repository as of 2026-11-22,
+> before the owner approved D-1…D-6 and before the golden corpus and Rust implementation existed.
+> Its “no authorization to continue” verdict is no longer current. The authoritative status is
+> [PLAN.md](PLAN.md), [decision-log.md](decision-log.md) and the Stage 3–6 reports.
+
 **Audit date:** 2026-11-22
 **Audited ref:** `main` at `46e64ff` (Stage 2 merge, PR #72)
 **Scope:** the six-stage Kotlin-to-Rust migration process as recorded in `docs/migration/` —

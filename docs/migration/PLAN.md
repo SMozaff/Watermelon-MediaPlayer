@@ -110,4 +110,4 @@ structural self-checks passed. The corpus is committed with `SHA256SUMS`; local 
 - [Stage 1](stage-1-report.md) · [Stage 2](stage-2-report.md) · [Stage 3](stage-3-report.md) · [Stage 4](stage-4-report.md) · [Stage 5](stage-5-report.md) · [Stage 6](stage-6-report.md)
 - [G0 report](g0-report.md) · [Decision log](decision-log.md) · [Delegated decisions](delegated-decisions.md)
 - [Kotlin signature inventory](kotlin-signatures.md) · [Baseline benchmarks](baseline-benchmarks.md)
-- [Native artifacts](native-artifacts.md) · [Migration process audit](migration-process-audit.md)
+- [Native artifacts](native-artifacts.md) · [Historical migration process audit (superseded)](migration-process-audit.md)
