@@ -130,3 +130,78 @@ jobs:
             build/uniffi-kotlin/
             rust/compile.log
           if-no-files-found: warn
+
+  android-ndk:
+    name: Cross-compile UniFFI library with the Android NDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # stable
+        with:
+          toolchain: stable
+          targets: aarch64-linux-android,armv7-linux-androideabi
+
+      - name: Set up Android SDK and NDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: ndk;27.2.12479018 platform-tools
+
+      - name: Generate lockfile
+        working-directory: rust
+        run: cargo generate-lockfile
+
+      - name: Record NDK toolchain metadata
+        run: |
+          mkdir -p migration-ndk
+          {
+            echo "captured_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "git_commit=$(git rev-parse HEAD)"
+            echo "workflow_run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "rust_version=$(rustc --version)"
+            echo "ndk_home=${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-unset}}"
+            echo "ndk_version=$(grep '^Pkg.Revision' "${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT}}/source.properties" 2>/dev/null || echo unknown)"
+          } > migration-ndk/metadata.txt
+          cat migration-ndk/metadata.txt
+
+      - name: Build arm64 and armv7 shared libraries
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          ndk_home="${ANDROID_NDK_HOME:-$ANDROID_NDK_ROOT}"
+          toolchain=$(find "$ndk_home/toolchains/llvm" -maxdepth 1 -mindepth 1 -type d | head -1)
+          test -x "$toolchain/bin/llvm-ar"
+
+          export CC_aarch64_linux_android="$toolchain/bin/aarch64-linux-android24-clang"
+          export AR_aarch64_linux_android="$toolchain/bin/llvm-ar"
+          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$CC_aarch64_linux_android"
+          cargo build -p watermelon-ffi --target aarch64-linux-android --release --locked
+
+          export CC_armv7_linux_androideabi="$toolchain/bin/armv7a-linux-androideabi24-clang"
+          export AR_armv7_linux_androideabi="$toolchain/bin/llvm-ar"
+          export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$CC_armv7_linux_androideabi"
+          cargo build -p watermelon-ffi --target armv7-linux-androideabi --release --locked
+
+      - name: Verify Android library ABIs
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          for target in aarch64-linux-android armv7-linux-androideabi; do
+            library="target/$target/release/libwatermelon_ffi.so"
+            test -s "$library"
+            file "$library" | tee "../migration-ndk/$target-file.txt"
+            grep -qi 'ELF' "../migration-ndk/$target-file.txt"
+          done
+
+      - name: Upload Android libraries
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: migration-ndk-libraries
+          path: |
+            migration-ndk/
+            rust/target/aarch64-linux-android/release/libwatermelon_ffi.so
+            rust/target/armv7-linux-androideabi/release/libwatermelon_ffi.so
+          if-no-files-found: warn
