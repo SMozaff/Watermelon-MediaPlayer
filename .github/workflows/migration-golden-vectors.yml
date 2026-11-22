@@ -44,8 +44,8 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: -Dwatermelon.generateGolden=true -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden
         run: |
-          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --stacktrace
-          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --stacktrace
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --rerun --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --rerun --stacktrace
 
       - name: Checksum run 1
         run: |
@@ -57,8 +57,8 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: -Dwatermelon.generateGolden=true -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden-run2
         run: |
-          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --stacktrace
-          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --stacktrace
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --rerun --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --rerun --stacktrace
 
       - name: Checksum run 2
         run: |
@@ -79,8 +79,8 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden
         run: |
-          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorSelfCheckTest' --no-daemon --stacktrace
-          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorSelfCheckTest' --no-daemon --stacktrace
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorSelfCheckTest' --no-daemon --rerun --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorSelfCheckTest' --no-daemon --rerun --stacktrace
 
       - name: Upload golden corpus and checksums
         if: always()
