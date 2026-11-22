@@ -1,0 +1,90 @@
+name: Migration golden vectors
+
+# Generates the Kotlin behavior oracle for the Rust migration, proves that two independent
+# runs are byte-identical, and runs the structural self-check. This is the execution path for
+# the Stage 2 acceptance items that could not be completed in an agent workspace.
+# Run deliberately with workflow_dispatch; the generator tests are gated off in normal CI.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-and-verify:
+    name: Generate, checksum, self-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;37.0.0
+
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@4733eaac7c1b0da527e4206b7671e0061de1ce37 # v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Generate run 1
+        env:
+          JAVA_TOOL_OPTIONS: -Dwatermelon.generateGolden=true -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden
+        run: |
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --stacktrace
+
+      - name: Checksum run 1
+        run: |
+          test "$(find testdata/golden -name '*.json' | wc -l)" -eq 10
+          sha256sum testdata/golden/*.json | sed 's#testdata/golden/##' | sort > golden-1.sha256
+          cat golden-1.sha256
+
+      - name: Generate run 2
+        env:
+          JAVA_TOOL_OPTIONS: -Dwatermelon.generateGolden=true -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden-run2
+        run: |
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorGeneratorTest' --no-daemon --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorGeneratorTest' --no-daemon --stacktrace
+
+      - name: Checksum run 2
+        run: |
+          test "$(find testdata/golden-run2 -name '*.json' | wc -l)" -eq 10
+          sha256sum testdata/golden-run2/*.json | sed 's#testdata/golden-run2/##' | sort > golden-2.sha256
+          cat golden-2.sha256
+
+      - name: Prove two runs are byte-identical
+        run: diff -u golden-1.sha256 golden-2.sha256
+
+      - name: Verify corpus size
+        run: |
+          bytes=$(du -sb testdata/golden | cut -f1)
+          echo "corpus_bytes=$bytes"
+          test "$bytes" -lt 5242880
+
+      - name: Kotlin golden self-check
+        env:
+          JAVA_TOOL_OPTIONS: -Dwatermelon.goldenDir=${{ github.workspace }}/testdata/golden
+        run: |
+          ./gradlew :subtitle-engine:testDebugUnitTest --tests '*SubtitleGoldenVectorSelfCheckTest' --no-daemon --stacktrace
+          ./gradlew :media-tools:testDebugUnitTest --tests '*SpeechAccumulatorGoldenVectorSelfCheckTest' --no-daemon --stacktrace
+
+      - name: Upload golden corpus and checksums
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: migration-golden-vectors
+          path: |
+            testdata/golden/
+            testdata/golden-run2/
+            golden-1.sha256
+            golden-2.sha256
+          retention-days: 30

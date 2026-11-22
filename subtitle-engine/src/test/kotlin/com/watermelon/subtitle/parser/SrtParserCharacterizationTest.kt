@@ -78,6 +78,8 @@ class SrtParserCharacterizationTest {
 
     @Test
     fun parsesPersianArabicAndMixedDirectionText() {
+        // "abc" (3 LTR chars) is used instead of "hello" (5) because BidiFormatter.isRtl
+        // requires a strict RTL majority; 4 vs 5 would classify the cue as LTR.
         val parsed = SrtParser.parse(
             "00:00:01,000 --> 00:00:02,000\nسلام دنیا\n\n" +
                 "00:00:03,000 --> 00:00:04,000\nمرحبا بالعالم\n\n" +

@@ -8,19 +8,8 @@ import java.nio.file.Files
 class OpenSubtitlesHasherTest {
 
     @Test
-    fun hashesExactlyOneChunkOfZeroBytes() {
-        val file = Files.createTempFile("opensubtitles-64k-", ".bin").toFile()
-        try {
-            file.writeBytes(ByteArray(65_536))
-            assertEquals("0000000000010000", OpenSubtitlesHasher.hash(file))
-        } finally {
-            file.delete()
-        }
-    }
-
-    @Test
-    fun hashesLargerZeroFilledFileIncludingItsSize() {
-        val file = Files.createTempFile("opensubtitles-large-", ".bin").toFile()
+    fun hashesMinimumTwoChunksOfZeroBytes() {
+        val file = Files.createTempFile("opensubtitles-128k-", ".bin").toFile()
         try {
             file.writeBytes(ByteArray(131_072))
             assertEquals("0000000000020000", OpenSubtitlesHasher.hash(file))
@@ -30,10 +19,20 @@ class OpenSubtitlesHasherTest {
     }
 
     @Test
+    fun hashesLargerZeroFilledFileIncludingItsSize() {
+        val file = Files.createTempFile("opensubtitles-large-", ".bin").toFile()
+        try {
+            file.writeBytes(ByteArray(262_144))
+            assertEquals("0000000000040000", OpenSubtitlesHasher.hash(file))
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
     fun preservesUnsignedHighBitThroughWrappingLongArithmetic() {
         val bytes = ByteArray(131_072)
-        // First little-endian uint64 word is 0x8000000000000000. The remaining
-        // words and the final 64 KiB chunk are zero.
+        // First little-endian uint64 word of the head chunk is 0x8000000000000000.
         bytes[7] = 0x80.toByte()
         val file = Files.createTempFile("opensubtitles-high-bit-", ".bin").toFile()
         try {
@@ -45,15 +44,32 @@ class OpenSubtitlesHasherTest {
     }
 
     @Test
-    fun rejectsFilesSmallerThanOneChunk() {
-        val file = Files.createTempFile("opensubtitles-short-", ".bin").toFile()
+    fun sumsHeadAndTailWithoutOverlapAtMinimumSize() {
+        val bytes = ByteArray(131_072)
+        bytes[0] = 1                 // head word = 1
+        bytes[65_536] = 2            // tail word = 2
+        val file = Files.createTempFile("opensubtitles-head-tail-", ".bin").toFile()
         try {
-            file.writeBytes(ByteArray(65_535))
-            assertThrows(IllegalArgumentException::class.java) {
-                OpenSubtitlesHasher.hash(file)
-            }
+            file.writeBytes(bytes)
+            // 1 + 2 + fileSize(0x20000) = 0x20003
+            assertEquals("0000000000020003", OpenSubtitlesHasher.hash(file))
         } finally {
             file.delete()
+        }
+    }
+
+    @Test
+    fun rejectsFilesSmallerThanTwoChunks() {
+        listOf(65_535, 65_536, 131_071).forEach { size ->
+            val file = Files.createTempFile("opensubtitles-short-", ".bin").toFile()
+            try {
+                file.writeBytes(ByteArray(size))
+                assertThrows(IllegalArgumentException::class.java) {
+                    OpenSubtitlesHasher.hash(file)
+                }
+            } finally {
+                file.delete()
+            }
         }
     }
 }

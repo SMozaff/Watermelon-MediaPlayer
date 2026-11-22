@@ -14,18 +14,21 @@ import java.nio.channels.FileChannel
  *   - every little-endian unsigned 64-bit word in the first 64 KB, plus
  *   - every little-endian unsigned 64-bit word in the last 64 KB.
  *
- * Arithmetic is performed mod 2^64 (natural [Long] overflow). The result is rendered as a
+ * The published OSHash reference requires at least 128 KB (131,072 bytes) so the head and
+ * tail chunks never overlap. Arithmetic is performed mod 2^64 (natural [Long] overflow).
+ * The result is rendered as a
  * zero-padded 16-char lowercase hex string, matching the reference implementation/test
  * vectors.
  */
 object OpenSubtitlesHasher {
 
     private const val CHUNK_SIZE = 64 * 1024 // 64 KB
+    private const val MIN_FILE_SIZE = CHUNK_SIZE * 2 // 128 KB, per the OSHash reference
 
     fun hash(file: File): String {
         val fileSize = file.length()
-        require(fileSize >= CHUNK_SIZE) {
-            "File must be at least $CHUNK_SIZE bytes for OpenSubtitles hashing"
+        require(fileSize >= MIN_FILE_SIZE) {
+            "File must be at least $MIN_FILE_SIZE bytes for OpenSubtitles hashing"
         }
         RandomAccessFile(file, "r").use { raf ->
             return hash(raf.channel, fileSize)
@@ -42,8 +45,8 @@ object OpenSubtitlesHasher {
      * descriptor, not the descriptor itself).
      */
     fun hash(fd: FileDescriptor, fileSize: Long): String {
-        require(fileSize >= CHUNK_SIZE) {
-            "File must be at least $CHUNK_SIZE bytes for OpenSubtitles hashing"
+        require(fileSize >= MIN_FILE_SIZE) {
+            "File must be at least $MIN_FILE_SIZE bytes for OpenSubtitles hashing"
         }
         FileInputStream(fd).channel.use { channel ->
             return hash(channel, fileSize)

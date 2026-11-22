@@ -32,7 +32,8 @@ object BidiFormatter {
     /**
      * Returns text safe for the layout engine: when [baseRtl], every maximal run of LTR
      * (Latin/neutral-with-LTR) characters is wrapped in FSI..PDI isolates. When the base is
-     * LTR, RTL runs are isolated instead. Neutral characters attach to the current run.
+     * LTR, RTL runs are isolated instead. Neutral characters attach to the current run, but
+     * neutrals trailing the run are left outside the isolate so spaces are not trapped.
      */
     fun format(text: String, baseRtl: Boolean): String {
         if (text.isEmpty()) return text
@@ -42,15 +43,26 @@ object BidiFormatter {
         while (i < text.length) {
             val d = directionOf(text[i])
             if (d == isolateDir) {
-                // start an isolate run; consume contiguous same-or-neutral chars
-                sb.append(FSI)
+                // Consume contiguous same-direction and neutral chars, but keep neutrals
+                // that trail the run outside the isolate so spaces are not trapped.
+                val run = StringBuilder()
+                val trailingNeutrals = StringBuilder()
                 while (i < text.length) {
-                    val dd = directionOf(text[i])
-                    if (dd == isolateDir || dd == Dir.NEUTRAL) { sb.append(text[i]); i++ }
-                    else break
+                    when (directionOf(text[i])) {
+                        isolateDir -> {
+                            run.append(trailingNeutrals)
+                            trailingNeutrals.setLength(0)
+                            run.append(text[i])
+                            i++
+                        }
+                        Dir.NEUTRAL -> {
+                            trailingNeutrals.append(text[i])
+                            i++
+                        }
+                        else -> break
+                    }
                 }
-                // trim trailing neutrals back out of the isolate so spaces don't get trapped
-                sb.append(PDI)
+                sb.append(FSI).append(run).append(PDI).append(trailingNeutrals)
             } else {
                 sb.append(text[i]); i++
             }
