@@ -7,6 +7,11 @@ name: Migration golden vectors
 
 on:
   workflow_dispatch:
+  # Temporary bootstrap trigger: GitHub only exposes workflow_dispatch for workflows that
+  # exist on the default branch. This branch-scoped push runs the first oracle generation;
+  # the trigger is removed once the workflow is merged to main.
+  push:
+    branches: [migration/golden-oracle-scaffolding]
 
 permissions:
   contents: read
