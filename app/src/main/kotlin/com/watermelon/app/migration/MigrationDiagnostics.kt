@@ -9,9 +9,9 @@ package com.watermelon.app.migration
  * No telemetry, upload or non-debug logging is performed. Artifacts stay on the device logcat.
  */
 internal class MigrationDiagnostics(private val bridge: RustBridge) {
-    fun <T> compare(component: String, kotlinValue: T, rustValue: () -> T): T {
+    fun <T> compare(component: String, kotlinValue: T, rustCall: (RustBridge) -> T): T {
         if (MigrationFlags.shadowMode && MigrationFlags.debugLogging) {
-            runCatching { rustValue() }
+            runCatching { rustCall(bridge) }
                 .onSuccess { rust -> RustMigrationLog.compare(component, kotlinValue, rust) }
                 .onFailure { error ->
                     RustMigrationLog.unavailable(component, error.message ?: error::class.java.simpleName)
