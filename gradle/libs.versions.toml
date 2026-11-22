@@ -68,7 +68,6 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark-macro" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
-jna-android = { module = "net.java.dev.jna:jna", version.ref = "jna", ext = "aar" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

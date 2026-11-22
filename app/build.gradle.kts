@@ -110,7 +110,9 @@ dependencies {
 
     // UniFFI-generated Kotlin bindings use JNA. The native libraries are committed under
     // src/main/jniLibs and are produced by the NDK job in migration-uniffi-spike.yml.
-    implementation(libs.jna.android)
+    // The Android artifact is selected with @aar here because Gradle version catalogs do not
+    // accept an `ext` key (verified by CI run 45082203703); the plain jar lacks libjnidispatch.
+    implementation("net.java.dev.jna:jna:${libs.versions.jna.get()}@aar")
 
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)

@@ -20,6 +20,19 @@ jobs:
         with:
           packages: platform-tools platforms;android-37.0 build-tools;37.0.0
       - name: Build
-        run: ./gradlew :ui-presentation:compileDebugKotlin --no-daemon
+        run: |
+          set +e
+          ./gradlew :ui-presentation:compileDebugKotlin --no-daemon > compile-debug-kotlin.log 2>&1
+          status=$?
+          set -e
+          cat compile-debug-kotlin.log
+          exit $status
+      - name: Upload compile log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: compile-debug-kotlin-log
+          path: compile-debug-kotlin.log
+          if-no-files-found: warn
       - name: Lint
         run: ./gradlew lint --no-daemon
