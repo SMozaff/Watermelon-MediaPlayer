@@ -1,5 +1,6 @@
 package com.watermelon.subtitle.sync
 
+import com.watermelon.common.subtitle.SubtitleOffsetConsensus
 import com.watermelon.common.subtitle.sync.ActivityCorrelator
 import com.watermelon.common.subtitle.sync.CorrelationConfig
 import com.watermelon.common.subtitle.sync.CorrelationResult
