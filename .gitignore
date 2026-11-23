@@ -60,3 +60,7 @@ test_push*.txt
 # Quarantined stale build outputs (undeletable leftover dirs, never source)
 *-stale-root/
 .jan/agent/threads/
+
+# Agent session transcripts (generated locally, never source)
+session-*.json
+session-*.md
