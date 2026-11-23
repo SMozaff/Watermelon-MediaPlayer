@@ -61,6 +61,22 @@ Rollback is a Git/release decision only (D-8), never an in-app switch. Triggers:
 5. JNA `5.19.1@aar` remains pinned in `gradle/verification-metadata.xml`, with provenance in
    [native-artifacts.md](native-artifacts.md).
 
+## Rust-only wiring
+
+| Port | Kotlin seam | Rust-backed implementation |
+|---|---|---|
+| SRT parsing | `SrtParserPort` | `RustSrtParser` → `srtParseJson` |
+| OpenSubtitles hash | `SubtitleHasherPort` | `RustSubtitleHasher` → `openSubtitlesHashChunks` (head/tail only) |
+| Offset consensus | `SubtitleOffsetConsensus` | `RustOffsetConsensus` → `consensusResolveJson` / `consensusHasUsefulProvisionalOffsetJson` |
+| Probe selection | `SubtitleProbeSelector` | `RustProbeSelector` → `probeSelectJson` |
+| Activity signature | `SubtitleActivityBuilder` | `RustActivityBuilder` → `activityBuildJson` |
+| Correlation | `ActivityCorrelator` | `RustCorrelator` → `correlateJson` |
+| Speech accumulation | `SpeechAccumulatorFactory` | `RustSpeechAccumulatorFactory` → `speechAccumulatorJson` (`PcmChunk`) |
+
+`SubtitleTimeMapper` and `LinearDriftCorrector` have no production Kotlin call sites after the
+cutover; their UniFFI exports (`timeMapJson`, `driftApplyJson`, `driftTimestampJson`) remain part of
+the parity surface only. Bidi and SRT helpers are also reached indirectly through the Rust parser.
+
 ## Rules that apply at every stage
 
 1. `docs/migration/decision-log.md` accepts **owner decisions only**. Agent choices are recorded
@@ -85,6 +101,8 @@ Rollback is a Git/release decision only (D-8), never an in-app switch. Triggers:
 | D-4 Shadow-mode logging | Repository owner | Stage 4 | Approved 2026-11-23 (local only) |
 | D-5 MP3 encoder | Repository owner | Stage 5 | Approved 2026-11-23 (keep pure-Java encoder) |
 | D-6 Migration owner and reviewer | Repository owner | Before Stage 3 | Approved 2026-11-23; owner delegated names on 2026-11-23: implementation owner = OpenCode agent session, independent reviewer = SMozaff |
+| D-7 Deletion scope | Repository owner | Stage 6 | Approved 2026-11-23: delete only the ten oracle-covered Kotlin ports |
+| D-8 Runtime choice | Repository owner | Stage 6 | Approved 2026-11-23: Rust-only, no fallback or in-app rollback switch |
 
 The rationale for D-1…D-6 is in [proposed-decisions.md](proposed-decisions.md); the authoritative
 record is [decision-log.md](decision-log.md). Delegated choices DD-1…DD-10 are in
