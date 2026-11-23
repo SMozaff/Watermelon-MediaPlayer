@@ -1,0 +1,4 @@
+f59585d8598cdf27d65a70c05bb33a0a70e679d5cb829adcf1abca47070e7b6f  app/src/main/jniLibs/arm64-v8a/libwatermelon_ffi.so
+53f480b1ccad6a6f0597cb44e2b19abc850da29f2cb26d2c7c9ffd644d136b04  app/src/main/jniLibs/armeabi-v7a/libwatermelon_ffi.so
+761508e1cce6d08a3ec0368320ac0d957c757744e8c0426813c0d748602a5b2b  app/src/main/jniLibs/x86_64/libwatermelon_ffi.so
+9c94ee085cecf0123a422dff7c2120c600d77565ff5a3f49143fd7b4f39191e6  app/src/main/kotlin/uniffi/watermelon_ffi/watermelon_ffi.kt

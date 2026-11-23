@@ -1,0 +1,13 @@
+captured_at_utc=2026-11-22T22:03:47Z
+git_commit=0bbe6c4429076bde3cf36629fb06470e4ea4858b
+workflow_run=https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45075503837
+runner_os=Linux
+runner_arch=X64
+runner_image=20261116.202.1
+kernel=Linux 7.0.0-1020-azure
+os=Ubuntu 26.04.1 LTS
+cpu_model=AMD EPYC 7763 64-Core Processor
+cpu_count=4
+java_version=openjdk version "17.0.21" 2026-10-20
+gradle_version=Gradle 9.7.1
+benchmark_property=watermelon.benchmarks=true

@@ -27,8 +27,23 @@ internal class AppDependencies(
     private val appContext = context.applicationContext
     private val application = app
 
+    init {
+        // Stage 5 cutover is opt-in. With the flag off (all CI and release builds) the Kotlin
+        // parser stays authoritative, so this installation is a no-op.
+        com.watermelon.app.migration.RustCutover.installIfEnabled()
+    }
+
     val database by lazy { com.watermelon.storage.db.WatermelonDatabase(appContext) }
     val settingsStore by lazy { com.watermelon.storage.prefs.FolderVisibilityStoreImpl(appContext) }
+
+    // D-4 shadow-mode seam. Comparison runs only for local debug builds with both flags enabled;
+    // the Kotlin result is always returned. The native library is packaged, but cutover itself is
+    // gated by the opt-in flag and the G1 device evidence recorded in PLAN.md.
+    val migrationDiagnostics by lazy {
+        com.watermelon.app.migration.MigrationDiagnostics(
+            com.watermelon.app.migration.RustBridgeImpl
+        )
+    }
 
     // media-tools: reuse the singleton MediaJobManager/OutputFileStore owned by
     // WatermelonApplication (see that class's doc). OutputFileStore reads the same

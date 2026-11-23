@@ -1,0 +1,53 @@
+name: Migration Rust parity
+
+on:
+  pull_request:
+    paths:
+      - "rust/**"
+      - "testdata/golden/**"
+      - ".github/workflows/migration-rust-parity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    name: Rust core matches frozen Kotlin oracle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Rust stable
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # stable
+        with:
+          toolchain: stable
+
+      - name: Generate lockfile (CI is the only Rust toolchain)
+        run: cargo generate-lockfile --manifest-path rust/Cargo.toml
+
+      - name: Compile Rust workspace and tests
+        run: |
+          set +e
+          cargo test --manifest-path rust/Cargo.toml --workspace --all-targets --locked > compile.log 2>&1
+          status=$?
+          set -e
+          cat compile.log
+          echo "cargo_exit=$status" >> compile.log
+          exit $status
+
+      - name: Compare Rust core with golden vectors
+        run: |
+          set -o pipefail
+          cargo run --manifest-path rust/Cargo.toml -p watermelon-core --bin parity -- testdata/golden | tee parity-report.txt
+
+      - name: Upload parity report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-parity-report
+          path: |
+            compile.log
+            parity-report.txt
+          if-no-files-found: warn

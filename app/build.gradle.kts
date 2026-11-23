@@ -10,6 +10,7 @@ android {
         applicationId = "com.watermelon.mediaplayer"
         minSdk = 24
         targetSdk = 35
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // First version bump off the initial 1 / "1.0" placeholders (see remediation plan
         // item 2) -- still a debug-signed build until real release signing is provisioned.
         versionCode = 2
@@ -21,6 +22,19 @@ android {
             .orElse("")
         val apiKeyValue = openSubtitlesApiKey.get().replace("\"", "\\\"")
         buildConfigField("String", "OPEN_SUBTITLES_API_KEY", "\"$apiKeyValue\"")
+
+        // Kotlin-to-Rust migration flags. All default to false, so CI and release builds keep
+        // the Kotlin behavior. Local debug builds can opt in with -P flags; no user-facing
+        // setting or network telemetry is introduced. See docs/migration/PLAN.md.
+        val useRustCore = project.providers.gradleProperty("watermelon.useRustCore")
+            .orNull?.toBoolean() ?: false
+        val rustShadowMode = project.providers.gradleProperty("watermelon.rustShadowMode")
+            .orNull?.toBoolean() ?: false
+        val rustDebugLogging = project.providers.gradleProperty("watermelon.rustDebugLogging")
+            .orNull?.toBoolean() ?: false
+        buildConfigField("boolean", "USE_RUST_CORE", useRustCore.toString())
+        buildConfigField("boolean", "RUST_SHADOW_MODE", rustShadowMode.toString())
+        buildConfigField("boolean", "RUST_DEBUG_LOGGING", rustDebugLogging.toString())
     }
     buildFeatures {
         compose = true
@@ -92,4 +106,14 @@ dependencies {
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.media3.ui)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    // UniFFI-generated Kotlin bindings use JNA. The native libraries are committed under
+    // src/main/jniLibs and are produced by the NDK job in migration-uniffi-spike.yml.
+    // The Android artifact is selected with @aar here because Gradle version catalogs do not
+    // accept an `ext` key (verified by CI run 45082203703); the plain jar lacks libjnidispatch.
+    implementation("net.java.dev.jna:jna:${libs.versions.jna.get()}@aar")
+
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }

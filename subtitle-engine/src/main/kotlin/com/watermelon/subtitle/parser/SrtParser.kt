@@ -4,6 +4,7 @@ import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.model.SubtitleCue
 import com.watermelon.common.model.SubtitleFormat
 import com.watermelon.subtitle.bidi.BidiFormatter
+import kotlin.jvm.Volatile
 
 /**
  * Parses SubRip (.srt) content into a [ParsedSubtitle]. Each cue's base direction is resolved
@@ -15,10 +16,24 @@ import com.watermelon.subtitle.bidi.BidiFormatter
  */
 object SrtParser {
 
+    /**
+     * Migration seam for the Stage 5 cutover. The app composition root can install a Rust-backed
+     * parser when its opt-in flag is enabled; the Kotlin implementation remains authoritative by
+     * default and is also the rollback target. Tests call [parse] exactly as production does.
+     */
+    fun interface Backend {
+        fun parse(content: String, language: String?): ParsedSubtitle
+    }
+
+    @Volatile
+    var backend: Backend = Backend { content, language -> parseKotlin(content, language) }
+
+    fun parse(content: String, language: String? = null): ParsedSubtitle = backend.parse(content, language)
+
     private val TIME = Regex("""(\d{1,2}):(\d{2}):(\d{2})[,.](\d{1,3})""")
     private val TAG  = Regex("""</?[a-zA-Z][^>]*>""")
 
-    fun parse(content: String, language: String? = null): ParsedSubtitle {
+    fun parseKotlin(content: String, language: String? = null): ParsedSubtitle {
         val text = content
             .removePrefix("\uFEFF")
             .replace("\r\n", "\n")

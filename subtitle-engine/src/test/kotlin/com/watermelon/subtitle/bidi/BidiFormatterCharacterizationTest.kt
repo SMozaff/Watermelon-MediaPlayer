@@ -29,12 +29,22 @@ class BidiFormatterCharacterizationTest {
 
     @Test
     fun neutralPunctuationAndDigitsAttachAccordingToTheCurrentRunLoop() {
-        assertEquals("سلام \u2068123!\u2069", BidiFormatter.format("سلام 123!", baseRtl = true))
-        assertEquals("\u2068سلام! \u2069" + "123", BidiFormatter.format("سلام! 123", baseRtl = false))
+        // A trailing neutral is moved after PDI, so "!" is no longer trapped in the isolate.
+        assertEquals("سلام \u2068123\u2069!", BidiFormatter.format("سلام 123!", baseRtl = true))
+        assertEquals("\u2068سلام\u2069! 123", BidiFormatter.format("سلام! 123", baseRtl = false))
     }
 
     @Test
-    fun trailingNeutralWhitespaceRemainsInsideOppositeDirectionIsolate() {
-        assertEquals("שלום \u2068abc \u2069", BidiFormatter.format("שלום abc ", baseRtl = true))
+    fun trailingNeutralWhitespaceStaysOutsideOppositeDirectionIsolate() {
+        assertEquals("שלום \u2068abc\u2069 ", BidiFormatter.format("שלום abc ", baseRtl = true))
+    }
+
+    @Test
+    fun isRtlUsesStrictStrongCharacterMajority() {
+        // Four RTL vs five LTR strong characters resolves LTR; four vs three resolves RTL.
+        // The mixed-script SRT fixture therefore uses "abc", not "hello".
+        assertFalse(BidiFormatter.isRtl("سلام hello"))
+        assertTrue(BidiFormatter.isRtl("سلام abc"))
+        assertFalse(BidiFormatter.isRtl("سلام abcd")) // 4 vs 4 tie: not RTL
     }
 }

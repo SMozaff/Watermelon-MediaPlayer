@@ -6,12 +6,11 @@ import org.junit.Test
 class BidiFormatterTest {
 
     @Test
-    fun trailingNeutralWhitespaceRemainsInsideOppositeDirectionIsolate() {
-        // Pin the current behavior. The formatter's inline comment says trailing neutral
-        // characters are trimmed out of the isolate, but the current loop consumes them.
-        // This test intentionally records the observed output without changing production code.
+    fun trailingNeutralWhitespaceStaysOutsideOppositeDirectionIsolate() {
+        // Behavior change (2026-11-23): the inline comment now matches the implementation.
+        // Trailing neutral characters are appended after PDI rather than trapped inside it.
         assertEquals(
-            "שלום \u2068abc \u2069",
+            "שלום \u2068abc\u2069 ",
             BidiFormatter.format("שלום abc ", baseRtl = true),
         )
     }
