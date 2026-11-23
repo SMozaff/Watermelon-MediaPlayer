@@ -719,6 +719,28 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -734,13 +756,35 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 // when the library is loaded.
 internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
-    fun uniffi_watermelon_ffi_checksum_func_bidi_format(
+    fun uniffi_watermelon_ffi_checksum_func_activity_build_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_bidi_format(
 ): Short
 fun uniffi_watermelon_ffi_checksum_func_bidi_is_rtl(
 ): Short
+fun uniffi_watermelon_ffi_checksum_func_consensus_has_useful_provisional_offset_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_consensus_resolve_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_correlate_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_drift_apply_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_drift_timestamp_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_open_subtitles_hash(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_open_subtitles_hash_chunks(
+): Short
 fun uniffi_watermelon_ffi_checksum_func_pcm_copy_spike_json(
 ): Short
+fun uniffi_watermelon_ffi_checksum_func_probe_select_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_speech_accumulator_json(
+): Short
 fun uniffi_watermelon_ffi_checksum_func_srt_parse_json(
+): Short
+fun uniffi_watermelon_ffi_checksum_func_time_map_json(
 ): Short
 fun ffi_watermelon_ffi_uniffi_contract_version(
 ): Int
@@ -787,14 +831,36 @@ internal interface UniffiLib : Library {
     }
 
     // FFI functions
-    fun uniffi_watermelon_ffi_fn_func_bidi_format(`text`: RustBuffer.ByValue,`baseRtl`: Byte,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_watermelon_ffi_fn_func_activity_build_json(`subtitleJson`: RustBuffer.ByValue,`startMs`: Long,`endMs`: Long,`bucketMs`: Int,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_bidi_format(`text`: RustBuffer.ByValue,`baseRtl`: Byte,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_watermelon_ffi_fn_func_bidi_is_rtl(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Byte
+fun uniffi_watermelon_ffi_fn_func_consensus_has_useful_provisional_offset_json(`measurementsJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Byte
+fun uniffi_watermelon_ffi_fn_func_consensus_resolve_json(`measurementsJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_correlate_json(`audioJson`: RustBuffer.ByValue,`subtitleJson`: RustBuffer.ByValue,`configJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_drift_apply_json(`cuesJson`: RustBuffer.ByValue,`offsetMs`: Long,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_drift_timestamp_json(`timestampMs`: Long,`offsetMs`: Long,uniffi_out_err: UniffiRustCallStatus,
+): Long
+fun uniffi_watermelon_ffi_fn_func_open_subtitles_hash(`bytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_open_subtitles_hash_chunks(`fileSize`: Long,`head`: RustBuffer.ByValue,`tail`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_watermelon_ffi_fn_func_pcm_copy_spike_json(`sampleCount`: Long,`samples`: Int,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_probe_select_json(`subtitleJson`: RustBuffer.ByValue,`mediaDurationMs`: Long,`maxCount`: Int,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_speech_accumulator_json(`targetStartUs`: Long,`durationMs`: Long,`bucketMs`: Int,`chunks`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_watermelon_ffi_fn_func_srt_parse_json(`content`: RustBuffer.ByValue,`language`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_watermelon_ffi_fn_func_time_map_json(`modelJson`: RustBuffer.ByValue,`timestampMs`: Long,uniffi_out_err: UniffiRustCallStatus,
+): Long
 fun ffi_watermelon_ffi_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun ffi_watermelon_ffi_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus,
@@ -921,16 +987,49 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 }
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
+    if (lib.uniffi_watermelon_ffi_checksum_func_activity_build_json() != 62729.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_watermelon_ffi_checksum_func_bidi_format() != 10845.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_watermelon_ffi_checksum_func_bidi_is_rtl() != 11388.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_watermelon_ffi_checksum_func_consensus_has_useful_provisional_offset_json() != 52589.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_consensus_resolve_json() != 2255.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_correlate_json() != 29309.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_drift_apply_json() != 14542.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_drift_timestamp_json() != 58814.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_open_subtitles_hash() != 61443.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_open_subtitles_hash_chunks() != 37291.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_watermelon_ffi_checksum_func_pcm_copy_spike_json() != 48884.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_watermelon_ffi_checksum_func_probe_select_json() != 17249.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_speech_accumulator_json() != 63.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_watermelon_ffi_checksum_func_srt_parse_json() != 13677.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_watermelon_ffi_checksum_func_time_map_json() != 57520.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -1038,6 +1137,52 @@ public object FfiConverterUInt: FfiConverter<UInt, Int> {
 /**
  * @suppress
  */
+public object FfiConverterInt: FfiConverter<Int, Int> {
+    override fun lift(value: Int): Int {
+        return value
+    }
+
+    override fun read(buf: ByteBuffer): Int {
+        return buf.getInt()
+    }
+
+    override fun lower(value: Int): Int {
+        return value
+    }
+
+    override fun allocationSize(value: Int) = 4UL
+
+    override fun write(value: Int, buf: ByteBuffer) {
+        buf.putInt(value)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterULong: FfiConverter<ULong, Long> {
+    override fun lift(value: Long): ULong {
+        return value.toULong()
+    }
+
+    override fun read(buf: ByteBuffer): ULong {
+        return lift(buf.getLong())
+    }
+
+    override fun lower(value: ULong): Long {
+        return value.toLong()
+    }
+
+    override fun allocationSize(value: ULong) = 8UL
+
+    override fun write(value: ULong, buf: ByteBuffer) {
+        buf.putLong(value.toLong())
+    }
+}
+
+/**
+ * @suppress
+ */
 public object FfiConverterLong: FfiConverter<Long, Long> {
     override fun lift(value: Long): Long {
         return value
@@ -1138,6 +1283,72 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
     }
 }
 
+/**
+ * @suppress
+ */
+public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
+    override fun read(buf: ByteBuffer): ByteArray {
+        val len = buf.getInt()
+        val byteArr = ByteArray(len)
+        buf.get(byteArr)
+        return byteArr
+    }
+    override fun allocationSize(value: ByteArray): ULong {
+        return 4UL + value.size.toULong()
+    }
+    override fun write(value: ByteArray, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        buf.put(value)
+    }
+}
+
+
+
+/**
+ * One PCM buffer and its presentation metadata, passed by value from Kotlin.
+ */
+data class PcmChunk (
+    var `bytes`: kotlin.ByteArray,
+    var `presentationTimeUs`: kotlin.Long,
+    var `sampleRate`: kotlin.Int,
+    var `channelCount`: kotlin.Int,
+    var `encoding`: kotlin.String
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePcmChunk: FfiConverterRustBuffer<PcmChunk> {
+    override fun read(buf: ByteBuffer): PcmChunk {
+        return PcmChunk(
+            FfiConverterByteArray.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PcmChunk) = (
+            FfiConverterByteArray.allocationSize(value.`bytes`) +
+            FfiConverterLong.allocationSize(value.`presentationTimeUs`) +
+            FfiConverterInt.allocationSize(value.`sampleRate`) +
+            FfiConverterInt.allocationSize(value.`channelCount`) +
+            FfiConverterString.allocationSize(value.`encoding`)
+    )
+
+    override fun write(value: PcmChunk, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`bytes`, buf)
+            FfiConverterLong.write(value.`presentationTimeUs`, buf)
+            FfiConverterInt.write(value.`sampleRate`, buf)
+            FfiConverterInt.write(value.`channelCount`, buf)
+            FfiConverterString.write(value.`encoding`, buf)
+    }
+}
+
 
 
 
@@ -1168,7 +1379,47 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
             FfiConverterString.write(value, buf)
         }
     }
-} fun `bidiFormat`(`text`: kotlin.String, `baseRtl`: kotlin.Boolean): kotlin.String {
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePcmChunk: FfiConverterRustBuffer<List<PcmChunk>> {
+    override fun read(buf: ByteBuffer): List<PcmChunk> {
+        val len = buf.getInt()
+        return List<PcmChunk>(len) {
+            FfiConverterTypePcmChunk.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PcmChunk>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePcmChunk.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PcmChunk>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePcmChunk.write(it, buf)
+        }
+    }
+}
+        /**
+         * Builds a subtitle activity signature with plain-number occupancy and onsets.
+         */ fun `activityBuildJson`(`subtitleJson`: kotlin.String, `startMs`: kotlin.Long, `endMs`: kotlin.Long, `bucketMs`: kotlin.Int): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_activity_build_json(
+        FfiConverterString.lower(`subtitleJson`),FfiConverterLong.lower(`startMs`),FfiConverterLong.lower(`endMs`),FfiConverterInt.lower(`bucketMs`),_status)
+}
+    )
+    }
+
+ fun `bidiFormat`(`text`: kotlin.String, `baseRtl`: kotlin.Boolean): kotlin.String {
             return FfiConverterString.lift(
     uniffiRustCall() { _status ->
     UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_bidi_format(
@@ -1188,6 +1439,90 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
 
 
         /**
+         * Whether the last measurement supports a provisional offset; invalid input is false.
+         */ fun `consensusHasUsefulProvisionalOffsetJson`(`measurementsJson`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_consensus_has_useful_provisional_offset_json(
+        FfiConverterString.lower(`measurementsJson`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Resolves serialized measurements to the core's consensus `Value` (float objects included).
+         */ fun `consensusResolveJson`(`measurementsJson`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_consensus_resolve_json(
+        FfiConverterString.lower(`measurementsJson`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Correlates audio/subtitle signatures. Returns compact offset/score fields or `{"error":...}`.
+         */ fun `correlateJson`(`audioJson`: kotlin.String, `subtitleJson`: kotlin.String, `configJson`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_correlate_json(
+        FfiConverterString.lower(`audioJson`),FfiConverterString.lower(`subtitleJson`),FfiConverterString.lower(`configJson`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Shifts serialized cues and returns a JSON array of `{startMs,endMs,text}`.
+         */ fun `driftApplyJson`(`cuesJson`: kotlin.String, `offsetMs`: kotlin.Long): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_drift_apply_json(
+        FfiConverterString.lower(`cuesJson`),FfiConverterLong.lower(`offsetMs`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Shifts a single timestamp, clamped at zero.
+         */ fun `driftTimestampJson`(`timestampMs`: kotlin.Long, `offsetMs`: kotlin.Long): kotlin.Long {
+            return FfiConverterLong.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_drift_timestamp_json(
+        FfiConverterLong.lower(`timestampMs`),FfiConverterLong.lower(`offsetMs`),_status)
+}
+    )
+    }
+
+
+        /**
+         * OpenSubtitles hash of the supplied subtitle bytes as plain 16-hex digits.
+         */ fun `openSubtitlesHash`(`bytes`: kotlin.ByteArray): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_open_subtitles_hash(
+        FfiConverterByteArray.lower(`bytes`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Production OpenSubtitles hash for large media: only the first and last 64 KiB cross FFI.
+         */ fun `openSubtitlesHashChunks`(`fileSize`: kotlin.ULong, `head`: kotlin.ByteArray, `tail`: kotlin.ByteArray): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_open_subtitles_hash_chunks(
+        FfiConverterULong.lower(`fileSize`),FfiConverterByteArray.lower(`head`),FfiConverterByteArray.lower(`tail`),_status)
+}
+    )
+    }
+
+
+        /**
          * Measures the cost of the owned `Vec<u8>` boundary UniFFI would use for PCM,
          * compared against a borrowed slice. Returns raw nanoseconds as JSON so the
          * Kotlin side does not need a generated record type during the spike.
@@ -1200,11 +1535,47 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
     )
     }
 
+
+        /**
+         * Selects subtitle probe windows as a JSON array with plain f32 distinctiveness.
+         */ fun `probeSelectJson`(`subtitleJson`: kotlin.String, `mediaDurationMs`: kotlin.Long, `maxCount`: kotlin.UInt): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_probe_select_json(
+        FfiConverterString.lower(`subtitleJson`),FfiConverterLong.lower(`mediaDurationMs`),FfiConverterUInt.lower(`maxCount`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Feeds PCM chunks through the speech accumulator and returns its signature as JSON.
+         */ fun `speechAccumulatorJson`(`targetStartUs`: kotlin.Long, `durationMs`: kotlin.Long, `bucketMs`: kotlin.Int, `chunks`: List<PcmChunk>): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_speech_accumulator_json(
+        FfiConverterLong.lower(`targetStartUs`),FfiConverterLong.lower(`durationMs`),FfiConverterInt.lower(`bucketMs`),FfiConverterSequenceTypePcmChunk.lower(`chunks`),_status)
+}
+    )
+    }
+
  fun `srtParseJson`(`content`: kotlin.String, `language`: kotlin.String?): kotlin.String {
             return FfiConverterString.lift(
     uniffiRustCall() { _status ->
     UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_srt_parse_json(
         FfiConverterString.lower(`content`),FfiConverterOptionalString.lower(`language`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Maps a timestamp through a serialized `SyncModel`; invalid models use Identity.
+         */ fun `timeMapJson`(`modelJson`: kotlin.String, `timestampMs`: kotlin.Long): kotlin.Long {
+            return FfiConverterLong.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_watermelon_ffi_fn_func_time_map_json(
+        FfiConverterString.lower(`modelJson`),FfiConverterLong.lower(`timestampMs`),_status)
 }
     )
     }
