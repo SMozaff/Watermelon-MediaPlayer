@@ -7,6 +7,10 @@
 > comparison — are now resolved. D-6 roles are recorded in [decision-log.md](decision-log.md), and
 > the ART protocol and zero-mismatch result are in [stage-5-report.md](stage-5-report.md). The rest
 > of this report is the historical Stage 3 record.
+>
+> Rust-only update: the UniFFI surface now covers all ten frozen-vector components, not only SRT
+> and bidi. The generated bindings and native libraries are rebuilt in CI from the expanded
+> `rust/crates/ffi`; parity is still evaluated against the unchanged Kotlin-generated oracle.
 
 ## Summary
 

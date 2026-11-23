@@ -4,7 +4,9 @@
 this repository; the stage and gate names below are reconstructed from the stage reports. The owner
 approved D-1…D-6 on 2026-11-23 and then delegated the remaining choices to the implementation
 agent, who recorded them in [delegated-decisions.md](delegated-decisions.md). The reconstructed
-golden schema is now confirmed by DD-2.
+golden schema is now confirmed by DD-2. The owner later chose D-7 (delete only the ten
+oracle-covered Kotlin ports) and D-8 (Rust-only runtime, no fallback), superseding DD-6 and DD-7;
+the cutover is complete.
 
 This file is the single place to check stage order, exit criteria and decision owners. Individual
 reports remain the evidence of what actually ran.
@@ -17,8 +19,8 @@ reports remain the evidence of what actually ran.
 | 2 — Golden vectors and test-gap closure | Generate the Kotlin behavior oracle; close direct-test gaps | Generator + 10 JSON files + Kotlin self-check + two-run checksum proof; corpus < 5 MB; target tests pass | **G0 / D-1** continue or stop | **Gate passed.** PR #72 merged as PARTIAL; 39 cases in 10 files, 111,890 bytes, byte-identical two-run proof (`45074382455`), full CI green (`45075903852`). D-1 approved 2026-11-23. Schema confirmed by DD-2; copyrighted media deliberately excluded by DD-3. |
 | 3 — Rust core + binding spike | Decide binding tool and tolerance; port one component end-to-end; measure FFI/copy cost | D-2 and D-3 approved; one function runs on device with bit/decimal comparison; NDK toolchain in CI | **G1** | **Gate closed.** 39/39 JVM parity (`45083247717`, earlier `45079683879`), generated Kotlin bindings (`45079293229`), three NDK libraries (`45080638272`), and zero-mismatch ART comparison on an x86_64 API 35 emulator (`45083247641`). D-6 roles recorded in the decision log. See [stage-3-report.md](stage-3-report.md) and [stage-5-report.md](stage-5-report.md). |
 | 4 — Remaining ports + shadow mode | Port remaining candidates behind approved seams; run Kotlin and Rust side by side locally | All ten vectors pass against Rust; D-4 logging policy approved; no user-visible behavior change | **G2** | **Gate closed.** Native bridge and JNA packaging added; shadow comparison returns the Kotlin value and logs locally only. Evidence in [stage-4-report.md](stage-4-report.md). |
-| 5 — Cutover | Switch runtime calls to Rust behind a flag; validate on device | Device parity on representative media; rollback criteria met; D-5/D-6 approved | **G3** | **Gate closed with caveat.** `SrtParser.Backend` + `RustCutover` installed only by `-Pwatermelon.useRustCore=true`; native errors fall back to Kotlin. ART test proves the reachable path with zero mismatches. Release default remains Kotlin; no physical-device performance claim. See [stage-5-report.md](stage-5-report.md). |
-| 6 — Cleanup | Remove superseded Kotlin implementations and migration scaffolding | No orphaned interfaces; `verify_interfaces.py` updated; docs archived | Done criteria (proposed) | **Deliberately deferred (DD-7).** Kotlin remains authoritative and is the rollback target; no interfaces removed, so `verify_interfaces.py` is unchanged. See [stage-6-report.md](stage-6-report.md). |
+| 5 — Cutover | Switch runtime calls to Rust; validate on device | Device parity on representative media; rollback criteria met; D-5/D-6 approved | **G3** | **Gate closed.** The original flag-gated cutover was superseded by D-8: `AppDependencies` now injects Rust-backed adapters unconditionally and no Kotlin fallback or `-Pwatermelon.*` flag remains. ART parity is re-verified in CI; no physical-device performance claim. See [stage-5-report.md](stage-5-report.md). |
+| 6 — Cleanup | Remove superseded Kotlin implementations and migration scaffolding | No orphaned interfaces; `verify_interfaces.py` updated; docs archived | Done criteria (proposed) | **Done under D-7/D-8.** The ten oracle-covered Kotlin ports, their Kotlin-only characterization/generator/benchmark tests, and the cutover scaffolding were deleted. New `common-interfaces` ports keep the module dependency graph acyclic; `verify_interfaces.py` needed no change because those ports were additions. See [stage-6-report.md](stage-6-report.md). |
 
 ## Final verification matrix
 
@@ -37,27 +39,27 @@ was green on that head:
 | Dependency Integrity | `45083247674` | passed |
 | CodeQL | `45083247650` | passed |
 
-## Cutover and rollback design (activated, default-off)
+## Runtime and rollback design (Rust-only)
 
-`app/build.gradle.kts` defines three compile-time flags, all defaulting to `false`:
-`watermelon.useRustCore`, `watermelon.rustShadowMode` and `watermelon.rustDebugLogging`.
-`MigrationFlags`, `RustMigrationLog`, `RustBridge`/`RustBridgeImpl`, `MigrationDiagnostics` and
-`RustCutover` implement the D-4 seam and the Stage 5 cutover. `AppDependencies` installs
-`RustCutover` only when the flag is on; `MigrationDiagnostics` calls native code only when both
-shadow flags are on and always returns the Kotlin value.
+`AppDependencies` is the single composition root. It injects Rust-backed implementations of the
+ports declared in `common-interfaces/.../SubtitlePorts.kt` into `SubtitleRepositoryImpl`,
+`LocalSidecarSourceImpl`, `SparseSpeechProbeSource` and `SubtitleSyncCoordinator`. The adapters in
+`app/.../migration/RustAdapters.kt` call the generated UniFFI Kotlin binding; there is no Kotlin
+fallback, no degradation path, no `-Pwatermelon.*` flag and no runtime switch. A native failure
+surfaces to the existing Auto Sync error handling. Logging remains local-only (D-4): no telemetry,
+upload or non-debug logging was introduced.
 
-Rollback triggers to apply before any flag is enabled in a non-local build:
+Rollback is a Git/release decision only (D-8), never an in-app switch. Triggers:
 
 1. Any non-numeric mismatch under the D-3 tolerance, or any integer/Long/hash mismatch, in the
-   39-case JVM corpus → revert to the Kotlin implementation and stop.
-2. Any mismatch on the owner-approved on-device protocol → revert and record the device, media
-   and raw outputs before changing code.
-3. A native-library load failure, missing ABI, or exception from the bridge → revert; shadow mode
-   must never turn into a user-visible crash.
-4. Any new telemetry, upload or non-debug logging → revert; D-4 permits local opt-in logging only.
-5. A new dependency or APK packaging change must be reviewed and pinned. JNA `5.19.1@aar` was
-   added under the owner's delegation (DD-5), with hashes in `gradle/verification-metadata.xml`
-   and provenance in [native-artifacts.md](native-artifacts.md).
+   frozen 39-case JVM corpus → revert the release and stop.
+2. Any mismatch in the ART parity evidence → revert and record the run, raw outputs and media
+   fixture before changing code.
+3. A native-library load failure or missing ABI → revert the release; no Kotlin path exists to
+   degrade into.
+4. Any new telemetry or upload → revert; D-4 permits local-only logging at most.
+5. JNA `5.19.1@aar` remains pinned in `gradle/verification-metadata.xml`, with provenance in
+   [native-artifacts.md](native-artifacts.md).
 
 ## Rules that apply at every stage
 
@@ -99,11 +101,14 @@ Ten component files under `testdata/golden/`:
 Each file contains `{component, generator, cases:[{id,input,output}]}` with a deterministic, sorted
 list of cases. Floating-point results are recorded as `{"decimal":"…","bits":"…"}` with 8 hex
 digits for f32 and 16 for f64, so D-3 can be applied without regenerating the corpus. Generation
-is implemented by the generator tests in `subtitle-engine` and `media-tools`, driven by
-`.github/workflows/migration-golden-vectors.yml` (`workflow_dispatch`). Run `45074382455` proved
-two byte-identical generations, the 10-file corpus is under 5 MB (111,890 bytes), and both
-structural self-checks passed. The corpus is committed with `SHA256SUMS`; local verification with
-`sha256sum -c` is green.
+was implemented by the Kotlin generator tests in `subtitle-engine` and `media-tools`, driven by
+`.github/workflows/migration-golden-vectors.yml`. Run `45074382455` proved two byte-identical
+generations, the 10-file corpus is under 5 MB (111,890 bytes), and both structural self-checks
+passed. Per DD-12 the generator tests were deleted with the Kotlin ports and the workflow is now
+**verification-only**: it enforces corpus inventory, `sha256sum -c`, size and structural self-checks.
+The corpus stays byte-identical with `generator:"kotlin"` provenance; it is never regenerated from
+Rust, and parity is always Rust-vs-frozen-Kotlin-golden. Local verification with `sha256sum -c` is
+green.
 
 ## Related documents
 

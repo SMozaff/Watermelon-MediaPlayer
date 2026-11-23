@@ -6,6 +6,11 @@
 
 This document records the source as read. It does not change production behavior or assert that the proposed Rust API in the migration blueprint is final.
 
+> Rust-only update (2026-11-23): this is a historical audit of the ten Kotlin ports that were
+> deleted under D-7/D-8. Call-site tables below describe the pre-cutover tree. The current seams are
+> `common-interfaces/.../SubtitlePorts.kt` and the UniFFI adapters in
+> `app/.../migration/RustAdapters.kt`; the frozen vectors in `testdata/golden/` remain the oracle.
+
 ## 1. Contracts and shared types
 
 Source: `common-interfaces/src/main/kotlin/com/watermelon/common/subtitle/sync/SubtitleSyncContracts.kt`

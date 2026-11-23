@@ -11,8 +11,14 @@ from generator commit `bf9af08`.
 - Every floating-point result is stored twice: a decimal string and the raw IEEE-754 bit
   pattern, so D-3 (float tolerance) can be decided without regenerating the corpus.
 - Production behavior changes that affect these vectors are recorded in
-  [`docs/migration/defect-fixes.md`](../../docs/migration/defect-fixes.md). Regenerate from a
-  corrected baseline when behavior changes, never by editing these files by hand.
+  [`docs/migration/defect-fixes.md`](../../docs/migration/defect-fixes.md). The corpus is frozen:
+  do not edit these files by hand and do not regenerate them from Rust.
+- Per DD-12 the Kotlin generator tests were removed with the Kotlin ports. The workflow
+  `migration-golden-vectors.yml` is now **verification-only**: it checks the ten-file inventory,
+  `sha256sum -c`, corpus size and the structural self-checks. `generator:"kotlin"` is historical
+  provenance, not a claim that a Kotlin implementation is still present.
+- Rust parity is always Rust output versus this frozen Kotlin oracle
+  (`rust/crates/core/src/bin/parity.rs`); it is never Rust versus Rust.
 
 The schema is reconstructed from the migration stage reports (the original Stage 2 brief was
 not committed); owner confirmation is recorded as an open input in

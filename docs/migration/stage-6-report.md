@@ -1,50 +1,62 @@
-# Stage 6 report: cleanup scope
+# Stage 6 report: cleanup and Rust-only cutover
 
-**Branch:** `migration/golden-oracle-scaffolding` · **PR:** #73
-**Stage:** 6 of 6 · **Status:** DELIBERATELY DEFERRED (see DD-7)
+**Branch:** `main` · **Stage:** 6 of 6 · **Status:** DONE under owner decisions D-7/D-8
 
-## Decision
+## Decision history
 
-No Kotlin implementation is deleted in this change. Stage 6 is recorded as deliberately deferred,
-not as completed, because the release default remains Kotlin (DD-6) and the frozen oracle plus the
-rollback path both depend on `SrtParser.parseKotlin`, `BidiFormatter` and the other ports.
+The earlier version of this report recorded Stage 6 as deliberately deferred (DD-7), because the
+release default was Kotlin and the frozen oracle plus the rollback path depended on the Kotlin
+ports. The owner subsequently chose:
 
-Deleting them would:
+- **D-7:** delete only the ten superseded, oracle-covered Kotlin ports;
+- **D-8:** make Rust the sole runtime and remove the fallback/degradation scaffolding.
 
-1. make the 39-case D-3 corpus unreproducible by the implementation it was generated from;
-2. remove the rollback target that the Stage 5 fallback and every rollback trigger require;
-3. break existing JVM unit tests that still call the Kotlin implementations;
-4. claim a migration of the application runtime that has not happened — only the SRT/bidi boundary
-   has a reachable Rust cutover, and it is default-off.
+DD-6 (opt-in reversible cutover) and DD-7 (defer deletion) are superseded. Rollback is now a
+Git/release operation, not an in-app flag.
 
-`scripts/verify_interfaces.py` is unchanged because no interface in `common-interfaces` was removed
-or renamed. The `RustBridge` interface is internal to the `app` module and is an addition, not a
-replacement, so it is out of scope for that guard.
+## What changed
 
-## What was cleaned up
+### Deleted Kotlin implementations (ten)
 
-- Reverted a misplaced log-capture edit from the build-judge workflow (`.github/workflows/CI.yaml`)
-  and placed it in the actual "Build and Test" workflow (`.github/workflows/android.yml`).
-- Replaced the invalid version-catalog `ext` key with a direct `@aar` dependency after CI run
-  `45082203703` proved Gradle rejects `ext`.
-- Added the JNA AAR and POM SHA-256 values to `gradle/verification-metadata.xml`, so strict
-  dependency verification remains intact rather than being disabled.
-- Normalized trailing whitespace in the generated UniFFI Kotlin binding so `git diff --check`
-  passes, while recording both the artifact hash and committed hash in
-  [native-artifacts.md](native-artifacts.md).
+`SrtParser`, `BidiFormatter`, `OpenSubtitlesHasher`, `SubtitleTimeMapper`, `LinearDriftCorrector`,
+`ActivityCorrelatorImpl`, `OffsetConsensus`, `SubtitleProbeSelectorImpl`,
+`SubtitleActivityBuilderImpl` and `SpeechLikelihoodAccumulator`.
 
-## Exit criteria — not met, by decision
+Their Kotlin-only characterization, unit, golden-generator and benchmark tests were deleted with
+them. `GoldenJson.kt` and the structural self-check tests remain, as does the frozen corpus.
+
+### Removed cutover scaffolding
+
+`MigrationFlags`, `RustMigrationLog`, `RustBridge`, `RustBridgeImpl`, `MigrationDiagnostics` and
+`RustCutover`, together with the `-Pwatermelon.useRustCore`, `-Pwatermelon.rustShadowMode` and
+`-Pwatermelon.rustDebugLogging` Gradle properties and their `BuildConfig` fields. JNA packaging
+was kept; it is required by the generated UniFFI binding.
+
+### Added Rust-only seams and adapters
+
+`common-interfaces/.../SubtitlePorts.kt` declares `SrtParserPort`, `SubtitleHasherPort`,
+`SubtitleOffsetConsensus`, `PcmChunk`, `SpeechAccumulator` and `SpeechAccumulatorFactory`.
+`app/.../migration/RustAdapters.kt` implements them over the UniFFI exports. `AppDependencies`
+injects those adapters unconditionally into the repository, sidecar source, speech probe source and
+sync coordinator. `SubtitleHasherPort` passes only the first and last 64 KiB of a media file, so a
+multi-gigabyte video is never copied into native memory.
+
+## Exit criteria
 
 | Criterion | State |
 |---|---|
-| Superseded Kotlin implementations removed | Not done (DD-7) |
-| `verify_interfaces.py` updated | Not applicable: no interface removed |
-| Docs archived | Superseded; current reports are linked from [PLAN.md](PLAN.md) and kept current instead |
+| Superseded Kotlin implementations removed | Done: exactly the ten oracle-covered ports |
+| No Kotlin fallback remains | Done: no runtime switch, flags or shadow scaffolding |
+| `verify_interfaces.py` updated | Not applicable: removed classes were additions/ports; shared contracts were kept |
+| Golden oracle preserved | Done: corpus frozen and workflow converted to verification-only (DD-12) |
+| Docs archived | Superseded by current reports linked from [PLAN.md](PLAN.md) |
 
-This is the one stage not claimed complete. The owner can close it by approving a physical-device
-soak test and a release default change, then removing Kotlin ports component by component.
+## Evidence limits
+
+ART evidence is from the pinned x86_64 API 35 emulator only. No physical-device soak test was
+performed and no device performance number is claimed.
 
 ## Related documents
 
 - [PLAN.md](PLAN.md) · [Stage 5 report](stage-5-report.md)
-- [Delegated decisions](delegated-decisions.md) DD-6, DD-7
+- [Decision log](decision-log.md) D-7/D-8 · [Delegated decisions](delegated-decisions.md) DD-6, DD-7, DD-12

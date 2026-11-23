@@ -3,6 +3,11 @@
 **Branch:** `migration/golden-oracle-scaffolding` · **PR:** #73
 **Stage:** 4 of 6 · **Status:** IMPLEMENTED, GATE G2 CLOSED
 
+> Historical record: the `MigrationFlags`/`RustBridge`/`MigrationDiagnostics` shadow seam described
+> below was deliberately removed when the owner chose D-8 (Rust-only runtime). JNA packaging and
+> the local-only logging policy remain. The current wiring is described in
+> [stage-6-report.md](stage-6-report.md).
+
 ## What was built
 
 Stage 4 takes the D-4 seam from scaffolding to an executable local comparison and packages the

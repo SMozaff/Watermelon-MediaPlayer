@@ -4,6 +4,12 @@
 **Branch head:** `8b65b8af8c9850d3d07b9b9ae2eef57ba4397af2`
 **Stage:** 5 of 6 · **Status:** IMPLEMENTED, GATE G3 CLOSED WITH CAVEAT
 
+> Historical record: the reversible, flag-gated `SrtParser.Backend`/`RustCutover` design below was
+> superseded by owner decisions D-7/D-8. Production now injects Rust adapters unconditionally with
+> no Kotlin fallback; rollback is a Git/release operation. The ART evidence below remains valid as
+> emulator-only evidence, and the current test is described in
+> [stage-6-report.md](stage-6-report.md). No physical-device performance claim is made.
+
 ## Cutover design
 
 - `SrtParser.Backend` is a `fun interface` with a volatile `backend` property. The default
