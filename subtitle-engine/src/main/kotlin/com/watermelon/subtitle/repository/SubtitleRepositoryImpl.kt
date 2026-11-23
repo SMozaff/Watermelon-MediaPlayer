@@ -3,6 +3,7 @@ package com.watermelon.subtitle.repository
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.ParcelFileDescriptor
 import com.watermelon.common.model.MediaItem
 import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.model.SubtitleTrack
@@ -10,9 +11,9 @@ import com.watermelon.common.model.VideoQuery
 import com.watermelon.common.repository.DownloadedSubtitle
 import com.watermelon.common.repository.OnlineSubtitleSearchResult
 import com.watermelon.common.repository.SubtitleRepository
+import com.watermelon.common.subtitle.SrtParserPort
+import com.watermelon.common.subtitle.SubtitleHasherPort
 import com.watermelon.subtitle.cache.SubtitleCacheStore
-import com.watermelon.subtitle.hash.OpenSubtitlesHasher
-import com.watermelon.subtitle.parser.SrtParser
 import com.watermelon.subtitle.provider.AuthenticationRequiredException
 import com.watermelon.subtitle.provider.PermissionDeniedException
 import com.watermelon.subtitle.provider.ProviderException
@@ -39,6 +40,8 @@ class SubtitleRepositoryImpl internal constructor(
     private val sidecarSource: SidecarSource,
     private val downloadClient: HttpClient,
     private val cacheStore: SubtitleCacheStore,
+    private val parser: SrtParserPort,
+    private val hasher: SubtitleHasherPort,
     private val isNetworkAvailable: () -> Boolean,
     private val hashFor: (MediaItem) -> String,
 ) : SubtitleRepository {
@@ -46,15 +49,19 @@ class SubtitleRepositoryImpl internal constructor(
     constructor(
         context: Context,
         providerRegistry: SubtitleProviderRegistry,
+        parser: SrtParserPort,
+        hasher: SubtitleHasherPort,
     ) : this(
         providerRegistry = providerRegistry,
-        sidecarSource = LocalSidecarSourceImpl(context),
+        sidecarSource = LocalSidecarSourceImpl(context, parser),
         downloadClient = HttpClient(Android),
         cacheStore = SubtitleCacheStore(
             File(context.cacheDir, "subtitles").apply { mkdirs() }
         ),
+        parser = parser,
+        hasher = hasher,
         isNetworkAvailable = { defaultNetworkAvailable(context) },
-        hashFor = { mediaItem -> defaultHashFor(context, mediaItem) },
+        hashFor = { mediaItem -> defaultHashFor(context, mediaItem, hasher) },
     )
 
     override suspend fun findSubtitles(
@@ -150,7 +157,7 @@ class SubtitleRepositoryImpl internal constructor(
         // Validate BEFORE committing to cache: a download with no valid cues must
         // never be finalized, or the next reopen would keep surfacing it.
         val content = String(bytes, Charsets.UTF_8)
-        val parsed = SrtParser.parse(content, track.language)
+        val parsed = parser.parse(content, track.language)
         require(parsed.cues.isNotEmpty()) {
             "Downloaded SRT contains no valid cues"
         }
@@ -217,7 +224,7 @@ class SubtitleRepositoryImpl internal constructor(
             ?.name
             ?: file.nameWithoutExtension.substringAfterLast('.', "").ifEmpty { null }
         return when (file.extension.lowercase()) {
-            "srt" -> runCatching { SrtParser.parse(content, lang) }.getOrNull()
+            "srt" -> runCatching { parser.parse(content, lang) }.getOrNull()
             else -> null
         }
     }
@@ -231,11 +238,19 @@ class SubtitleRepositoryImpl internal constructor(
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
         }
 
-        internal fun defaultHashFor(context: Context, mediaItem: MediaItem): String {
+        internal fun defaultHashFor(
+            context: Context,
+            mediaItem: MediaItem,
+            hasher: SubtitleHasherPort,
+        ): String {
             val uri = android.net.Uri.parse(mediaItem.uri)
-            context.contentResolver.openFileDescriptor(uri, "r").use { pfd ->
-                requireNotNull(pfd) { "Unable to open file descriptor for ${mediaItem.uri}" }
-                return OpenSubtitlesHasher.hash(pfd.fileDescriptor, mediaItem.fileSize)
+            val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+            requireNotNull(pfd) { "Unable to open file descriptor for ${mediaItem.uri}" }
+            // AutoCloseInputStream owns the descriptor, so availability/null handling stays
+            // identical to the previous hashing path: a null or unopenable descriptor throws
+            // and the caller's runCatching maps that to a hash failure.
+            return ParcelFileDescriptor.AutoCloseInputStream(pfd).use { input ->
+                hasher.hash(input.readBytes())
             }
         }
     }

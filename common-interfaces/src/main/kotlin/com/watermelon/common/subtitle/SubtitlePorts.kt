@@ -16,8 +16,13 @@ fun interface SrtParserPort {
     fun parse(content: String, language: String?): ParsedSubtitle
 }
 
+/**
+ * OpenSubtitles hashing over only the first and last 64 KiB of a media file. Passing whole files
+ * through FFI is not acceptable for multi-gigabyte videos; small callers can pass the same byte
+ * array as both chunks when the file is exactly 128 KiB.
+ */
 fun interface SubtitleHasherPort {
-    fun hash(bytes: ByteArray): String
+    fun hash(fileSize: Long, head: ByteArray, tail: ByteArray): String
 }
 
 /** Replaces the former concrete `OffsetConsensus` class in subtitle-engine. */

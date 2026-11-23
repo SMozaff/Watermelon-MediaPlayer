@@ -29,6 +29,28 @@ pub fn hash_bytes(bytes: &[u8]) -> String {
     format!("{hash:016x}")
 }
 
+/// Production entry point for content:// URIs: callers pass only the first and last 64 KiB
+/// so a multi-gigabyte video never has to be read into memory. Short chunks are zero-padded,
+/// matching the FileChannel implementation that produced the frozen Kotlin oracle.
+pub fn hash_from_chunks(file_size: u64, head: &[u8], tail: &[u8]) -> Result<String, String> {
+    if file_size < MIN_FILE_SIZE as u64 {
+        return Err(format!(
+            "File must be at least {MIN_FILE_SIZE} bytes for OpenSubtitles hashing"
+        ));
+    }
+    let hash = file_size
+        .wrapping_add(sum_chunk_padded(head))
+        .wrapping_add(sum_chunk_padded(tail));
+    Ok(format!("{hash:016x}"))
+}
+
+fn sum_chunk_padded(chunk: &[u8]) -> u64 {
+    let mut padded = [0u8; CHUNK_SIZE];
+    let len = chunk.len().min(CHUNK_SIZE);
+    padded[..len].copy_from_slice(&chunk[..len]);
+    sum_chunk(&padded, 0)
+}
+
 fn sum_chunk(bytes: &[u8], offset: usize) -> u64 {
     let mut sum = 0u64;
     for i in 0..(CHUNK_SIZE / 8) {

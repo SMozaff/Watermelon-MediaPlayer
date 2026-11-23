@@ -5,8 +5,8 @@ import android.os.Environment
 import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.model.SubtitleFormat
 import com.watermelon.common.model.VideoQuery
+import com.watermelon.common.subtitle.SrtParserPort
 import com.watermelon.common.util.FileLogger
-import com.watermelon.subtitle.parser.SrtParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -20,7 +20,10 @@ import java.nio.charset.Charset
  * Language is inferred from the filename's secondary extension (fa/ar/ur/ku + aliases).
  * Encoding: auto-detects UTF-8; falls back to Windows-1256 for legacy FA/AR subtitles.
  */
-class LocalSidecarSourceImpl(private val context: Context) : SidecarSource {
+class LocalSidecarSourceImpl(
+    private val context: Context,
+    private val parser: SrtParserPort,
+) : SidecarSource {
 
     /**
      * Memoizes [resolveFolder] results by the raw `parentFolder` string (including a cached
@@ -85,7 +88,7 @@ class LocalSidecarSourceImpl(private val context: Context) : SidecarSource {
         val bytes = runCatching { file.readBytes() }.getOrNull() ?: return null
         val content = decode(bytes)
         return when (file.extension.lowercase()) {
-            "srt" -> runCatching { SrtParser.parse(content, language) }.getOrNull()
+            "srt" -> runCatching { parser.parse(content, language) }.getOrNull()
             else  -> { FileLogger.i("Subtitle", "sidecar: ${file.extension} not yet supported"); null }
         }
     }

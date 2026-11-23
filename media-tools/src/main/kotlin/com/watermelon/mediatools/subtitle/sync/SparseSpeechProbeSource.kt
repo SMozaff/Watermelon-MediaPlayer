@@ -7,6 +7,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.SystemClock
+import com.watermelon.common.subtitle.SpeechAccumulatorFactory
 import com.watermelon.common.subtitle.sync.ActivitySignature
 import com.watermelon.common.subtitle.sync.SpeechProbeResult
 import com.watermelon.common.subtitle.sync.SpeechProbeSource
@@ -25,6 +26,7 @@ import kotlin.coroutines.coroutineContext
  */
 class SparseSpeechProbeSource(
     private val context: Context,
+    private val speechAccumulatorFactory: SpeechAccumulatorFactory,
     private val dispatcher: CoroutineDispatcher = DECODER_DISPATCHER,
 ) : SpeechProbeSource {
 
@@ -66,7 +68,7 @@ class SparseSpeechProbeSource(
             val seekStartUs = (targetStartUs - SEEK_PREROLL_US).coerceAtLeast(0L)
             extractor.seekTo(seekStartUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
 
-            val accumulator = SpeechLikelihoodAccumulator(
+            val accumulator = speechAccumulatorFactory.create(
                 targetStartUs = targetStartUs,
                 durationMs = durationMs,
                 bucketMs = bucketMs,
@@ -80,6 +82,9 @@ class SparseSpeechProbeSource(
             var inputEos = false
             var outputEos = false
             var fedPastTarget = false
+            // The native accumulator no longer exposes decodedSampleCount; track whether any PCM
+            // was handed to it so a decode that produced no samples is still reported as a failure.
+            var receivedPcm = false
 
             while (!outputEos) {
                 coroutineContext.ensureActive()
@@ -148,11 +153,12 @@ class SparseSpeechProbeSource(
                                     sampleRate = sampleRate,
                                     channelCount = channels,
                                     encoding = if (pcmEncoding == AudioFormat.ENCODING_PCM_FLOAT) {
-                                        PcmSampleEncoding.PCM_FLOAT
+                                        "PCM_FLOAT"
                                     } else {
-                                        PcmSampleEncoding.PCM_16
+                                        "PCM_16"
                                     },
                                 )
+                                receivedPcm = true
                             }
                         } finally {
                             codec.releaseOutputBuffer(outputIndex, false)
@@ -165,7 +171,7 @@ class SparseSpeechProbeSource(
             }
 
             val signature = accumulator.finish()
-            if (signature.occupancy.none { it > 0f } && accumulator.decodedSampleCount == 0L) {
+            if (signature.occupancy.none { it > 0f } && !receivedPcm) {
                 return SpeechProbeResult.Failure("no PCM decoded for requested probe")
             }
             return SpeechProbeResult.Success(

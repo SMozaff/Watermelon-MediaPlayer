@@ -60,6 +60,12 @@ pub fn open_subtitles_hash(bytes: Vec<u8>) -> String {
     watermelon_core::hash::hash_bytes(&bytes)
 }
 
+/// Production OpenSubtitles hash for large media: only the first and last 64 KiB cross FFI.
+#[uniffi::export]
+pub fn open_subtitles_hash_chunks(file_size: u64, head: Vec<u8>, tail: Vec<u8>) -> String {
+    watermelon_core::hash::hash_from_chunks(file_size, &head, &tail).unwrap_or_else(error_json)
+}
+
 /// Maps a timestamp through a serialized `SyncModel`; invalid models use Identity.
 #[uniffi::export]
 pub fn time_map_json(model_json: String, timestamp_ms: i64) -> i64 {
