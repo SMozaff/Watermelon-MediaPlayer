@@ -34,6 +34,8 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
 
 class SubtitleRepositoryImpl internal constructor(
     private val providerRegistry: SubtitleProviderRegistry,
@@ -230,6 +232,8 @@ class SubtitleRepositoryImpl internal constructor(
     }
 
     companion object {
+        private const val HASH_CHUNK_SIZE = 64 * 1024
+
         @Suppress("MissingPermission")
         internal fun defaultNetworkAvailable(context: Context): Boolean {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -250,8 +254,20 @@ class SubtitleRepositoryImpl internal constructor(
             // identical to the previous hashing path: a null or unopenable descriptor throws
             // and the caller's runCatching maps that to a hash failure.
             return ParcelFileDescriptor.AutoCloseInputStream(pfd).use { input ->
-                hasher.hash(input.readBytes())
+                val channel = input.channel
+                val head = ByteArray(HASH_CHUNK_SIZE)
+                readChunk(channel, 0L, head)
+                val tail = ByteArray(HASH_CHUNK_SIZE)
+                readChunk(channel, (mediaItem.fileSize - HASH_CHUNK_SIZE).coerceAtLeast(0L), tail)
+                hasher.hash(mediaItem.fileSize, head, tail)
             }
+        }
+
+        /** Fills [target] from [position]; short reads leave the remaining bytes zeroed. */
+        private fun readChunk(channel: FileChannel, position: Long, target: ByteArray) {
+            val buffer = ByteBuffer.wrap(target)
+            channel.position(position)
+            while (buffer.hasRemaining() && channel.read(buffer) >= 0) { /* drain up to 64 KiB */ }
         }
     }
 }

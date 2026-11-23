@@ -107,3 +107,9 @@ The unmodified raw samples and host metadata are committed in
 run artifact (90-day retention). Re-run the workflow on the same image before comparing numbers,
 and never compare these JVM numbers with ART/device results. The on-device protocol above is still
 not implemented and still requires owner approval.
+
+**Retired after the Rust-only cutover (2026-11-23):** the opt-in harness and its workflow were
+deleted together with the Kotlin ports they measured (owner decisions D-7/D-8). The recorded run
+`45075503837` and the numbers above remain the historical JVM baseline; they are no longer
+reproducible from this checkout. The live performance workflow is the Rust PCM copy-cost spike in
+`migration-uniffi-spike.yml`, which is a host microbenchmark and makes no device claim.

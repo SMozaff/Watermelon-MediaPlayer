@@ -2,11 +2,15 @@ package com.watermelon.subtitle.sync
 
 import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.model.SubtitleCue
-import com.watermelon.common.subtitle.sync.CorrelationConfig
+import com.watermelon.common.subtitle.SubtitleOffsetConsensus
+import com.watermelon.common.subtitle.sync.ActivityCorrelator
 import com.watermelon.common.subtitle.sync.ActivitySignature
+import com.watermelon.common.subtitle.sync.CorrelationConfig
+import com.watermelon.common.subtitle.sync.CorrelationResult
 import com.watermelon.common.subtitle.sync.ProbeCandidate
 import com.watermelon.common.subtitle.sync.SpeechProbeResult
 import com.watermelon.common.subtitle.sync.SpeechProbeSource
+import com.watermelon.common.subtitle.sync.SubtitleActivityBuilder
 import com.watermelon.common.subtitle.sync.SubtitleProbeSelector
 import com.watermelon.common.subtitle.sync.SubtitleSyncProfile
 import com.watermelon.common.subtitle.sync.SubtitleSyncRepository
@@ -14,102 +18,59 @@ import com.watermelon.common.subtitle.sync.SubtitleSyncRequest
 import com.watermelon.common.subtitle.sync.SubtitleSyncModel
 import com.watermelon.common.subtitle.sync.SubtitleSyncResult
 import com.watermelon.common.subtitle.sync.SyncMeasurement
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 
+/**
+ * Kotlin-side coverage that remains after the Rust cutover. Correlation, activity building,
+ * probe selection and consensus characterization moved with their ports to Rust; the fakes
+ * below only supply those ports to the coordinator orchestration tests.
+ */
 class SubtitleSyncCoreTest {
-    private val config = SubtitleSyncConfig(autoApplyThreshold = 0.80f)
-    private val builder = SubtitleActivityBuilderImpl(config)
-    private val correlator = ActivityCorrelatorImpl()
-
-    @Test
-    fun correlation_recoversPositiveConstantOffset() {
-        val source = patternedSubtitle(shiftMs = 0L)
-        val audioTimeline = patternedSubtitle(shiftMs = 2_500L)
-        val subtitleSignal = builder.build(source, 0L, 80_000L, config.bucketMs)
-        val audioSignal = builder.build(audioTimeline, 0L, 80_000L, config.bucketMs)
-
-        val result = correlator.correlate(
-            audio = audioSignal,
-            subtitleContext = subtitleSignal,
-            config = CorrelationConfig(-10_000L, 10_000L, config.bucketMs.toLong()),
+    private val fakeBuilder = object : SubtitleActivityBuilder {
+        override fun build(
+            subtitle: ParsedSubtitle,
+            startMs: Long,
+            endMs: Long,
+            bucketMs: Int,
+        ): ActivitySignature = ActivitySignature(
+            startMs = startMs,
+            bucketMs = bucketMs,
+            occupancy = FloatArray(1) { 1f },
+            onsets = FloatArray(1),
         )
-
-        assertTrue("offset=${result.offsetMs}", abs(result.offsetMs - 2_500L) <= config.bucketMs)
-        assertTrue(result.peakMargin > 0.03f)
     }
 
-    @Test
-    fun correlation_recoversNegativeConstantOffset() {
-        val source = patternedSubtitle(shiftMs = 4_000L)
-        val audioTimeline = patternedSubtitle(shiftMs = 1_000L)
-        val subtitleSignal = builder.build(source, 0L, 90_000L, config.bucketMs)
-        val audioSignal = builder.build(audioTimeline, 0L, 90_000L, config.bucketMs)
-
-        val result = correlator.correlate(
-            audioSignal,
-            subtitleSignal,
-            CorrelationConfig(-10_000L, 10_000L, config.bucketMs.toLong()),
+    private val fakeCorrelator = object : ActivityCorrelator {
+        override fun correlate(
+            audio: ActivitySignature,
+            subtitleContext: ActivitySignature,
+            config: CorrelationConfig,
+        ): CorrelationResult = CorrelationResult(
+            offsetMs = 2_500L,
+            peakScore = 0.9f,
+            secondPeakScore = 0.1f,
+            peakMargin = 0.18f,
         )
-
-        assertTrue("offset=${result.offsetMs}", abs(result.offsetMs + 3_000L) <= config.bucketMs)
     }
 
-    @Test
-    fun consensus_acceptsAgreement() {
-        val result = OffsetConsensus(config).resolve(
-            listOf(
-                measurement(10_000L, 2_280L),
-                measurement(40_000L, 2_360L),
-                measurement(70_000L, 2_310L),
-            )
-        )
-        assertTrue(result is SubtitleSyncResult.Synchronized)
-        val model = (result as SubtitleSyncResult.Synchronized).model
-        assertTrue(model is SubtitleSyncModel.Offset)
-        assertEquals(2_310L, (model as SubtitleSyncModel.Offset).offsetMs)
-    }
+    private val fakeConsensus = object : SubtitleOffsetConsensus {
+        override fun resolve(measurements: List<SyncMeasurement>): SubtitleSyncResult =
+            if (measurements.size >= 2) {
+                SubtitleSyncResult.Synchronized(
+                    model = SubtitleSyncModel.Offset(2_500L),
+                    confidence = 0.9f,
+                    measurements = measurements,
+                )
+            } else {
+                SubtitleSyncResult.LowConfidence(measurements)
+            }
 
-    @Test
-    fun consensus_classifiesLinearDriftInsteadOfAveragingIt() {
-        val result = OffsetConsensus(config).resolve(
-            listOf(
-                measurement(10_000L, 500L),
-                measurement(40_000L, 2_200L),
-                measurement(70_000L, 4_100L),
-            )
-        )
-        assertTrue(result is SubtitleSyncResult.ComplexDriftDetected)
-    }
-
-    @Test
-    fun consensus_refusesConflictingEvidence() {
-        val result = OffsetConsensus(config).resolve(
-            listOf(
-                measurement(10_000L, 2_300L),
-                measurement(40_000L, -8_200L),
-                measurement(70_000L, 14_700L),
-            )
-        )
-        assertTrue(result is SubtitleSyncResult.LowConfidence)
-    }
-
-    @Test
-    fun sdhCuesAreDownWeightedNotDeleted() {
-        val subtitle = ParsedSubtitle(
-            listOf(
-                SubtitleCue(1, 1_000, 2_000, "[DOOR SLAMS]"),
-                SubtitleCue(2, 3_000, 4_000, "actual dialogue"),
-            )
-        )
-        val signal = builder.build(subtitle, 0, 5_000, config.bucketMs)
-        val sdhBucket = (1_200 / config.bucketMs)
-        val dialogueBucket = (3_200 / config.bucketMs)
-        assertTrue(signal.occupancy[sdhBucket] > 0f)
-        assertTrue(signal.occupancy[sdhBucket] < signal.occupancy[dialogueBucket])
+        override fun hasUsefulProvisionalOffset(measurements: List<SyncMeasurement>): Boolean =
+            measurements.lastOrNull()?.estimatedOffsetMs == 2_500L
     }
 
     @Test
@@ -118,7 +79,6 @@ class SubtitleSyncCoreTest {
         assertEquals(provider.fingerprint(patternedSubtitle(0)), provider.fingerprint(patternedSubtitle(0)))
         assertTrue(provider.fingerprint(patternedSubtitle(0)) != provider.fingerprint(patternedSubtitle(40)))
     }
-
 
     @Test
     fun coordinator_usesAdaptiveSecondProbeAndPersistsAcceptedOffset() = runBlocking {
@@ -131,7 +91,7 @@ class SubtitleSyncCoreTest {
                 mediaUri: String, targetPositionMs: Long, durationMs: Long, bucketMs: Int
             ): SpeechProbeResult {
                 probeStarts += targetPositionMs
-                val signature = builder.build(
+                val signature = fakeBuilder.build(
                     shiftedAudioTimeline, targetPositionMs, targetPositionMs + durationMs, bucketMs
                 )
                 return SpeechProbeResult.Success(signature, targetPositionMs, durationMs)
@@ -150,10 +110,10 @@ class SubtitleSyncCoreTest {
         val coordinator = SubtitleSyncCoordinator(
             repository = repo,
             probeSelector = selector,
-            subtitleActivityBuilder = SubtitleActivityBuilderImpl(productionConfig),
+            subtitleActivityBuilder = fakeBuilder,
             speechProbeSource = probe,
-            correlator = ActivityCorrelatorImpl(),
-            consensus = OffsetConsensus(productionConfig),
+            correlator = fakeCorrelator,
+            consensus = fakeConsensus,
             config = productionConfig,
         )
 
@@ -200,11 +160,15 @@ class SubtitleSyncCoreTest {
         }
         val coordinator = SubtitleSyncCoordinator(
             repository = repo,
-            probeSelector = SubtitleProbeSelectorImpl(),
-            subtitleActivityBuilder = SubtitleActivityBuilderImpl(),
+            probeSelector = object : SubtitleProbeSelector {
+                override fun select(
+                    subtitle: ParsedSubtitle, mediaDurationMs: Long, maxCount: Int
+                ): List<ProbeCandidate> = emptyList()
+            },
+            subtitleActivityBuilder = fakeBuilder,
             speechProbeSource = probe,
-            correlator = ActivityCorrelatorImpl(),
-            consensus = OffsetConsensus(),
+            correlator = fakeCorrelator,
+            consensus = fakeConsensus,
         )
         val result = coordinator.synchronize(
             SubtitleSyncRequest(
@@ -215,17 +179,6 @@ class SubtitleSyncCoreTest {
         assertEquals(-1_200L, ((result as SubtitleSyncResult.Synchronized).model as SubtitleSyncModel.Offset).offsetMs)
         assertEquals(0, probeCalls)
     }
-
-    private fun measurement(position: Long, offset: Long) = SyncMeasurement(
-        subtitleProbeStartMs = position,
-        audioProbeStartMs = position + offset,
-        estimatedOffsetMs = offset,
-        correlationScore = 0.92f,
-        peakMargin = 0.18f,
-        speechCoverage = 0.42f,
-        transitionCount = 8,
-        probeQuality = 0.98f,
-    )
 
     private fun patternedSubtitle(shiftMs: Long): ParsedSubtitle {
         val starts = listOf(10_000L, 13_400L, 18_200L, 26_900L, 31_100L, 42_600L, 51_300L, 63_700L)
@@ -299,5 +252,4 @@ class SubtitleSyncCoreTest {
             mediaId: String, mediaFileSize: Long, subtitleFingerprint: String
         ) = Unit
     }
-
 }

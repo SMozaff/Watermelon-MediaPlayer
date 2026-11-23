@@ -25,7 +25,7 @@ class SubtitleSyncCoordinator(
     private val subtitleActivityBuilder: SubtitleActivityBuilder,
     private val speechProbeSource: SpeechProbeSource,
     private val correlator: ActivityCorrelator,
-    private val consensus: OffsetConsensus,
+    private val consensus: SubtitleOffsetConsensus,
     private val config: SubtitleSyncConfig = SubtitleSyncConfig(),
 ) {
     suspend fun synchronize(request: SubtitleSyncRequest): SubtitleSyncResult {

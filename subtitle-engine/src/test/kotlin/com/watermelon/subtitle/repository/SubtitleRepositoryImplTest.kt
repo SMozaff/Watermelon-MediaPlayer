@@ -6,6 +6,8 @@ import com.watermelon.common.model.SubtitleCue
 import com.watermelon.common.model.SubtitleTrack
 import com.watermelon.common.model.VideoQuery
 import com.watermelon.common.repository.OnlineSubtitleSearchResult
+import com.watermelon.common.subtitle.SrtParserPort
+import com.watermelon.common.subtitle.SubtitleHasherPort
 import com.watermelon.subtitle.cache.SubtitleCacheStore
 import com.watermelon.subtitle.provider.AuthenticationRequiredException
 import com.watermelon.subtitle.provider.PermissionDeniedException
@@ -109,6 +111,34 @@ class SubtitleRepositoryImplTest {
         }
     }
 
+    // Minimal stand-ins for the Rust-backed ports. The parser only needs to handle the
+    // SRT fixtures used in this file; no port behavior is under test here.
+    private val fakeParser = SrtParserPort { content, language ->
+        val timeRegex = Regex("""(\d{1,2}):(\d{2}):(\d{2})[,.](\d{1,3})""")
+        val cues = content.split(Regex("\n[ \t]*\n")).mapNotNull { block ->
+            val lines = block.lines().map { it.trim() }.filter { it.isNotEmpty() }
+            val timing = lines.firstOrNull { it.contains("-->") } ?: return@mapNotNull null
+            val times = timeRegex.findAll(timing).toList()
+            if (times.size < 2) return@mapNotNull null
+            val text = lines.drop(lines.indexOf(timing) + 1).joinToString("\n")
+            if (text.isBlank()) return@mapNotNull null
+            fun toMs(match: MatchResult): Long {
+                val (hours, minutes, seconds, millis) = match.destructured
+                return hours.toLong() * 3_600_000 + minutes.toLong() * 60_000 +
+                    seconds.toLong() * 1_000 + millis.padEnd(3, '0').take(3).toLong()
+            }
+            SubtitleCue(
+                index = 0,
+                startMs = toMs(times[0]),
+                endMs = toMs(times[1]),
+                rawText = text,
+            )
+        }.sortedBy { it.startMs }.mapIndexed { index, cue -> cue.copy(index = index) }
+        ParsedSubtitle(cues = cues, language = language)
+    }
+
+    private val fakeHasher = SubtitleHasherPort { _, _, _ -> "hash-unused" }
+
     private lateinit var cacheDir: File
 
     @Before
@@ -129,6 +159,8 @@ class SubtitleRepositoryImplTest {
             sidecarSource = sidecar,
             downloadClient = client,
             cacheStore = SubtitleCacheStore(cacheDir),
+            parser = fakeParser,
+            hasher = fakeHasher,
             isNetworkAvailable = { network },
             hashFor = { hash },
         )
@@ -390,6 +422,8 @@ class SubtitleRepositoryImplTest {
                 throw AssertionError("network must not be touched on reopen")
             }),
             cacheStore = SubtitleCacheStore(cacheDir),
+            parser = fakeParser,
+            hasher = fakeHasher,
             isNetworkAvailable = { false },
             hashFor = { throw AssertionError("hash must not be touched on reopen") },
         )
@@ -411,6 +445,8 @@ class SubtitleRepositoryImplTest {
                 throw AssertionError("network must not be touched")
             }),
             cacheStore = SubtitleCacheStore(cacheDir),
+            parser = fakeParser,
+            hasher = fakeHasher,
             isNetworkAvailable = { false },
             hashFor = { throw AssertionError("hash must not be touched") },
         )

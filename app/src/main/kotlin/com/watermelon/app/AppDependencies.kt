@@ -27,23 +27,8 @@ internal class AppDependencies(
     private val appContext = context.applicationContext
     private val application = app
 
-    init {
-        // Stage 5 cutover is opt-in. With the flag off (all CI and release builds) the Kotlin
-        // parser stays authoritative, so this installation is a no-op.
-        com.watermelon.app.migration.RustCutover.installIfEnabled()
-    }
-
     val database by lazy { com.watermelon.storage.db.WatermelonDatabase(appContext) }
     val settingsStore by lazy { com.watermelon.storage.prefs.FolderVisibilityStoreImpl(appContext) }
-
-    // D-4 shadow-mode seam. Comparison runs only for local debug builds with both flags enabled;
-    // the Kotlin result is always returned. The native library is packaged, but cutover itself is
-    // gated by the opt-in flag and the G1 device evidence recorded in PLAN.md.
-    val migrationDiagnostics by lazy {
-        com.watermelon.app.migration.MigrationDiagnostics(
-            com.watermelon.app.migration.RustBridgeImpl
-        )
-    }
 
     // media-tools: reuse the singleton MediaJobManager/OutputFileStore owned by
     // WatermelonApplication (see that class's doc). OutputFileStore reads the same
@@ -76,7 +61,9 @@ internal class AppDependencies(
         )
         com.watermelon.subtitle.repository.SubtitleRepositoryImpl(
             appContext,
-            providerRegistry
+            providerRegistry,
+            com.watermelon.app.migration.RustSrtParser,
+            com.watermelon.app.migration.RustSubtitleHasher,
         )
     }
 
@@ -104,11 +91,14 @@ internal class AppDependencies(
     val subtitleSyncCoordinator by lazy {
         com.watermelon.subtitle.sync.SubtitleSyncCoordinator(
             repository = subtitleSyncRepository,
-            probeSelector = com.watermelon.subtitle.sync.SubtitleProbeSelectorImpl(),
-            subtitleActivityBuilder = com.watermelon.subtitle.sync.SubtitleActivityBuilderImpl(),
-            speechProbeSource = com.watermelon.mediatools.subtitle.sync.SparseSpeechProbeSource(appContext),
-            correlator = com.watermelon.subtitle.sync.ActivityCorrelatorImpl(),
-            consensus = com.watermelon.subtitle.sync.OffsetConsensus(),
+            probeSelector = com.watermelon.app.migration.RustProbeSelector,
+            subtitleActivityBuilder = com.watermelon.app.migration.RustActivityBuilder,
+            speechProbeSource = com.watermelon.mediatools.subtitle.sync.SparseSpeechProbeSource(
+                appContext,
+                com.watermelon.app.migration.RustSpeechAccumulatorFactory,
+            ),
+            correlator = com.watermelon.app.migration.RustCorrelator,
+            consensus = com.watermelon.app.migration.RustOffsetConsensus,
         )
     }
 

@@ -1,7 +1,8 @@
 name: Migration device parity
 
-# G1 evidence: runs the Rust core on Android ART inside a pinned x86_64 emulator and compares its
-# output with the Kotlin oracle using the D-3 rule. No local SDK, NDK or emulator is used.
+# G1 evidence: runs the Rust-only core on Android ART inside a pinned x86_64 emulator and compares
+# its output with the frozen Kotlin-generated oracle (D-3 rule). The Kotlin ports were deleted;
+# there is no fallback and no migration flag. No local SDK, NDK or emulator is used.
 
 on:
   pull_request:
@@ -13,7 +14,9 @@ on:
       - "app/src/main/kotlin/**"
       - "app/src/androidTest/**"
       - ".github/workflows/migration-device-parity.yml"
-      - "subtitle-engine/src/main/kotlin/com/watermelon/subtitle/parser/**"
+      - "common-interfaces/src/main/kotlin/com/watermelon/common/subtitle/**"
+      - "subtitle-engine/src/main/kotlin/**"
+      - "media-tools/src/main/kotlin/**"
   workflow_dispatch:
 
 permissions:
@@ -21,7 +24,7 @@ permissions:
 
 jobs:
   art-parity:
-    name: Kotlin vs Rust parity on Android ART
+    name: Rust-only parity on Android ART
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -58,7 +61,8 @@ jobs:
             echo "emulator_abi=x86_64"
             echo "protocol=app/src/androidTest/kotlin/com/watermelon/app/migration/RustDeviceParityTest.kt"
             echo "rule=D-3 (1e-6 derived floats, exact int/Long/hash/strings)"
-            echo "flags=-Pwatermelon.useRustCore=true -Pwatermelon.rustShadowMode=true -Pwatermelon.rustDebugLogging=true"
+            echo "runtime=rust-only (no Kotlin fallback, no migration flags)"
+            echo "oracle=frozen testdata/golden/*.json (generator=kotlin)"
           } > migration-device/metadata.txt
           cat migration-device/metadata.txt
 
@@ -83,7 +87,7 @@ jobs:
           disable-animations: true
           # Keep this on one line: the action invokes the script through /usr/bin/sh, where
           # backslash continuations were passed through as a literal '\' task (run 45082914674).
-          script: ./gradlew :app:connectedAndroidTest --rerun --stacktrace -Pwatermelon.useRustCore=true -Pwatermelon.rustShadowMode=true -Pwatermelon.rustDebugLogging=true
+          script: ./gradlew :app:connectedAndroidTest --rerun --stacktrace
 
       - name: Upload device parity results
         if: always()

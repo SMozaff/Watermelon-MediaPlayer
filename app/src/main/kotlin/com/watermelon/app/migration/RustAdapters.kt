@@ -17,6 +17,8 @@ import com.watermelon.common.subtitle.sync.SubtitleSyncResult
 import com.watermelon.common.subtitle.sync.SyncAnchor
 import com.watermelon.common.subtitle.sync.SyncMeasurement
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.nio.ByteBuffer
 import uniffi.watermelon_ffi.activityBuildJson
