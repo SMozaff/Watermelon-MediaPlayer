@@ -9,7 +9,8 @@ oracle-covered Kotlin ports) and D-8 (Rust-only runtime, no fallback), supersedi
 the cutover is complete.
 
 This file is the single place to check stage order, exit criteria and decision owners. Individual
-reports remain the evidence of what actually ran.
+reports remain the evidence of what actually ran. The final all-green gate results and their exact
+run IDs are in [final-verification.md](final-verification.md).
 
 ## Stage and gate matrix
 
