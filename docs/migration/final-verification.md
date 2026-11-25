@@ -1,6 +1,7 @@
 # Final verification: Rust-only cutover
 
-**Final code head:** `fbdf094349a1f1952bebcc793c01390d0f9b517a4` (`main`)
+**Final code head:** `e2d8adf3ac17db44000be28cbfe1988d1f19e806` (`main`). The only commit after
+`fbdf094` was this evidence document; no source, artifact or workflow changed.
 **Decision:** D-7 (delete only the ten oracle-covered Kotlin ports) and D-8 (Rust-only runtime,
 no fallback) recorded in [decision-log.md](decision-log.md).
 
@@ -12,14 +13,20 @@ without `set -o pipefail` (`45078413395`) was excluded earlier and is not eviden
 
 | Run | Workflow | Job | Result |
 |---|---|---|---|
-| [`45679767714`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679767714) | Build and Test | `build` | success |
-| [`45679767717`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679767717) | CodeQL | `Analyze Kotlin and Java` | success |
-| [`45679767822`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679767822) | build-judge | all gates incl. migration ladder and player runtime | success |
-| [`45679865751`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679865751) | Migration Rust parity | Rust vs frozen Kotlin golden, D-3 rule | success |
-| [`45679872400`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679872400) | Migration golden vectors | frozen corpus inventory, checksums, structural checks | success |
-| [`45679878179`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679878179) | Migration device parity | ART parity on x86_64 API 35 emulator | success |
-| [`45679883490`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679883490) | Dependency Integrity | clean resolution, strict verification, MP3 compile gate | success |
-| [`45679889287`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45679889287) | Migration UniFFI spike | binding generation and three-ABI NDK build | success |
+| [`45681853710`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681853710) | build-judge | all gates incl. migration ladder and player runtime | success |
+| [`45681853722`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681853722) | Build and Test | `build` | success |
+| [`45681853824`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681853824) | CodeQL | `Analyze Kotlin and Java` | success |
+| [`45681869376`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681869376) | Migration Rust parity | Rust vs frozen Kotlin golden, D-3 rule | success |
+| [`45681876684`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681876684) | Migration golden vectors | frozen corpus inventory, checksums, structural checks | success |
+| [`45681882946`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681882946) | Migration device parity | ART parity on x86_64 API 35 emulator | success |
+| [`45683793907`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45683793907) | Dependency Integrity | clean resolution, strict verification, MP3 compile gate | success (retry) |
+| [`45681896751`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681896751) | Migration UniFFI spike | binding generation and three-ABI NDK build | success |
+
+Dependency Integrity failed once at [`45681890688`](https://github.com/SMozaff/Watermelon-MediaPlayer/actions/runs/45681890688)
+during its clean Gradle resolution step (no artifacts were produced, so the failure was before the
+MP3 test gate). The same job had already passed on the identical source at `21b60de` and `fbdf094`,
+and passed on retry at `45683793907`; it is recorded as a transient dependency-resolution failure,
+not a suppressed code failure.
 
 The device-parity workflow now compiles `app/src/androidTest` before starting the emulator and
 uploads `androidTest-compile.log` on failure (`set -o pipefail`), so a silent compile failure can no
