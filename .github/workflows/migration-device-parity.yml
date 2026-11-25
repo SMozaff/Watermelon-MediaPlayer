@@ -66,6 +66,13 @@ jobs:
           } > migration-device/metadata.txt
           cat migration-device/metadata.txt
 
+      # Compile the instrumentation APK sources before starting the emulator. This is the only
+      # CI gate that compiles app/src/androidTest, so its diagnostics are uploaded on failure.
+      - name: Compile Android instrumentation sources
+        run: |
+          set -o pipefail
+          ./gradlew :app:compileDebugAndroidTestKotlin --no-daemon --stacktrace 2>&1 | tee migration-device/androidTest-compile.log
+
       # x86_64 system images need KVM on GitHub-hosted Linux runners. Without these udev rules
       # the emulator never becomes ready and the action reports "Timeout waiting for emulator
       # to boot" (run 45081607445, 11m14s). This is infrastructure setup, not a local toolchain.
