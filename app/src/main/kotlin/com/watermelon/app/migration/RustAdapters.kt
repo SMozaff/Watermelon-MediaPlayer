@@ -202,9 +202,9 @@ private fun configJson(config: CorrelationConfig) = kotlinx.serialization.json.b
     put("minOffsetMs", kotlinx.serialization.json.JsonPrimitive(config.minOffsetMs))
     put("maxOffsetMs", kotlinx.serialization.json.JsonPrimitive(config.maxOffsetMs))
     put("stepMs", kotlinx.serialization.json.JsonPrimitive(config.stepMs))
-    put("onsetWeight", RustAdapters.json.encodeToJsonElement(f32(config.onsetWeight)))
-    put("occupancyWeight", RustAdapters.json.encodeToJsonElement(f32(config.occupancyWeight)))
-    put("silenceWeight", RustAdapters.json.encodeToJsonElement(f32(config.silenceWeight)))
+    put("onsetWeight", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(config.onsetWeight)))
+    put("occupancyWeight", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(config.occupancyWeight)))
+    put("silenceWeight", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(config.silenceWeight)))
     put(
         "independentPeakDistanceMs",
         kotlinx.serialization.json.JsonPrimitive(config.independentPeakDistanceMs),
@@ -215,11 +215,11 @@ private fun measurementJson(value: SyncMeasurement) = kotlinx.serialization.json
     put("subtitleProbeStartMs", kotlinx.serialization.json.JsonPrimitive(value.subtitleProbeStartMs))
     put("audioProbeStartMs", kotlinx.serialization.json.JsonPrimitive(value.audioProbeStartMs))
     put("estimatedOffsetMs", kotlinx.serialization.json.JsonPrimitive(value.estimatedOffsetMs))
-    put("correlationScore", RustAdapters.json.encodeToJsonElement(f32(value.correlationScore)))
-    put("peakMargin", RustAdapters.json.encodeToJsonElement(f32(value.peakMargin)))
-    put("speechCoverage", RustAdapters.json.encodeToJsonElement(f32(value.speechCoverage)))
+    put("correlationScore", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(value.correlationScore)))
+    put("peakMargin", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(value.peakMargin)))
+    put("speechCoverage", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(value.speechCoverage)))
     put("transitionCount", kotlinx.serialization.json.JsonPrimitive(value.transitionCount))
-    put("probeQuality", RustAdapters.json.encodeToJsonElement(f32(value.probeQuality)))
+    put("probeQuality", RustAdapters.json.encodeToJsonElement(WireFloat.serializer(), f32(value.probeQuality)))
 }
 
 internal object RustSrtParser : SrtParserPort {
@@ -319,7 +319,11 @@ internal object RustCorrelator : ActivityCorrelator {
 internal object RustSpeechAccumulatorFactory :
     com.watermelon.common.subtitle.SpeechAccumulatorFactory {
 
-    override fun create(targetStartUs: Long, durationMs: Long, bucketMs: Int) =
+    override fun create(
+        targetStartUs: Long,
+        durationMs: Long,
+        bucketMs: Int,
+    ): com.watermelon.common.subtitle.SpeechAccumulator =
         RustSpeechAccumulator(targetStartUs, durationMs, bucketMs)
 }
 
