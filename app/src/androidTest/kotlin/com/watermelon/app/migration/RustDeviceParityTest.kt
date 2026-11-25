@@ -13,7 +13,7 @@ import uniffi.watermelon_ffi.uniffiEnsureInitialized
 
 /**
  * G1 device evidence after the Rust-only cutover. The expected strings below are copied from
- * the frozen Kotlin-generated oracle in `testdata/golden/*.json`; the Kotlin implementations
+ * the frozen Kotlin-generated oracle in the `testdata/golden` JSON corpus; the Kotlin implementations
  * that produced them were deleted under owner decisions D-7/D-8. No migration flags exist and
  * there is no Kotlin fallback to compare against.
  */
