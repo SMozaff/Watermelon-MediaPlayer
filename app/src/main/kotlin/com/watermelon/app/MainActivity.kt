@@ -2,6 +2,7 @@ package com.watermelon.app
 
 import androidx.annotation.OptIn
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.media.AudioManager
 import android.os.Build
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,11 +33,13 @@ import com.watermelon.common.model.PlaybackMode
 import com.watermelon.common.model.ParsedSubtitle
 import com.watermelon.common.util.FileLogger
 import com.watermelon.mediatools.output.OriginalFileDeleter
+import com.watermelon.mediatools.service.JobsDeepLink
 import com.watermelon.playback.controller.PlaybackControllerImpl
 import com.watermelon.playback.service.PlaybackConnection
 import com.watermelon.ui.components.WatermelonBottomNavigation
 import com.watermelon.ui.screens.ThemeMode
 import com.watermelon.ui.theme.WatermelonTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
