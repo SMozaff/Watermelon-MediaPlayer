@@ -34,6 +34,7 @@ fun TvFolderBrowserScreen(
     onFolderClick: (FolderNode) -> Unit,
     onAllVideosClick: () -> Unit,
     onPlaylistsClick: () -> Unit,
+    onJobsClick: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -61,6 +62,13 @@ fun TvFolderBrowserScreen(
                 label = stringResource(R.string.nav_playlists),
                 detail = stringResource(R.string.tv_nav_playlists_detail),
                 onClick = onPlaylistsClick
+            )
+        }
+        item {
+            TvHomeDestination(
+                label = stringResource(R.string.jobs_title),
+                detail = stringResource(R.string.tv_nav_jobs_detail),
+                onClick = onJobsClick
             )
         }
         item {
