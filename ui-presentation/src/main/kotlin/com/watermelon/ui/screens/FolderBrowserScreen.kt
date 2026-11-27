@@ -73,6 +73,7 @@ fun FolderBrowserScreen(
     viewModel: FolderViewModel,
     onFolderClick: (FolderNode) -> Unit,
     onSettingsClick: () -> Unit = {},
+    onJobsClick: () -> Unit = {},
     layout: FolderLayout = FolderLayout.LIST,
     showDurations: Boolean = true,
     showFileSize: Boolean = false,
@@ -143,6 +144,9 @@ fun FolderBrowserScreen(
             showBackButton = false,
             showSettingsButton = true,
             onSettingsClick = onSettingsClick,
+            // Always visible (not only while a job is running) — WM-403's persistent entry.
+            showJobsButton = true,
+            onJobsClick = onJobsClick,
             modifier = Modifier.fillMaxWidth()
         )
 
