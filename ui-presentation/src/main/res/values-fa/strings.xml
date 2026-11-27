@@ -199,6 +199,7 @@
     <string name="cd_close_player">بستن پخش‌کننده</string>
     <string name="cd_favorite">علاقه‌مندی</string>
     <string name="cd_item_size">اندازهٔ آیتم: %1$s</string>
+    <string name="cd_jobs">کارها</string>
     <string name="cd_larger_items">آیتم‌های بزرگ‌تر</string>
     <string name="cd_lock">قفل</string>
     <string name="cd_menu">منو</string>
@@ -260,7 +261,7 @@
     <!-- کارهای رسانه -->
     <string name="jobs_view">مشاهدهٔ کارها</string>
     <string name="jobs_title">کارهای رسانه</string>
-    <string name="jobs_empty">در این نشست کاری از ابزارهای رسانه آغاز نشده است.</string>
+    <string name="jobs_empty">هیچ کار فعال یا اخیری وجود ندارد.</string>
     <string name="jobs_section_active">فعال</string>
     <string name="jobs_section_recent">اخیر</string>
     <string name="jobs_queued">در صف</string>
@@ -272,6 +273,7 @@
     <string name="jobs_open_result">باز کردن نتیجه</string>
     <string name="jobs_media_tool_settings">تنظیمات ابزارهای رسانه</string>
     <string name="jobs_change_settings">تغییر تنظیمات</string>
+    <string name="jobs_clear_history">پاک کردن تاریخچه</string>
     <string name="jobs_continue_background">ادامه در پس‌زمینه</string>
     <string name="jobs_mp3_ready">ام‌پی‌تری آماده است</string>
     <string name="jobs_done">انجام شد</string>
@@ -457,6 +459,7 @@
     <string name="tv_nav_all_videos_detail">مرور همهٔ ویدئوهای کتابخانهٔ شما</string>
     <string name="tv_nav_playlists_detail">تازه‌ها، علاقه‌مندی‌ها و فهرست‌های پخش شما</string>
     <string name="tv_nav_settings_detail">کتابخانه، پخش، زیرنویس و خروجی‌ها</string>
+    <string name="tv_nav_jobs_detail">کارهای فعال و نتایج اخیر پردازش رسانه</string>
     <string name="tv_folders">پوشه‌ها</string>
     <string name="tv_folders_empty">هنوز پوشه‌ای نمایه نشده است. اجازهٔ دسترسی به رسانه را بدهید یا ویدئو اضافه کنید و به اینجا بازگردید.</string>
     <string name="tv_video_count_one">%1$d ویدئو</string>

@@ -16,6 +16,7 @@ import com.watermelon.common.util.FileLogger
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobManager
 import com.watermelon.mediatools.job.MediaJobState
+import com.watermelon.mediatools.job.TerminalTransitionTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "MediaJobService"
 private const val CHANNEL_ID = "media_tools_jobs"
+private const val RESULT_CHANNEL_ID = "media_tools_job_results"
 private const val NOTIFICATION_ID = 4200 // arbitrary, app-unique; distinct from playback's own id space
 private const val ACTION_CANCEL_JOB = "com.watermelon.mediatools.action.CANCEL_JOB"
 private const val EXTRA_JOB_ID = "job_id"
@@ -77,11 +79,35 @@ class MediaJobService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
+
+        /**
+         * Activity intent that lands on the application's Jobs destination (WM-403).
+         *
+         * Deliberately implicit (action + setPackage) instead of naming MainActivity directly:
+         * media-tools is a library module and must not depend on the app module. The app
+         * declares the matching intent-filter in its manifest. CLEAR_TOP + SINGLE_TOP make a
+         * delivered notification reach the already-running instance through onNewIntent
+         * instead of stacking a second copy of the Activity.
+         *
+         * [focusJobId] is set only for a finished job's result notification, so the user lands
+         * on that exact outcome rather than on a generic or empty surface; the ongoing
+         * progress notification passes null and opens Jobs itself.
+         */
+        fun openJobsIntent(context: Context, focusJobId: String?): Intent {
+            return Intent(JobsDeepLink.ACTION_OPEN_JOBS).apply {
+                setPackage(context.packageName)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                focusJobId?.let { putExtra(JobsDeepLink.EXTRA_FOCUS_JOB_ID, it) }
+            }
+        }
     }
 
     private val serviceScope = CoroutineScope(SupervisorJob())
     private var observerJob: Job? = null
     private var jobManager: MediaJobManager? = null
+
+    /** Detects each job's single active-to-terminal transition across jobs-flow repaints. */
+    private val terminalTracker = TerminalTransitionTracker()
 
     override fun onCreate() {
         super.onCreate()
@@ -111,6 +137,12 @@ class MediaJobService : Service() {
     }
 
     private fun onJobsChanged(jobs: List<MediaJob>) {
+        // Announce terminal outcomes exactly once, before any early return below: this is the
+        // only place the service observes job state, and the empty-active branch stops the
+        // service (the notifications themselves are posted through NotificationManager, so
+        // they outlive this service instance).
+        terminalTracker.update(jobs).forEach { job -> notifyResult(job) }
+
         val active = jobs.filter { it.state is MediaJobState.Queued || it.state is MediaJobState.Running }
         if (active.isEmpty()) {
             FileLogger.i(TAG, "no active jobs -- stopping foreground")
@@ -148,6 +180,14 @@ class MediaJobService : Service() {
             .setProgress(100, averageProgress, false)
             .setSmallIcon(com.watermelon.mediatools.R.drawable.ic_notification_watermelon)
             .setOngoing(true)
+            // Tapping the live progress notification opens Jobs (the "active outcome" deep
+            // link) rather than a generic launcher relaunch.
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this, NOTIFICATION_ID, openJobsIntent(this, focusJobId = null),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            )
 
         if (activeJobs.size == 1) {
             builder.addAction(0, "Cancel", cancelIntent(this, primary.id))
@@ -167,6 +207,56 @@ class MediaJobService : Service() {
         com.watermelon.mediatools.job.MediaJobType.COMPRESS -> "Compressing video"
     }
 
+    /**
+     * Posts one result notification per job that just finished (WM-403: "completion
+     * notifications open the relevant item in Jobs"). Its content intent carries the job id,
+     * so tapping it deep-links to that exact record in the Jobs destination instead of a
+     * generic surface.
+     *
+     * Posted through NotificationManager rather than as a foreground notification: the service
+     * stops itself as soon as no job is active, while a result must stay visible (and tappable)
+     * after that. Cancelled jobs never reach here — [TerminalTransitionTracker] filters them.
+     */
+    private fun notifyResult(job: MediaJob) {
+        val state = job.state
+        val title = when {
+            state is MediaJobState.Failed -> when (job.type) {
+                com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO -> "Audio extraction failed"
+                com.watermelon.mediatools.job.MediaJobType.TRIM -> "Trim failed"
+                com.watermelon.mediatools.job.MediaJobType.COMPRESS -> "Compression failed"
+            }
+            state is MediaJobState.Completed -> when (job.type) {
+                com.watermelon.mediatools.job.MediaJobType.EXTRACT_AUDIO -> "Audio extraction complete"
+                com.watermelon.mediatools.job.MediaJobType.TRIM -> "Trim complete"
+                com.watermelon.mediatools.job.MediaJobType.COMPRESS -> "Compression complete"
+            }
+            else -> "Media job finished"
+        }
+        val source = jobSource(job)
+        val contentIntent = PendingIntent.getActivity(
+            this, job.id.hashCode(), openJobsIntent(this, focusJobId = job.id),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val builder = NotificationCompat.Builder(this, RESULT_CHANNEL_ID)
+            .setSmallIcon(com.watermelon.mediatools.R.drawable.ic_notification_watermelon)
+            .setContentTitle(title)
+            .setContentText(source)
+            .setContentIntent(contentIntent)
+            .setAutoCancel(true)
+            .setWhen(System.currentTimeMillis())
+        if (state is MediaJobState.Failed) {
+            // The failure reason is the actionable text; the row in Jobs shows it too.
+            builder.setStyle(
+                NotificationCompat.BigTextStyle().bigText("$source — ${state.reason}")
+            )
+        }
+        // Notification ids share the app's notification space but are keyed per job so two
+        // results never overwrite each other, and a re-post replaces only its own entry.
+        getSystemService(NotificationManager::class.java)
+            .notify(job.id.hashCode(), builder.build())
+        FileLogger.i(TAG, "result notification posted id=${job.id} title=$title")
+    }
+
     private fun jobSource(job: MediaJob): String =
         android.net.Uri.decode(job.inputUri).substringAfterLast('/').ifBlank { "Media file" }
 
@@ -176,6 +266,13 @@ class MediaJobService : Service() {
                 CHANNEL_ID, "Media processing", NotificationManager.IMPORTANCE_LOW
             )
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+            // Results use their own DEFAULT-importance channel: a finished job should be able
+            // to alert, while ongoing progress must stay silent (matching the existing
+            // progress channel's contract).
+            val results = NotificationChannel(
+                RESULT_CHANNEL_ID, "Media processing results", NotificationManager.IMPORTANCE_DEFAULT
+            )
+            getSystemService(NotificationManager::class.java).createNotificationChannel(results)
         }
     }
 

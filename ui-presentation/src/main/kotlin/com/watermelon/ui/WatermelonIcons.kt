@@ -52,6 +52,8 @@ object WatermelonIcons {
 
     @DrawableRes val ViewList = R.drawable.ic_view_list
     @DrawableRes val ViewGrid = R.drawable.ic_view_grid
+    /** Jobs destination entry point (WM-403) — see ic_jobs.xml. */
+    @DrawableRes val Jobs = R.drawable.ic_jobs
     @DrawableRes val Sort = R.drawable.ic_sort_ascending
     @DrawableRes val Folder = R.drawable.ic_folder
     @DrawableRes val FolderOpen = R.drawable.ic_folder_open

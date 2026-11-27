@@ -204,6 +204,7 @@
     <string name="cd_close_player">Close player</string>
     <string name="cd_favorite">Favorite</string>
     <string name="cd_item_size">Item size: %1$s</string>
+    <string name="cd_jobs">Jobs</string>
     <string name="cd_larger_items">Larger items</string>
     <string name="cd_lock">Lock</string>
     <string name="cd_menu">Menu</string>
@@ -265,7 +266,7 @@
     <!-- Media jobs -->
     <string name="jobs_view">View jobs</string>
     <string name="jobs_title">Media jobs</string>
-    <string name="jobs_empty">No media jobs have started in this session.</string>
+    <string name="jobs_empty">No active or recent media jobs.</string>
     <string name="jobs_section_active">Active</string>
     <string name="jobs_section_recent">Recent</string>
     <string name="jobs_queued">Queued</string>
@@ -277,6 +278,7 @@
     <string name="jobs_open_result">Open result</string>
     <string name="jobs_media_tool_settings">Media tool settings</string>
     <string name="jobs_change_settings">Change settings</string>
+    <string name="jobs_clear_history">Clear history</string>
     <string name="jobs_continue_background">Continue in background</string>
     <string name="jobs_mp3_ready">MP3 ready</string>
     <string name="jobs_done">Done</string>
@@ -462,6 +464,7 @@
     <string name="tv_nav_all_videos_detail">Browse every video in your library</string>
     <string name="tv_nav_playlists_detail">Recently added, favourites, and your playlists</string>
     <string name="tv_nav_settings_detail">Library, playback, subtitles, and exports</string>
+    <string name="tv_nav_jobs_detail">Active jobs and recent processing results</string>
     <string name="tv_folders">Folders</string>
     <string name="tv_folders_empty">No folders are indexed yet. Grant media access or add videos, then return here.</string>
     <string name="tv_video_count_one">%1$d video</string>

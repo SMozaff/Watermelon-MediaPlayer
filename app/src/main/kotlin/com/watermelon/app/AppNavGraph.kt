@@ -133,6 +133,7 @@ internal fun AppNavGraph(
                     onFolderClick = onFolderClick,
                     onAllVideosClick = { navController.navigate(Routes.ALL_VIDEOS) },
                     onPlaylistsClick = { navController.navigate(Routes.PLAYLISTS) },
+                    onJobsClick = { navController.navigate(Routes.JOBS) { launchSingleTop = true } },
                     onSettingsClick = { navController.navigate(Routes.SETTINGS) }
                 )
             } else {
@@ -140,6 +141,7 @@ internal fun AppNavGraph(
                     viewModel = vm,
                     onFolderClick = onFolderClick,
                     onSettingsClick = { navController.navigate(Routes.SETTINGS) },
+                    onJobsClick = { navController.navigate(Routes.JOBS) { launchSingleTop = true } },
                     layout = if (settingsState.gridDefault) {
                         com.watermelon.ui.screens.FolderLayout.GRID
                     } else {
@@ -239,6 +241,22 @@ internal fun AppNavGraph(
                     popUpTo(Routes.FAVORITES) { inclusive = true }
                 }
             }
+        }
+        // WM-403: the persistent Jobs destination. Two patterns, one content — the plain
+        // route for a user-driven entry (header button, active-jobs bar, TV home row), the
+        // item route for a completion notification's deep link.
+        composable(Routes.JOBS) {
+            JobsDestination(activity = activity, navController = navController, focusJobId = null)
+        }
+        composable(
+            route = Routes.JOBS_ITEM,
+            arguments = listOf(navArgument("jobId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            JobsDestination(
+                activity = activity,
+                navController = navController,
+                focusJobId = backStackEntry.arguments?.getString("jobId"),
+            )
         }
         composable(
             route = "videos/{folderPath}?isPlaylist={isPlaylist}",
@@ -916,4 +934,38 @@ internal fun AppNavGraph(
             playerDelete.outcome = null
         }
     }
+}
+
+/**
+ * Shared content for both Jobs route patterns ([Routes.JOBS] and [Routes.JOBS_ITEM]).
+ *
+ * Kept out of the NavHost block so a user-driven open and a notification deep-link cannot
+ * drift: both collect the same application-scoped StateFlows and offer the same actions.
+ * "Review original" hands the job id back to the Activity shell, which owns the dialog and the
+ * system-consent launcher; the dialog resolves the decision against the live job in
+ * MediaJobManager (a stale history record cannot resolve it — see JobsScreen).
+ */
+@OptIn(UnstableApi::class)
+@Composable
+private fun JobsDestination(
+    activity: MainActivity,
+    navController: NavHostController,
+    focusJobId: String?,
+) {
+    val deps = activity.deps
+    val liveJobs by deps.mediaJobsViewModel.jobs.collectAsStateWithLifecycle()
+    val history by deps.mediaJobsViewModel.history.collectAsStateWithLifecycle()
+
+    com.watermelon.ui.screens.JobsScreen(
+        liveJobs = liveJobs,
+        recentEntries = history,
+        focusJobId = focusJobId,
+        onCancel = { id -> deps.mediaJobsViewModel.cancel(id) },
+        onDismiss = { id -> deps.mediaJobsViewModel.dismiss(id) },
+        onClearHistory = { deps.mediaJobsViewModel.clearHistory() },
+        onOpenResult = { uri -> activity.openJobOutput(uri) },
+        onOpenSettings = { navController.navigate(Routes.SETTINGS) { launchSingleTop = true } },
+        onReviewOriginal = { id -> activity.originalReviewRequest = id },
+        onBack = { navController.popBackStack() },
+    )
 }

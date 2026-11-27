@@ -9,7 +9,7 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import com.watermelon.common.util.FileLogger
-import com.watermelon.mediatools.output.OutputFileStore
+import com.watermelon.mediatools.output.MediaJobOutputStore
 import com.watermelon.mediatools.output.OutputNaming
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +45,7 @@ private const val PROGRESS_POLL_MS = 250L
  */
 @OptIn(UnstableApi::class)
 class MediaJobManager(
-    private val outputFileStore: OutputFileStore,
+    private val outputFileStore: MediaJobOutputStore,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
     /**
      * Optional application Context, used only to start MediaJobService's foreground
@@ -55,9 +55,19 @@ class MediaJobManager(
      * but non-fatal degradation (see startJobServiceIfNeeded's doc).
      */
     private val appContext: android.content.Context? = null,
+    /**
+     * Durable terminal-history owner (WM-403). Every state transition is fed through
+     * [MediaJobHistory.onJobUpdated] from [setState]; defaults to an in-memory store so the
+     * manager stays constructible in tests, while the application passes a file-backed store
+     * so recent outcomes survive a restart.
+     */
+    private val jobHistory: MediaJobHistory = MediaJobHistory(),
 ) {
     private val _jobs = MutableStateFlow<List<MediaJob>>(emptyList())
     val jobs: StateFlow<List<MediaJob>> = _jobs.asStateFlow()
+
+    /** Terminal outcomes recorded so far, newest first, bounded. See [MediaJobHistory]. */
+    val history: StateFlow<List<MediaJobHistoryEntry>> = jobHistory.entries
 
     private val transformers = mutableMapOf<String, Transformer>()
     private val progressPollers = mutableMapOf<String, Job>()
@@ -353,15 +363,29 @@ class MediaJobManager(
         FileLogger.w(TAG, "job id=$id fell back: $originalRequest -> $fallbackRequest")
     }
 
-    /** Removes a terminal job after its outcome has been reviewed or dismissed. */
+    /**
+     * Removes a terminal job after its outcome has been reviewed or dismissed. Also drops the
+     * job's durable history record, so the Jobs destination's Recent section and the in-memory
+     * list can never disagree; a job id that only exists in history (after a restart) is
+     * removed there too.
+     */
     fun dismiss(id: String) {
-        val job = _jobs.value.find { it.id == id } ?: return
-        if (job.state is MediaJobState.Queued || job.state is MediaJobState.Running) {
+        val job = _jobs.value.find { it.id == id }
+        if (job != null && (job.state is MediaJobState.Queued || job.state is MediaJobState.Running)) {
             FileLogger.w(TAG, "refused to dismiss active job id=$id")
             return
         }
-        _jobs.update { list -> list.filterNot { it.id == id } }
+        if (job != null) {
+            _jobs.update { list -> list.filterNot { it.id == id } }
+        }
+        jobHistory.remove(id)
         FileLogger.i(TAG, "terminal job dismissed id=$id")
+    }
+
+    /** Clears the bounded durable history ("Clear history" in the Jobs destination). */
+    fun clearHistory() {
+        jobHistory.clear()
+        FileLogger.i(TAG, "job history cleared")
     }
 
     fun cancel(id: String) {
@@ -436,5 +460,9 @@ class MediaJobManager(
 
     private fun setState(id: String, state: MediaJobState) {
         _jobs.update { list -> list.map { if (it.id == id) it.copy(state = state) else it } }
+        // Single ingest point for durable history: active states are ignored by the history,
+        // terminal transitions are recorded once, and later updates to an already-recorded
+        // job (the original-file decision being resolved) are merged into that record.
+        _jobs.value.firstOrNull { it.id == id }?.let { jobHistory.onJobUpdated(it) }
     }
 }

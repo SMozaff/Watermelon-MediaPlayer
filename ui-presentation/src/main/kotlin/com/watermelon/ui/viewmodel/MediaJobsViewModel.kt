@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import android.content.ContentResolver
 import androidx.media3.common.util.UnstableApi
 import com.watermelon.mediatools.job.MediaJob
+import com.watermelon.mediatools.job.MediaJobHistoryEntry
 import com.watermelon.mediatools.job.MediaJobManager
 import kotlinx.coroutines.flow.StateFlow
 
@@ -23,12 +24,23 @@ class MediaJobsViewModel(private val jobManager: MediaJobManager) : ViewModel() 
 
     val jobs: StateFlow<List<MediaJob>> = jobManager.jobs
 
+    /**
+     * Bounded durable terminal history behind the Jobs destination (WM-403): survives the
+     * active bar disappearing and a normal app restart, unlike [jobs], which is in-memory.
+     */
+    val history: StateFlow<List<MediaJobHistoryEntry>> = jobManager.history
+
     fun cancel(jobId: String) {
         jobManager.cancel(jobId)
     }
 
     fun dismiss(jobId: String) {
         jobManager.dismiss(jobId)
+    }
+
+    /** Clears the durable recent history ("Clear history"); active jobs are untouched. */
+    fun clearHistory() {
+        jobManager.clearHistory()
     }
 
     fun resolveOriginalFileDecision(jobId: String, deleteOriginal: Boolean, contentResolver: ContentResolver) {

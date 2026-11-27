@@ -1,5 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
+    // JSON (de)serialization for MediaJobHistory's durable on-disk document -- see that
+    // file's doc. Same plugin alias :app already applies, so no new plugin coordinate.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -52,6 +55,10 @@ dependencies {
     // (asset attached to the v3.98.4 release) and drop it in as a local file dependency
     // instead, e.g. `implementation(files("libs/java-lame-3.98.4.jar"))`.
     implementation(libs.java.lame)
+
+    // MediaJobHistory persistence (WM-403). Same module/version :app already depends on,
+    // so dependency verification metadata and the SBOM are unaffected by coordinates.
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

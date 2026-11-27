@@ -1,5 +1,7 @@
 package com.watermelon.mediatools.job
 
+import kotlinx.serialization.Serializable
+
 /**
  * One in-flight or finished media processing job (extract audio / trim / compress).
  *
@@ -32,6 +34,11 @@ data class MediaJob(
     val targetSizeBytes: Long? = null,
 )
 
+/**
+ * @Serializable: recorded verbatim inside [MediaJobHistoryEntry] so terminal history survives a
+ * restart (WM-403). No other behavior depends on the annotation.
+ */
+@Serializable
 enum class MediaJobType { EXTRACT_AUDIO, TRIM, COMPRESS }
 
 sealed class MediaJobState {

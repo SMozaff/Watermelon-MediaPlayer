@@ -3,28 +3,22 @@ package com.watermelon.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.watermelon.mediatools.job.MediaJob
 import com.watermelon.mediatools.job.MediaJobState
 import com.watermelon.mediatools.job.MediaJobType
 import com.watermelon.ui.R
 import com.watermelon.ui.theme.WatermelonSpacing
-import com.watermelon.ui.theme.WatermelonGlass
 
 /** Jobs that are still performing work and must remain visible outside their initiating screen. */
 fun List<MediaJob>.activeMediaJobs(): List<MediaJob> = filter {
@@ -35,6 +29,9 @@ fun List<MediaJob>.activeMediaJobs(): List<MediaJob> = filter {
  * Compact, persistent entry point rendered above normal app content whenever one or more media
  * jobs are active. It deliberately summarizes every active operation rather than silently
  * privileging the first started task.
+ *
+ * "View jobs" navigates to the Jobs destination (WM-403) rather than opening a second,
+ * in-memory-only jobs surface: one place shows active work and the bounded durable history.
  */
 @Composable
 fun MediaJobsBar(
@@ -81,76 +78,13 @@ fun MediaJobsBar(
     }
 }
 
-/** Application-scoped active and recent media-job view. */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * One active job: operation, source, progress and Cancel. Rendered by the Jobs destination's
+ * Active section; shared with it (rather than duplicated) so both places stay identical as the
+ * row grows.
+ */
 @Composable
-fun MediaJobsSheet(
-    jobs: List<MediaJob>,
-    onCancel: (MediaJob) -> Unit,
-    onDismissJob: (MediaJob) -> Unit,
-    onOpenResult: (MediaJob) -> Unit,
-    onOpenSettings: () -> Unit,
-    onReviewOriginal: (MediaJob) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val activeJobs = jobs.activeMediaJobs()
-    val recentJobs = jobs.filterNot { it in activeJobs }.takeLast(4).reversed()
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = WatermelonGlass.surfaceFor(WatermelonGlass.Role.Modal),
-        scrimColor = WatermelonGlass.scrim,
-        tonalElevation = 0.dp,
-    ) {
-        Text(
-            text = stringResource(R.string.jobs_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
-        )
-        if (activeJobs.isEmpty() && recentJobs.isEmpty()) {
-            Text(
-                text = stringResource(R.string.jobs_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.md),
-            )
-        }
-        if (activeJobs.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.jobs_section_active),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
-            )
-            activeJobs.forEachIndexed { index, job ->
-                MediaJobRow(job = job, onCancel = { onCancel(job) })
-                if (index < activeJobs.lastIndex || recentJobs.isNotEmpty()) HorizontalDivider()
-            }
-        }
-        if (recentJobs.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.jobs_section_recent),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.xs),
-            )
-            recentJobs.forEachIndexed { index, job ->
-                MediaJobOutcomeRow(
-                    job = job,
-                    onDismiss = { onDismissJob(job) },
-                    onOpenResult = { onOpenResult(job) },
-                    onOpenSettings = onOpenSettings,
-                    onReviewOriginal = { onReviewOriginal(job) },
-                )
-                if (index < recentJobs.lastIndex) HorizontalDivider()
-            }
-        }
-        Spacer(modifier = Modifier.padding(bottom = WatermelonSpacing.lg))
-    }
-}
-
-@Composable
-private fun MediaJobRow(job: MediaJob, onCancel: () -> Unit) {
+internal fun MediaJobRow(job: MediaJob, onCancel: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -188,76 +122,6 @@ private fun MediaJobRow(job: MediaJob, onCancel: () -> Unit) {
 }
 
 @Composable
-private fun MediaJobOutcomeRow(
-    job: MediaJob,
-    onDismiss: () -> Unit,
-    onOpenResult: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onReviewOriginal: () -> Unit,
-) {
-    val state = job.state
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = WatermelonSpacing.lg, vertical = WatermelonSpacing.sm),
-        verticalArrangement = Arrangement.spacedBy(WatermelonSpacing.xs),
-    ) {
-        Text(
-            text = when (state) {
-                is MediaJobState.Completed -> stringResource(R.string.jobs_status_complete, jobPastTense(job.type))
-                is MediaJobState.Failed -> stringResource(R.string.jobs_status_failed, jobVerb(job.type))
-                is MediaJobState.Cancelled -> stringResource(R.string.jobs_status_cancelled, jobVerb(job.type))
-                else -> jobVerb(job.type)
-            },
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = jobSourceLabel(job),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-        )
-        when (state) {
-            is MediaJobState.Completed -> {
-                Text(
-                    text = stringResource(R.string.jobs_output_name, outputName(state.outputUri)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (state.awaitingOriginalFileDecision) {
-                    TextButton(onClick = onReviewOriginal) { Text(stringResource(R.string.jobs_review_original)) }
-                } else {
-                    Row {
-                        TextButton(onClick = onOpenResult) { Text(stringResource(R.string.jobs_open_result)) }
-                        if (job.type == MediaJobType.EXTRACT_AUDIO) {
-                            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.jobs_media_tool_settings)) }
-                        }
-                        TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
-                    }
-                }
-            }
-            is MediaJobState.Failed -> {
-                Text(
-                    text = state.reason,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                Row {
-                    TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.jobs_change_settings)) }
-                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
-                }
-            }
-            is MediaJobState.Cancelled -> {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
-            }
-            else -> Unit
-        }
-    }
-}
-
-@Composable
 fun jobVerb(type: MediaJobType): String = stringResource(
     when (type) {
         MediaJobType.EXTRACT_AUDIO -> R.string.jobs_verb_extract_audio
@@ -266,8 +130,9 @@ fun jobVerb(type: MediaJobType): String = stringResource(
     }
 )
 
+/** Past-tense operation label ("Audio extraction", "Trim", "Compression") for terminal rows. */
 @Composable
-private fun jobPastTense(type: MediaJobType): String = stringResource(
+internal fun jobPastTense(type: MediaJobType): String = stringResource(
     when (type) {
         MediaJobType.EXTRACT_AUDIO -> R.string.jobs_past_extract_audio
         MediaJobType.TRIM -> R.string.jobs_past_trim
@@ -276,9 +141,21 @@ private fun jobPastTense(type: MediaJobType): String = stringResource(
 )
 
 @Composable
-fun jobSourceLabel(job: MediaJob): String =
-    android.net.Uri.decode(job.inputUri).substringAfterLast('/').ifBlank { stringResource(R.string.jobs_source_fallback) }
+fun jobSourceLabel(job: MediaJob): String = sourceLabelFor(job.inputUri)
 
+/**
+ * Source label for a raw input uri, shared by live jobs and durable history records so a
+ * restart cannot change how the same job's source reads.
+ */
 @Composable
-private fun outputName(uri: String): String =
-    android.net.Uri.decode(uri).substringAfterLast('/').ifBlank { stringResource(R.string.jobs_output_fallback) }
+internal fun sourceLabelFor(inputUri: String): String =
+    android.net.Uri.decode(inputUri).substringAfterLast('/').ifBlank {
+        stringResource(R.string.jobs_source_fallback)
+    }
+
+/** Display name of a job's output uri, shared by terminal rows. */
+@Composable
+internal fun outputNameFor(uri: String): String =
+    android.net.Uri.decode(uri).substringAfterLast('/').ifBlank {
+        stringResource(R.string.jobs_output_fallback)
+    }

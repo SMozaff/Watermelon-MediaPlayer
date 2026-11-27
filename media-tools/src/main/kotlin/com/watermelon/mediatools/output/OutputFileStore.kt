@@ -35,16 +35,19 @@ private const val TAG = "OutputFileStore"
  * SharedPreferences-backed pattern as FolderVisibilityStoreImpl's getString/putString in
  * library-storage) and pass it in here; this class doesn't own settings persistence itself,
  * to avoid media-tools depending on library-storage for a few strings.
+ * Placed behind [MediaJobOutputStore] so MediaJobManager (and its unit tests) depend on the
+ * contract rather than on this Android-backed class; this remains the only production
+ * implementation.
  */
 class OutputFileStore(
     private val context: Context,
     private val mp3RelativePath: () -> String = { "Music/Watermelon" },
     private val compressedRelativePath: () -> String = { "Movies/Watermelon/compressed" },
     private val trimmedRelativePath: () -> String = { "Movies/Watermelon/trimmed" },
-) {
+) : MediaJobOutputStore {
 
     /** App-private staging path for [type]'s output before it's published to MediaStore. */
-    fun stagingPathFor(type: MediaJobType, displayName: String): String {
+    override fun stagingPathFor(type: MediaJobType, displayName: String): String {
         val dir = File(context.filesDir, "media-tools-staging").apply { mkdirs() }
         return File(dir, displayName).absolutePath
     }
@@ -55,7 +58,7 @@ class OutputFileStore(
      * IS_PENDING isn't used; on API < 29 we resolve collisions manually since the legacy
      * DATA-path insert doesn't dedupe display names for us.
      */
-    fun publish(type: MediaJobType, stagingPath: String, displayName: String): Uri? {
+    override fun publish(type: MediaJobType, stagingPath: String, displayName: String): Uri? {
         val stagingFile = File(stagingPath)
         if (!stagingFile.exists()) {
             FileLogger.e(TAG, "publish called but staging file missing: $stagingPath")
@@ -119,7 +122,7 @@ class OutputFileStore(
     }
 
     /** Deletes an orphaned staging file after a failed or cancelled job. */
-    fun deleteStaging(stagingPath: String) {
+    override fun deleteStaging(stagingPath: String) {
         val deleted = File(stagingPath).delete()
         FileLogger.i(TAG, "deleteStaging path=$stagingPath deleted=$deleted")
     }

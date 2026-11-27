@@ -199,6 +199,7 @@
     <string name="cd_close_player">إغلاق المشغّل</string>
     <string name="cd_favorite">المفضلة</string>
     <string name="cd_item_size">حجم العنصر: %1$s</string>
+    <string name="cd_jobs">المهام</string>
     <string name="cd_larger_items">عناصر أكبر</string>
     <string name="cd_lock">قفل</string>
     <string name="cd_menu">القائمة</string>
@@ -260,7 +261,7 @@
     <!-- مهام الوسائط -->
     <string name="jobs_view">عرض المهام</string>
     <string name="jobs_title">مهام الوسائط</string>
-    <string name="jobs_empty">لم تُبدأ أي مهام أدوات وسائط في هذه الجلسة.</string>
+    <string name="jobs_empty">لا توجد مهام نشطة أو حديثة.</string>
     <string name="jobs_section_active">نشط</string>
     <string name="jobs_section_recent">الأخيرة</string>
     <string name="jobs_queued">في قائمة الانتظار</string>
@@ -272,6 +273,7 @@
     <string name="jobs_open_result">فتح النتيجة</string>
     <string name="jobs_media_tool_settings">إعدادات أدوات الوسائط</string>
     <string name="jobs_change_settings">تغيير الإعدادات</string>
+    <string name="jobs_clear_history">مسح السجل</string>
     <string name="jobs_continue_background">متابعة في الخلفية</string>
     <string name="jobs_mp3_ready">ملف MP3 جاهز</string>
     <string name="jobs_done">تم</string>
@@ -457,6 +459,7 @@
     <string name="tv_nav_all_videos_detail">تصفّح كل فيديوهات مكتبتك</string>
     <string name="tv_nav_playlists_detail">الأحدث والمفضلة وقوائم التشغيل</string>
     <string name="tv_nav_settings_detail">المكتبة والتشغيل والترجمة والمخرجات</string>
+    <string name="tv_nav_jobs_detail">المهام النشطة ونتائج المعالجة الأخيرة</string>
     <string name="tv_folders">المجلدات</string>
     <string name="tv_folders_empty">لم يُفهرَس أي مجلد بعد. امنح إذن الوصول إلى الوسائط أو أضف فيديوهات ثم عد إلى هنا.</string>
     <string name="tv_video_count_one">فيديو واحد</string>

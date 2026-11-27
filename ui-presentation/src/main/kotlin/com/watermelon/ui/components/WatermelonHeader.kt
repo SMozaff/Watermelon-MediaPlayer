@@ -37,7 +37,9 @@ fun WatermelonHeader(
     showSettingsButton: Boolean = false,
     onSettingsClick: () -> Unit = {},
     showMenuButton: Boolean = false,
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    showJobsButton: Boolean = false,
+    onJobsClick: () -> Unit = {}
 ) {
     WatermelonGlassSurface(
         modifier = modifier
@@ -89,6 +91,16 @@ fun WatermelonHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
+                if (showJobsButton) {
+                    // Labelled Jobs entry point (WM-403): reachable whether or not any job is
+                    // running, and announced to TalkBack through its contentDescription.
+                    WatermelonGlassIconButton(
+                        onClick = onJobsClick,
+                        icon = WatermelonIcons.Jobs,
+                        contentDescription = stringResource(R.string.cd_jobs),
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
                 if (showSettingsButton) {
                     WatermelonGlassIconButton(
                         onClick = onSettingsClick,
