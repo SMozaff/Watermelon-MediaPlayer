@@ -87,6 +87,21 @@ class MainActivity : ComponentActivity() {
     internal var miniPlayerUri by mutableStateOf<String?>(null)
     internal var isMuted by mutableStateOf(false)
 
+    /**
+     * Which completed job's keep-or-delete-original dialog should be shown. Owned by the shell
+     * because the dialog needs Activity-scoped infrastructure (the system consent launcher and
+     * ContentResolver), while the request can come from the Jobs destination or the active-jobs
+     * bar. The dialog itself is rendered by [MediaJobsSection].
+     */
+    internal var originalReviewRequest by mutableStateOf<String?>(null)
+
+    /**
+     * Destination requested by a notification deep link (WM-403). A StateFlow rather than a
+     * Compose-only state so both onCreate and onNewIntent can deliver one, and composition can
+     * consume it once the NavHost has a graph.
+     */
+    private val jobsDestination = MutableStateFlow<JobsDeepLink.Destination?>(null)
+
     internal val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
     internal var playbackMode by mutableStateOf(PlaybackMode.NORMAL)
     internal val isPiPActive: Boolean get() = playbackMode == PlaybackMode.PIP
@@ -110,6 +125,7 @@ class MainActivity : ComponentActivity() {
         }
 
         permissionGate.checkOrRequest()
+        consumeJobsIntent(intent)
 
         setContent {
             var themeMode by remember { mutableStateOf(readThemeMode(prefs)) }
@@ -126,6 +142,23 @@ class MainActivity : ComponentActivity() {
 
                 // Track current destination for bottom navigation
                 val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+
+                // WM-403: a notification tap lands on the Jobs destination — on the specific
+                // finished item for a result notification, on Jobs itself for the ongoing
+                // progress notification. Deferred until the NavHost has a graph (and media
+                // access is granted), then cleared so rotation cannot re-navigate.
+                val pendingJobsDestination by jobsDestination.collectAsState()
+                LaunchedEffect(pendingJobsDestination, permissionGate.granted) {
+                    val destination = pendingJobsDestination ?: return@LaunchedEffect
+                    if (!permissionGate.granted) return@LaunchedEffect
+                    navController.navigate(
+                        when (destination) {
+                            JobsDeepLink.Destination.Jobs -> Routes.JOBS
+                            is JobsDeepLink.Destination.JobsItem -> Routes.jobsItem(destination.jobId)
+                        }
+                    ) { launchSingleTop = true }
+                    jobsDestination.value = null
+                }
 
                 // Mini-player is visible only when something is loaded AND we're not already
                 // looking at the full player screen — showing both at once would be redundant
