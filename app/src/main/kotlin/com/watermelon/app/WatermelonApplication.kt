@@ -3,10 +3,13 @@ package com.watermelon.app
 import androidx.annotation.OptIn
 import android.app.Application
 import androidx.media3.common.util.UnstableApi
+import com.watermelon.mediatools.job.JsonMediaJobHistoryStore
+import com.watermelon.mediatools.job.MediaJobHistory
 import com.watermelon.mediatools.job.MediaJobManager
 import com.watermelon.mediatools.output.OutputFileStore
 import com.watermelon.mediatools.service.MediaJobService
 import com.watermelon.storage.prefs.FolderVisibilityStoreImpl
+import java.io.File
 
 /**
  * Composition root. This app has no DI framework (confirmed by audit during media-tools
@@ -55,7 +58,16 @@ class WatermelonApplication : Application() {
             },
         )
 
-        mediaJobManager = MediaJobManager(outputFileStore, appContext = applicationContext)
+        // WM-403: the durable bounded history lives in app-private storage. Passing it here
+        // (instead of letting MediaJobManager use its in-memory default) is what makes recent
+        // outcomes survive a normal app restart.
+        mediaJobManager = MediaJobManager(
+            outputFileStore = outputFileStore,
+            appContext = applicationContext,
+            jobHistory = MediaJobHistory(
+                JsonMediaJobHistoryStore(File(filesDir, "media-job-history.json"))
+            ),
+        )
 
         // MediaJobService reads this static provider on its own onStartCommand (see that
         // class's doc for why it's a stopgap, not a real DI solution).

@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- media-tools' MediaJobService (trim/compress/extract jobs) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -59,6 +60,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <!-- WM-403: MediaJobService's progress/result notifications deep-link to Jobs.
+                 The action is owned by media-tools (JobsDeepLink.ACTION_OPEN_JOBS); the
+                 notification intent additionally pins setPackage to this app. -->
+            <intent-filter>
+                <action android:name="com.watermelon.mediatools.action.OPEN_JOBS" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 

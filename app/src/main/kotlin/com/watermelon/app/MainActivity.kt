@@ -213,11 +213,36 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
+     * Delivered when a Jobs notification is tapped while this Activity instance is already at
+     * the top (the deep-link intent carries CLEAR_TOP + SINGLE_TOP). On a cold start the same
+     * work happens in onCreate; both paths feed the one [jobsDestination] StateFlow.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        consumeJobsIntent(intent)
+    }
+
+    private fun consumeJobsIntent(intent: Intent?) {
+        if (intent == null) return
+        val destination = JobsDeepLink.destination(
+            intent.action,
+            intent.getStringExtra(JobsDeepLink.EXTRA_FOCUS_JOB_ID),
+        ) ?: return
+        // Consume the extras so a configuration change (Android re-delivers the same Intent
+        // object to onCreate) cannot navigate a second time.
+        intent.action = null
+        intent.removeExtra(JobsDeepLink.EXTRA_FOCUS_JOB_ID)
+        jobsDestination.value = destination
+        FileLogger.i("App", "Jobs deep link: $destination")
+    }
+
+    /**
      * Determine if bottom navigation bar should be shown.
      * Hide for full-screen player and PiP mode, and hide unconditionally on TV — TV has no
      * touch-oriented bottom nav at all; its root/home surface is TvFolderBrowserScreen's own
-     * pinned Settings/All Videos/Playlists rows (D-pad rows, not a bottom bar), reached at the
-     * same Routes.FOLDERS start destination every device uses.
+     * pinned All Videos / Playlists / Jobs / Settings rows (D-pad rows, not a bottom bar),
+     * reached at the same Routes.FOLDERS start destination every device uses.
      */
     private fun shouldShowBottomBar(destination: NavDestination?): Boolean {
         if (com.watermelon.ui.screens.PlayerDeviceRouting.isTelevision(this)) return false
