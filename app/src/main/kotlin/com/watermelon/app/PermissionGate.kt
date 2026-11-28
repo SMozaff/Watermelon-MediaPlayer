@@ -1,6 +1,7 @@
 package com.watermelon.app
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -10,6 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
+private const val KEY_NOTIFICATION_PERMISSION_ASKED = "notification_permission_asked"
 
 /**
  * Owns the media-permission flow, extracted from MainActivity in Phase 2b.
@@ -38,6 +41,13 @@ internal class PermissionGate(
         else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
 
+    private val notificationPrefs = activity.getSharedPreferences(
+        "watermelon_prefs", Context.MODE_PRIVATE
+    )
+    private val notificationLauncher = activity.registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { /* Non-blocking: denial only hides job notifications, never locks the library. */ }
+
     private val launcher = activity.registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
@@ -53,6 +63,29 @@ internal class PermissionGate(
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, perm)
             }
         }
+        // Ask for notifications only once the media dialog has resolved: two simultaneous
+        // permission launchers on one Activity would race for the same dialog slot.
+        requestNotificationPermissionIfNeeded()
+    }
+
+    /**
+     * API 33+ notification permission for MediaJobService's progress/result notifications
+     * (WM-403). Deliberately separate from [requiredPermissions] and gated by a one-shot flag:
+     * denying notifications must not lock the user out of the library, and must not be nagged
+     * again on every start. A user who declines can still enable them in system settings.
+     */
+    fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (notificationPrefs.getBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, false)) return
+        if (ContextCompat.checkSelfPermission(
+                activity, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPrefs.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, true).apply()
+            return
+        }
+        notificationPrefs.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, true).apply()
+        notificationLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
     }
 
     /** Startup check: refresh the library when access already exists, otherwise ask. */
@@ -60,7 +93,12 @@ internal class PermissionGate(
         granted = requiredPermissions.all { perm ->
             ContextCompat.checkSelfPermission(activity, perm) == PackageManager.PERMISSION_GRANTED
         }
-        if (granted) onGranted() else launcher.launch(requiredPermissions)
+        if (granted) {
+            onGranted()
+            requestNotificationPermissionIfNeeded()
+        } else {
+            launcher.launch(requiredPermissions)
+        }
     }
 
     /**

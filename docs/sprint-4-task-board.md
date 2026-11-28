@@ -41,10 +41,33 @@ flowchart LR
     F --> G
 ```
 
+## Current board state (2026-11-28)
+
+| ID | Story | State | Evidence recorded so far | Next gate |
+|---|---|---|---|---|
+| **WM-401** | Real-user findability study | Ready | — | Human participants (assistant can only prepare artifacts). |
+| **WM-402** | Physical-device accessibility/long-job suite | Ready | — | Physical devices; WM-403 build to be included. |
+| **WM-403** | Persistent Jobs destination and recent-history recovery | **In progress** | Implementation and JVM unit coverage committed; CI run IDs pending | Full GitHub Actions gate (build/unit tests/lint + connected instrumentation); then move to Review. |
+| **WM-404** | Library search/no-results recovery | Ready | — | Begin after WM-403 CI is green. |
+| **WM-405** | Behavioral/accessibility regression coverage | Ready | — | Stabilized Jobs/Search contracts. |
+| **WM-406** | Settings language cleanup | Ready | — | WM-401 findings. |
+| **WM-407** | Triage and release recommendation | Blocked | — | WM-401…WM-406 evidence. |
+
+### WM-403 implementation notes (acceptance mapping)
+
+| Acceptance criterion | Implementation | Unit evidence |
+|---|---|---|
+| Jobs reachable whether or not work is running; labelled and TalkBack-visible | Library header Jobs button (`WatermelonHeader.showJobsButton` + `cd_jobs`), TV home Jobs row, active-jobs bar "View jobs"; mobile/TV entry both navigate to `Routes.JOBS`. | `JobsDeepLinkTest` (routing), `JobsFocusIndexTest` (deep-link target). |
+| Active jobs show operation/source/state/progress/Cancel, live and not duplicated | `JobsScreen` Active section observes the application-scoped `MediaJobManager.jobs` StateFlow; shared `MediaJobRow`. | `MediaJobManagerHistoryTest` (state transitions through the real manager). |
+| Recent terminal jobs survive bar disappearance and app restart; bounded | `MediaJobHistory` records each terminal transition once, newest-first, capped at 50; `JsonMediaJobHistoryStore` in app-private `filesDir`; wired by `WatermelonApplication`. | `MediaJobHistoryTest` (transitions, timestamp/merge, eviction, restart reload, corrupt/unwritable store). |
+| Context actions, safe on missing output/no handler | Open result via `JobOutputOpener` + ContentResolver/file probe with toast fallback; Review original only while a live decision exists; Change settings for failures; Dismiss and Clear history drop durable records. | `JobOutputOpenerTest`, `MediaJobManagerHistoryTest` (dismiss/clear). |
+| Completion notifications open the relevant Jobs item | `MediaJobService` posts one result notification per active→terminal transition (`TerminalTransitionTracker`) with `JobsDeepLink.EXTRA_FOCUS_JOB_ID`; ongoing notification also opens Jobs; MainActivity consumes the action via `JobsDeepLink.destination` and navigates to `Routes.JOBS_ITEM`. | `TerminalTransitionTrackerTest`, `JobsDeepLinkTest`, `JobsFocusIndexTest`. |
+
+Post-notification deep-link and accessibility/responsive behavior still require the WM-402 device suite; this board entry is **not** Done until that evidence is recorded.
+
 ## First planning cycle
 
 | Order | Board action | Owner role | Evidence expected before moving on |
-|---:|---|---|---|
 | 1 | Move **WM-401** and **WM-402** to In progress after test preparation. | Product research lead and accessibility/device lead | Recruitment/device plan, fixture library, moderator script, and shared decision-log template. |
 | 2 | Keep **WM-403** and **WM-404** Ready; begin only when implementation capacity does not compromise evidence gathering. | Android lead | Brief technical design and testability check. |
 | 3 | Schedule **WM-405** after state contracts for Jobs and Search stabilize. | QA/Android lead | Named regression matrix mapped to prior P0/P1 findings. |
