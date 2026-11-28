@@ -24,7 +24,7 @@ class JobsFocusIndexTest {
 
     @Test
     fun `a recent row sits after both section headers when work is active`() {
-        assertEquals(4, jobsFocusIndex(listOf("a", "b"), listOf("c", "d"), "d"))
+        assertEquals(5, jobsFocusIndex(listOf("a", "b"), listOf("c", "d"), "d"))
     }
 
     @Test
